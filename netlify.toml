@@ -1,0 +1,65 @@
+# BrainyApp2 on Netlify: a fully static site. The AI runs in the visitor's browser (WebLLM), so there are
+# no functions, no environment variables and no secrets.
+[build]
+  command = "npm run build"
+  publish = "web/dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# SPA routes only (no catch-all), so unknown paths get a real 404.
+[[redirects]]
+  from = "/expert/*"
+  to = "/index.html"
+  status = 200
+[[redirects]]
+  from = "/team"
+  to = "/index.html"
+  status = 200
+[[redirects]]
+  from = "/studio"
+  to = "/index.html"
+  status = 200
+[[redirects]]
+  from = "/library"
+  to = "/index.html"
+  status = 200
+[[redirects]]
+  from = "/resources"
+  to = "/index.html"
+  status = 200
+[[redirects]]
+  from = "/guide"
+  to = "/index.html"
+  status = 200
+[[redirects]]
+  from = "/privacy"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "microphone=(self), camera=(), geolocation=(), payment=(), usb=()"
+    X-Frame-Options = "SAMEORIGIN"
+    Strict-Transport-Security = "max-age=31536000"
+
+# The app's CSP is a <meta> tag in index.html (it allows the model download hosts). The preview sandbox
+# gets its own, separate policy: sandboxed (opaque origin), inline scripts for generated pages, no network.
+[[headers]]
+  for = "/sandbox.html"
+  [headers.values]
+    Content-Security-Policy = "sandbox allow-scripts allow-forms allow-modals; default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; connect-src 'none'; form-action 'none'; frame-ancestors 'self'"
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/team.json"
+  [headers.values]
+    Cache-Control = "no-cache"

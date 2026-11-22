@@ -1,0 +1,12 @@
+node_modules/
+web/dist/
+netlify/lib/_generated/
+web/public/team.json
+web/public/library.json
+.netlify/
+test-results/
+playwright-report/
+*.log
+.env
+web/src/ai/_generated/
+web/dist-test/

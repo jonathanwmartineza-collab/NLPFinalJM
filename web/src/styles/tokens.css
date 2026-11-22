@@ -1,0 +1,56 @@
+/* BrainyApp2 design tokens. Light first; dark values follow the system or the theme toggle.
+   Contrast: text ≥ 4.5:1, control borders and focus rings ≥ 3:1 (checked in reports/a11y.md). */
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --side: #f4efe9;
+  --side-hover: #ebe4db;
+  --panel: #ffffff;
+  --raised: #faf7f3;
+  --input: #f8f5f1;
+  --ink: #1c1917;
+  --soft: #5f5750;
+  --faint: #685f57;
+  --line: #e4dcd2;          /* decorative dividers */
+  --control: #8c847c;       /* input and button borders, 3.6:1 on white */
+  --accent: #c2410c;        /* 5.2:1 with white text */
+  --accent-ink: #ffffff;
+  --accent-soft: #fbe9df;
+  --focus: #c2410c;
+  --ok: #1f7a4a;
+  --warn: #8a5a00;
+  --err: #b42318;
+  --op: #6b3fb8; --op-bg: #efe8fb;
+  --so: #1c5aa3; --so-bg: #e5effb;
+  --ha: #1d7044; --ha-bg: #e3f4ea;
+  --radius: 10px;
+  --radius-sm: 8px;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --shadow: 0 1px 2px rgba(28, 25, 23, .06), 0 8px 24px rgba(28, 25, 23, .08);
+  --sidebar-w: 320px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #141210; --side: #1d1a17; --side-hover: #27231f; --panel: #171513; --raised: #1f1c19; --input: #201d1a;
+    --ink: #eee8e1; --soft: #b9b0a6; --faint: #9c938a; --line: #34302b; --control: #857c73;
+    --accent: #fb923c; --accent-ink: #1c1917; --accent-soft: #3a2416; --focus: #fdba74;
+    --ok: #6ee7a8; --warn: #fcd34d; --err: #fca5a5;
+    --op: #c9adff; --op-bg: #2b2140; --so: #9cc6ff; --so-bg: #18283d; --ha: #8fe0b0; --ha-bg: #15301f;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #141210; --side: #1d1a17; --side-hover: #27231f; --panel: #171513; --raised: #1f1c19; --input: #201d1a;
+  --ink: #eee8e1; --soft: #b9b0a6; --faint: #9c938a; --line: #34302b; --control: #857c73;
+  --accent: #fb923c; --accent-ink: #1c1917; --accent-soft: #3a2416; --focus: #fdba74;
+  --ok: #6ee7a8; --warn: #fcd34d; --err: #fca5a5;
+  --op: #c9adff; --op-bg: #2b2140; --so: #9cc6ff; --so-bg: #18283d; --ha: #8fe0b0; --ha-bg: #15301f;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+}
+/* Department avatar colours: white text on each is ≥ 4.5:1. */
+.dept-Leadership { --c: #6b3fb8; } .dept-Product { --c: #1f64b0; } .dept-Design { --c: #b4532a; }
+.dept-Engineering { --c: #23784f; } .dept-Quality { --c: #8a5a00; } .dept-Launch { --c: #0e6f7d; } .dept-Governance { --c: #a3344f; }

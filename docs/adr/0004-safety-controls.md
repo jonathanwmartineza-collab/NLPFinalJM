@@ -1,0 +1,4 @@
+# 0004. Spend and sandbox safety
+Status: accepted · Date: 2026-11-21
+**Decision.** Fail closed (AI off without `APP_PASSWORD` or `PUBLIC_MODE=true`); HMAC-signed session cookie (httpOnly, Secure, SameSite=Strict, 7 days; changing the password signs everyone out); daily budget (`DAILY_BUDGET_USD`, default 1.00) and per-visitor quota (`VISITOR_DAILY_QUOTA`, default 30) in Netlify Blobs, using conservative prices; kill switch `AI_ENABLED=false`; server-chosen models and token caps; message ≤ 4,000 chars, history ≤ 24 messages, ≤ 4 experts, synthesis only with a signed run token. Generated code runs only in `/sandbox.html` (opaque origin, no network).
+**Consequences.** Visitors can't spend more than the owner allows; generated pages can't read chats, cookies or call the API (verified by an end-to-end test).
