@@ -21,6 +21,8 @@ This manual is for any Claude Code session opened on this repository. Its job: t
 | Secrets / env vars | **None.** The site is static; the AI runs in the visitor's browser. Never add keys. |
 | Build | `npm ci && npm run build` (Node 22) → `web/dist` |
 | Checks | `./scripts/gates.sh` (all gates, evidence in `reports/gates.md`) · `./scripts/verify-live.sh` (live check) |
+| Session setup | Automatic: `.claude/settings.json` runs `scripts/setup-cloud.sh` at session start (npm ci, a Chrome for tests, git identity, live-site reachability). Run it again by hand if a session reports missing packages. |
+| Repo visibility | **Private** while the project is being finished. `studio.config.json` → `"repoPublic": false` hides every GitHub link on the site. When the owner makes the repo public, set it to `true` in the same update (a test checks this). |
 
 **Session requirements (the owner sets these once):**
 1. Claude Code session opened on **BrainyApp2** with the Claude GitHub App allowed to push (already done).

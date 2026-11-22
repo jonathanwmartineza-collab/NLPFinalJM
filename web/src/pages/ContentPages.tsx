@@ -14,11 +14,11 @@ export function ResourcesPage({ team }: { team: Team }) {
       <h1>Resources</h1>
       <p className="lede">Everything this free studio relies on. Research dated {team.studio.researchDate}; models, browsers and limits change, so check the sources.</p>
       <h2>This project</h2>
-      <ul>
+      {repo ? <ul>
         <li><Ext href={repo}>Source code on GitHub</Ext>: agents in <code>.claude/agents</code>, skills in <code>.claude/skills</code>, knowledge in <code>knowledge/</code>.</li>
         <li><Ext href={`${repo}/blob/main/docs/MASTER_PROMPT.md`}>The audited master prompt</Ext> used to build it, and the <a href="/guide" onClick={onLinkClick}>step-by-step guide</a>.</li>
         <li><Ext href={`${repo}/blob/main/docs/models.md`}>Models and licences</Ext> · <Ext href={`${repo}/blob/main/docs/skills-lock.md`}>Skills lock</Ext></li>
-      </ul>
+      </ul> : <p>The source code isn't public yet. How the site was built is on the <a href="/guide" onClick={onLinkClick}>guide page</a>; the models and their licences are listed below.</p>}
       <h2>On-device AI</h2>
       <ul>
         <li><Ext href="https://github.com/mlc-ai/web-llm">WebLLM</Ext> (Apache-2.0) by the <Ext href="https://mlc.ai">MLC</Ext> team runs the models in your browser with <Ext href="https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API">WebGPU</Ext>. <Ext href="https://webllm.mlc.ai/models/">Model list</Ext>.</li>
@@ -61,7 +61,7 @@ export function GuidePage({ team }: { team: Team }) {
       <p className="lede">Built with Claude Code from an audited master prompt, one step at a time, with proof for each step.</p>
       <ol>{STEPS.map(([t, d]) => <li key={t}><b>{t}.</b> {d}</li>)}</ol>
       <h2>Build your own</h2>
-      <p>The full prompt is in <Ext href={`${team.studio.repoUrl}/blob/main/docs/MASTER_PROMPT.md`}>docs/MASTER_PROMPT.md</Ext>. To build a real app with this team, copy <code>.claude/</code>, <code>knowledge/</code> and <code>prompts/</code> into a new repository, start Claude Code, and ask the orchestrator to take your idea from discovery to deploy.</p>
+      <p>{team.studio.repoUrl ? <>The full prompt is in <Ext href={`${team.studio.repoUrl}/blob/main/docs/MASTER_PROMPT.md`}>docs/MASTER_PROMPT.md</Ext>. </> : 'The source code and the full build prompt will be published when the project is complete. '}To build a real app with this team, copy <code>.claude/</code>, <code>knowledge/</code> and <code>prompts/</code> into a new repository, start Claude Code, and ask the orchestrator to take your idea from discovery to deploy.</p>
       <h2>How the website works</h2>
       <ul>
         <li>Agents live as files in <code>.claude/agents</code>. At build time a script validates them and turns them into this sidebar and short on-device prompts.</li>
@@ -79,7 +79,7 @@ export function GuidePage({ team }: { team: Team }) {
   );
 }
 
-export function PrivacyPage() {
+export function PrivacyPage({ team }: { team: Team }) {
   const s = useEngine();
   const [msg, setMsg] = useState('');
   return (
@@ -104,7 +104,7 @@ export function PrivacyPage() {
       <h2>AI-generated content</h2>
       <p>All answers and pages are produced by small AI models. They can be wrong. Review them before you rely on them, and don't treat them as legal, financial or medical advice.</p>
       <h2>Contact</h2>
-      <p>Questions about this site: open an issue on the project's GitHub repository.</p>
+      <p>Questions about this site: {team.studio.repoUrl ? <>open an issue on the <Ext href={`${team.studio.repoUrl}/issues`}>project's GitHub repository</Ext>.</> : 'contact details will be added when the project is published.'}</p>
     </Page>
   );
 }

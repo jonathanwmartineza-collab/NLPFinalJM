@@ -27,7 +27,7 @@ export default function Sidebar({ team, path, costMode, open, onClose, theme, on
         <nav className="side-links" aria-label="Site">
           <a href="/resources" onClick={go}>Resources</a><span aria-hidden="true">·</span>
           <a href="/guide" onClick={go}>How it was built</a><span aria-hidden="true">·</span>
-          <a href={team.studio.repoUrl} target="_blank" rel="noopener noreferrer">Source code</a>
+          {team.studio.repoUrl && <a href={team.studio.repoUrl} target="_blank" rel="noopener noreferrer">Source code</a>}
         </nav>
       </div>
       <div className="side-tools">

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -93,6 +94,17 @@ test('privacy page explains the download and can delete models', async ({ page }
   await expect(page.getByText(/Hugging Face/).first()).toBeVisible();
   await page.getByRole('button', { name: 'Delete downloaded models' }).click();
   await expect(page.getByText('Downloaded models were deleted from this browser.')).toBeVisible();
+});
+
+test('no links to the GitHub repository while it is private', async ({ page }) => {
+  const cfg = JSON.parse(readFileSync('studio.config.json', 'utf8'));
+  test.skip(cfg.repoPublic !== false, 'repository is public');
+  for (const path of ['/', '/resources', '/guide', '/privacy']) {
+    await page.goto(path);
+    await expect(page.locator('a[href*="github.com/jonathanwmartineza-collab"]')).toHaveCount(0);
+  }
+  await page.goto('/resources');
+  await expect(page.getByText("The source code isn't public yet.")).toBeVisible();
 });
 
 test('library lists prompts', async ({ page }) => {

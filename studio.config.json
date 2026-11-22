@@ -5,5 +5,6 @@
  "siteUrl": "https://brainyapp2.netlify.app",
  "accent": "#C2410C",
  "repoUrl": "https://github.com/jonathanwmartineza-collab/BrainyApp2",
- "researchDate": "2026-11-22"
+ "researchDate": "2026-11-22",
+ "repoPublic": false
 }

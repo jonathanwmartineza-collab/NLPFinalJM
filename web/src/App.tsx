@@ -64,7 +64,7 @@ export default function App() {
   else if (path === '/library') page = <LibraryPage library={library} team={team} />;
   else if (path === '/resources') page = <ResourcesPage team={team} />;
   else if (path === '/guide') page = <GuidePage team={team} />;
-  else if (path === '/privacy') page = <PrivacyPage />;
+  else if (path === '/privacy') page = <PrivacyPage team={team} />;
   else page = <NotFound />;
 
   return (

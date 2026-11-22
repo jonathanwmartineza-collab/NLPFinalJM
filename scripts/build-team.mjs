@@ -92,7 +92,7 @@ if (fs.existsSync(rel('prompts/library.json'))) {
 const pub = agents.map(({ system, ...rest }) => rest);
 fs.mkdirSync(rel('web/public'), { recursive: true });
 fs.writeFileSync(rel('web/public/team.json'), JSON.stringify({
-  studio: { name: studio.studioName, tagline: studio.tagline, accent: studio.accent, repoUrl: studio.repoUrl, researchDate: studio.researchDate },
+  studio: { name: studio.studioName, tagline: studio.tagline, accent: studio.accent, repoUrl: studio.repoPublic === false ? '' : studio.repoUrl, researchDate: studio.researchDate },
   departments: DEPARTMENTS.filter((d) => pub.some((a) => a.department === d)), agents: pub,
 }, null, 1));
 fs.writeFileSync(rel('web/public/library.json'), JSON.stringify(library, null, 1));

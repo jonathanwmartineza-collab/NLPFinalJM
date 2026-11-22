@@ -8,6 +8,7 @@ mkdir -p reports
 gate() { local name="$1"; shift; local log; log=$("$@" 2>&1); local code=$?; local res=PASS; [ $code -ne 0 ] && { res=FAIL; fails=$((fails+1)); }
   { echo "## $name: $res"; echo; echo '```'; echo "\$ $*"; echo "$log" | tail -15; echo '```'; echo; } >> $out; echo "$name: $res"; }
 gate "Team validation" node scripts/validate-team.mjs
+gate "Generate team data (team.json, lite prompts, version)" bash -c "node scripts/build-team.mjs && node scripts/stamp-version.mjs"
 gate "Skills check" node scripts/check-skills.mjs
 gate "Type check" npx tsc -p tsconfig.json --noEmit
 gate "Unit tests (Vitest)" npx vitest run
