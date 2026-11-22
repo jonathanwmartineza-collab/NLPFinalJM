@@ -1,5 +1,7 @@
 # BrainyApp2: master build prompt (v2, audited)
 
+> **Changing the live project?** Use `docs/OPERATING_MANUAL.md` (or the `ship-change` skill): it turns any request into a tested push and a verified Netlify deploy. This file is the original build specification; its hard constraints (§3) still apply to every change.
+
 BrainyApp2 is the free, public edition of the BrainyApp agent studio. It has the same expert team and the same website (team chat, "Ask the whole team", One-shot Studio, Prompt Library, guides), but every AI answer is generated **inside the visitor's own browser** by a free open model (WebLLM on WebGPU). There are no API keys, no server-side AI, no password and no per-answer cost.
 
 **Do the model files need to be downloaded and uploaded to Netlify?** No. Each visitor's browser downloads the chosen model directly from Hugging Face the first time they turn the AI on (after they click to agree), then keeps it cached. Netlify only hosts a small static site.

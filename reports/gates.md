@@ -1,19 +1,19 @@
 # Quality gates
 
-Run: 2026-11-22T05:33Z on commit fa78ba1
+Run: 2026-11-22T13:54Z on commit 01bfb7b
 
 ## Team validation: PASS
 
 ```
 $ node scripts/validate-team.mjs
-validate-team: 31 agents OK, 43 skills present, descriptions 10159 chars
+validate-team: 31 agents OK, 44 skills present, descriptions 10159 chars
 ```
 
 ## Skills check: PASS
 
 ```
 $ node scripts/check-skills.mjs
-check-skills: 43 skills OK
+check-skills: 44 skills OK
 ```
 
 ## Type check: PASS
@@ -33,11 +33,8 @@ $ npx vitest run
 
  Test Files  4 passed (4)
       Tests  19 passed (19)
-   Start at  00:33:03
-   Duration  734ms (import 62%, transform 26%, tests 8%, worker 3%)
-
-    Isolate  4 workers spawned · ~85ms startup each (spawn + environment, per file)
-             at least ~254ms faster with isolate: false — reuses workers across files instead of one per file
+   Start at  08:54:12
+   Duration  579ms (import 73%, transform 12%, tests 11%, worker 4%)
 ```
 
 ## Production build: PASS
@@ -58,7 +55,7 @@ web/dist/assets/lib-DbM4P1Ls.js     6,139.64 kB │ gzip: 2,194.24 kB
 - Using dynamic import() to code-split the application
 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 1.29s
+✓ built in 1.20s
 ```
 
 ## Initial JS budget (<= 250 KB gzip, WebLLM lazy): PASS
@@ -86,7 +83,7 @@ $ npx playwright test --reporter=line
 [24/26] tests/e2e/site.spec.ts:116:5 › axe: no serious or critical issues on /privacy (dark)
 [25/26] tests/e2e/site.spec.ts:127:1 › axe: a generated page passes in light and dark
 [26/26] tests/e2e/site.spec.ts:140:1 › axe: every Studio block and palette passes in light and dark (rendered directly)
-  26 passed (45.9s)
+  26 passed (44.0s)
 ```
 
 ## No server AI, secrets or private-edition links in the bundle: PASS

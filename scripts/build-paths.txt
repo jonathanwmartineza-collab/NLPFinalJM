@@ -1,0 +1,14 @@
+# Paths that change the live site. A push that touches none of these skips the Netlify build
+# (netlify.toml "ignore" → scripts/should-build.sh), which saves the 15-credit production deploy.
+# verify-live.sh expects the live site to show the last commit that touched one of these paths.
+web
+scripts
+.claude/agents
+.claude/skills/one-shot-build
+knowledge
+prompts
+studio.config.json
+package.json
+package-lock.json
+netlify.toml
+tsconfig.json

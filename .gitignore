@@ -10,3 +10,4 @@ playwright-report/
 .env
 web/src/ai/_generated/
 web/dist-test/
+web/public/version.json

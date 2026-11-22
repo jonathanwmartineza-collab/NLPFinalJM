@@ -12,7 +12,7 @@
     "validate:team": "node scripts/validate-team.mjs",
     "check:skills": "node scripts/check-skills.mjs",
     "build:team": "node scripts/build-team.mjs",
-    "prebuild": "node scripts/build-team.mjs",
+    "prebuild": "node scripts/build-team.mjs && node scripts/stamp-version.mjs",
     "build": "vite build --config web/vite.config.ts",
     "dev": "vite --config web/vite.config.ts",
     "pretest": "node scripts/build-team.mjs",
