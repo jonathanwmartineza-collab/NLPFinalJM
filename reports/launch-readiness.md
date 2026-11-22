@@ -18,8 +18,12 @@ Red-team release gate (Morgan) against docs/MASTER_PROMPT.md §3. Date: 2026-11-
 | 12. Model output treated as data | PASS | Markdown skipHtml; zod; escaping tests |
 | 13. Privacy and Resources pages | PASS | e2e privacy; Resources lists licences |
 | 14. Evidence rule | PASS | reports/gates.md |
-| Real model answers on a WebGPU device | **NOT RUN** | This build environment can't reach Hugging Face. Owner smoke test: docs/MASTER_PROMPT.md §4 |
-| Live deploy checks | see below | |
+| Real model on a WebGPU device (live site, owner's Chrome, Balanced) | PASS | 2026-11-22: consent → download ≈0.84 GB (30 shards, ~5 min) → "On your device · Balanced"; Ada answered on-device; Studio built a Massa Mae bakery page; team mode answered with 3 contributors |
+| Live deploy | PASS | https://brainyapp2.netlify.app public; static build; nothing downloaded before the click |
 
-Blockers: none. Notes: real-device quality and speed of each tier are unmeasured until the owner smoke test.
+Blockers: none.
+
+Found and fixed in the live test: WebLLM 0.2.89 rejected `response_format: json_object` for Qwen2.5-1.5B (`GrammarMatcherInitError: Cannot pass non-string to std::string`), so the Studio showed an error. Fix 0cd9794: fall back to plain-text JSON, which `parseSpec` repairs. Confirmed live. Picker sizes were relabelled as graphics-memory needs, because the measured download is smaller.
+
+Not run: the Lite and Quality tiers on real hardware, a phone, the Stop button and the two-tab lock on real hardware, and Lighthouse.
 | Lighthouse | **NOT RUN** | Not installed in this environment; initial JS budget gate passes instead |
