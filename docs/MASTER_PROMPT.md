@@ -97,7 +97,8 @@ HARD CONSTRAINTS
    A pure renderer turns the object into one self-contained, accessible, responsive, light/dark HTML page
    from ~12 blocks and 6 palettes, escaping every string. Refine edits the JSON. "Get the Claude Code
    prompt" is built deterministically from the brief + JSON (no model). Preview only in /sandbox.html
-   with its own strict CSP.
+   with its own strict CSP. Scope: website pages (landing, portfolio, shop front, small business); library
+   items that are apps, dashboards or games are marked "Claude Code prompt only".
 9. Static site only: delete netlify/functions, the auth/budget/model server code, @anthropic-ai/sdk and
    @netlify/blobs. No environment variables are needed.
 10. App CSP (meta tag): default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:;
@@ -126,7 +127,8 @@ PHASES (finish, verify, commit, `git push origin HEAD:main`, show `git log origi
 4. Test & harden: Vitest (budgets, model IDs, router, schema repair, renderer escaping, cc prompt);
    Playwright with VITE_MOCK_ENGINE=1 (consent → progress → ready; chat stream + Stop + reload
    persistence; team chips; Studio generate → sandbox preview → refine → download; no-WebGPU state;
-   library; mobile drawer; axe 0 serious/critical on every page in light and dark); gates incl.
+   library; mobile drawer; axe 0 serious/critical on every page and on every Studio block × palette in
+   light and dark); Lighthouse (median of 3, model not downloaded) if available, else NOT RUN; gates incl.
    "no private-edition link", "no /api/ calls", "no secrets", npm audit. DONE WHEN all gates pass or are
    NOT RUN with a reason.
 5. Ship: push; create/import the Netlify project "brainyapp2" (static; no env vars); make it public;

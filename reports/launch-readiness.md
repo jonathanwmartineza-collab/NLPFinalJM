@@ -22,3 +22,4 @@ Red-team release gate (Morgan) against docs/MASTER_PROMPT.md §3. Date: 2026-11-
 | Live deploy checks | see below | |
 
 Blockers: none. Notes: real-device quality and speed of each tier are unmeasured until the owner smoke test.
+| Lighthouse | **NOT RUN** | Not installed in this environment; initial JS budget gate passes instead |
