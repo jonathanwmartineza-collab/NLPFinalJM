@@ -25,6 +25,7 @@ BrainyApp2 is the free, public edition of the BrainyApp agent studio. It has the
 | 13 | "Benchmark the models yourself" isn't possible in a cloud session with no GPU. | Low | Real-model checks are marked NOT RUN, with a 6-step manual smoke test for the owner. |
 | 14 | No budget for page weight. | Low | Initial JS ≤ 250 KB gzip. WebLLM loads lazily, only after consent. Lighthouse is run without the model downloaded. |
 | 15 | The agent team had no experts for on-device AI or for template generation. | Medium | Two new agents: **Ada**, Edge AI Engineer, and **Theo**, Template Systems Engineer. The team grows to 31 experts. |
+| 16 | Found in the live test: JSON mode crashed the Studio on the real model, and the picker showed memory needs as download sizes. | High | JSON-mode fallback to plain text (constraint 8); sizes relabelled (constraint 3). Verified live. |
 
 ---
 
@@ -75,9 +76,9 @@ HARD CONSTRAINTS
 2. Pin @mlc-ai/web-llm to an exact version (0.2.89 or newer, re-verified). Copy model IDs from that
    version's prebuiltAppConfig.model_list; a unit test fails if any configured ID is missing.
 3. Model tiers (permissive licences only):
-   - Lite: Llama-3.2-1B-Instruct (≈0.9 GB), Llama 3.2 Community Licence — show "Built with Llama".
-   - Balanced (default when the GPU allows): Qwen2.5-1.5B-Instruct (≈1.6 GB), Apache-2.0.
-   - Quality: Phi-4-mini-instruct (≈3.4 GB), MIT.
+   - Lite: Llama-3.2-1B-Instruct (needs ≈0.9 GB graphics memory), Llama 3.2 Community Licence — show "Built with Llama".
+   - Balanced (default when the GPU allows): Qwen2.5-1.5B-Instruct (≈1.6 GB; download measured ≈0.84 GB), Apache-2.0.
+   - Quality: Phi-4-mini-instruct (≈3.4 GB), MIT. Label sizes as graphics-memory needs, not download size.
    Use the q4f16_1 build when the adapter has "shader-f16", else q4f32_1.
    Never Qwen2.5-3B (non-commercial licence).
 4. Nothing downloads before a click that names the model, its size, where it comes from (Hugging Face)
@@ -93,7 +94,8 @@ HARD CONSTRAINTS
    another (≤ 300 tokens each); Morgan adds a short review when money/security/legal/release words appear;
    Nova synthesises (≤ 600 tokens) from inputs truncated to fit. Progress chips as before.
 8. One-shot Studio: the model never writes HTML. It fills a small JSON content object (zod schema with
-   defaults); a repair step extracts and coerces JSON; on failure a fallback spec is built from the brief.
+   defaults). Try WebLLM JSON mode first; if the engine rejects it (0.2.89 + Qwen2.5 throws
+   GrammarMatcherInitError), fall back to plain text for the session. A repair step extracts and coerces JSON; on failure a fallback spec is built from the brief.
    A pure renderer turns the object into one self-contained, accessible, responsive, light/dark HTML page
    from ~12 blocks and 6 palettes, escaping every string. Refine edits the JSON. "Get the Claude Code
    prompt" is built deterministically from the brief + JSON (no model). Preview only in /sandbox.html
@@ -115,8 +117,8 @@ HARD CONSTRAINTS
     mark it NOT RUN and list the owner's manual smoke test.
 
 PHASES (finish, verify, commit, `git push origin HEAD:main`, show `git log origin/main --oneline -3`)
-1. Copy: clone SOURCE_REPO (the agent-studio repository the owner names in chat) without .git; rename to BrainyApp2 (studio.config.json, README,
-   CLAUDE.md, meta tags, sitemap, robots, OG image text); add Ada and Theo with knowledge indexes and a
+1. Copy: clone SOURCE_REPO (the agent-studio repository the owner names in chat) without .git; rename to
+   BrainyApp2 (studio.config.json, README, CLAUDE.md, meta tags, sitemap, robots, OG image text); add Ada and Theo with knowledge indexes and a
    sourced note knowledge/_shared/webllm-on-device.md. DONE WHEN validate-team passes with 31 agents.
 2. Decide: ADRs 0005 static + on-device AI, 0006 model tiers and licences, 0007 context budget and team
    mode, 0008 schema-driven Studio. DONE WHEN each ADR states verified facts with dates.
