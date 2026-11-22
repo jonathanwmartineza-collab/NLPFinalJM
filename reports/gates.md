@@ -1,6 +1,6 @@
 # Quality gates
 
-Run: 2026-11-22T05:18Z on commit 
+Run: 2026-11-22T05:33Z on commit fa78ba1
 
 ## Team validation: PASS
 
@@ -33,11 +33,11 @@ $ npx vitest run
 
  Test Files  4 passed (4)
       Tests  19 passed (19)
-   Start at  00:18:04
-   Duration  882ms (import 51%, transform 40%, tests 7%, worker 3%)
+   Start at  00:33:03
+   Duration  734ms (import 62%, transform 26%, tests 8%, worker 3%)
 
-    Isolate  4 workers spawned · ~88ms startup each (spawn + environment, per file)
-             at least ~263ms faster with isolate: false — reuses workers across files instead of one per file
+    Isolate  4 workers spawned · ~85ms startup each (spawn + environment, per file)
+             at least ~254ms faster with isolate: false — reuses workers across files instead of one per file
 ```
 
 ## Production build: PASS
@@ -50,7 +50,7 @@ computing gzip size...
 web/dist/index.html                     1.91 kB │ gzip:     0.83 kB
 web/dist/assets/worker-HJiqo6PJ.js  6,124.96 kB
 web/dist/assets/index-TYC1jDJH.css     17.67 kB │ gzip:     4.65 kB
-web/dist/assets/index-DQd_RM4H.js     578.62 kB │ gzip:   181.34 kB
+web/dist/assets/index-pQDK2N2s.js     579.13 kB │ gzip:   181.56 kB
 web/dist/assets/lib-DbM4P1Ls.js     6,139.64 kB │ gzip: 2,194.24 kB
 
 [plugin builtin:vite-reporter] 
@@ -58,14 +58,14 @@ web/dist/assets/lib-DbM4P1Ls.js     6,139.64 kB │ gzip: 2,194.24 kB
 - Using dynamic import() to code-split the application
 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 1.41s
+✓ built in 1.29s
 ```
 
 ## Initial JS budget (<= 250 KB gzip, WebLLM lazy): PASS
 
 ```
 $ bash -c f=$(grep -o "assets/index-[^\"]*\.js" web/dist/index.html | head -1); s=$(gzip -c "web/dist/$f" | wc -c); echo "$f gzip $s bytes"; grep -q "web-llm\|CreateWebWorkerMLCEngine" web/dist/index.html && { echo "WebLLM in entry HTML"; exit 1; }; [ "$s" -le 256000 ]
-assets/index-DQd_RM4H.js gzip 179314 bytes
+assets/index-pQDK2N2s.js gzip 179556 bytes
 ```
 
 ## End-to-end + axe (Playwright, mock engine): PASS
@@ -86,7 +86,7 @@ $ npx playwright test --reporter=line
 [24/26] tests/e2e/site.spec.ts:116:5 › axe: no serious or critical issues on /privacy (dark)
 [25/26] tests/e2e/site.spec.ts:127:1 › axe: a generated page passes in light and dark
 [26/26] tests/e2e/site.spec.ts:140:1 › axe: every Studio block and palette passes in light and dark (rendered directly)
-  26 passed (47.1s)
+  26 passed (45.9s)
 ```
 
 ## No server AI, secrets or private-edition links in the bundle: PASS

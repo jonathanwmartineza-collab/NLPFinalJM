@@ -1,16 +1,31 @@
 // Studio pipeline: brief → model fills JSON → repair/validate → fallback → render. Refine edits the JSON.
-import { chat, EngineError } from '../engine';
+import { chat, EngineError, type ChatMessage } from '../engine';
 import { BUDGET } from '../models';
 import { SPEC_TASK, REFINE_TASK, STUDIO_NAME } from '../prompts';
 import { parseSpec, fallbackSpec, type Spec } from './spec';
 import { renderPage } from './render';
+
+// JSON mode (grammar-constrained) is preferred; if the engine rejects it, retry as plain text:
+// parseSpec() repairs JSON from free text.
+let jsonMode = true;
+async function fill(messages: ChatMessage[], maxTokens: number, temperature: number, onText: (t: string) => void, signal?: AbortSignal) {
+  if (jsonMode) {
+    try { return await chat(messages, { maxTokens, temperature, json: true }, onText, signal); }
+    catch (e) {
+      if (!(e instanceof EngineError) || e.code !== 'other' || signal?.aborted) throw e;
+      console.warn('[BrainyApp2] JSON mode failed; using plain text from now on.');
+      jsonMode = false;
+    }
+  }
+  return chat(messages, { maxTokens, temperature }, onText, signal);
+}
 
 export type BuildResult = { spec: Spec; html: string; usedFallback: boolean };
 
 export async function buildFromBrief(brief: string, onText: (t: string) => void, signal?: AbortSignal): Promise<BuildResult> {
   let spec: Spec | null = null;
   for (let attempt = 0; attempt < 2 && !spec && !signal?.aborted; attempt++) {
-    const r = await chat([{ role: 'system', content: SPEC_TASK }, { role: 'user', content: `Brief: ${brief.slice(0, BUDGET.inputChars)}` }], { maxTokens: 1_100, temperature: 0.5, json: true }, onText, signal);
+    const r = await fill([{ role: 'system', content: SPEC_TASK }, { role: 'user', content: `Brief: ${brief.slice(0, BUDGET.inputChars)}` }], 1_100, 0.5, onText, signal);
     spec = parseSpec(r.text);
   }
   if (signal?.aborted) throw new EngineError('aborted', 'Stopped.');
@@ -20,7 +35,7 @@ export async function buildFromBrief(brief: string, onText: (t: string) => void,
 }
 
 export async function refineSpec(spec: Spec, change: string, onText: (t: string) => void, signal?: AbortSignal): Promise<BuildResult> {
-  const r = await chat([{ role: 'system', content: REFINE_TASK }, { role: 'user', content: `Change request: ${change.slice(0, 600)}\n\nCurrent JSON:\n${JSON.stringify(spec)}` }], { maxTokens: 1_200, temperature: 0.4, json: true }, onText, signal);
+  const r = await fill([{ role: 'system', content: REFINE_TASK }, { role: 'user', content: `Change request: ${change.slice(0, 600)}\n\nCurrent JSON:\n${JSON.stringify(spec)}` }], 1_200, 0.4, onText, signal);
   if (signal?.aborted) throw new EngineError('aborted', 'Stopped.');
   const next = parseSpec(r.text);
   if (!next) throw new EngineError('refine', 'The AI could not apply that change. Try a shorter, more specific request.');

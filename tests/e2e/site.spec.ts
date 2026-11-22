@@ -28,7 +28,7 @@ test('nothing downloads before consent; the picker shows sizes and licences', as
   await expect(page.locator('#composer')).toHaveCount(0);
   await expect(page.getByText('Apache-2.0')).toBeVisible();
   await expect(page.getByText(/Built with Llama/)).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Download Balanced model (1.6 GB)' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Download Balanced model' })).toBeVisible();
   await page.waitForTimeout(500);
   expect(external).toEqual([]);
 });

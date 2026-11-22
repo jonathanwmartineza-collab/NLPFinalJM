@@ -94,7 +94,7 @@ export default function App() {
             <li><b>Ask one expert</b> from the list, or <b>ask the whole team</b> and get one combined answer.</li>
             <li><b>One-shot Studio</b> turns a description into a complete web page you can preview and download.</li>
             <li>Answers are AI-generated: review them before you rely on them.</li>
-            <li>The first time, you choose a model and your browser downloads it once (about 1–3 GB). Nothing you type leaves your browser.</li>
+            <li>The first time, you choose a model and your browser downloads it once (about 1 GB; the Quality model is bigger). Nothing you type leaves your browser.</li>
             <li>Needs a browser with WebGPU (for example a recent Chrome or Edge on a laptop). Small models give short, simpler answers.</li>
           </ul>
           <p style={{ fontSize: 14, color: 'var(--soft)' }}>Read the <a href="/privacy" onClick={(e) => { intro.current?.close(); onLinkClick(e); }}>privacy note</a>.</p>

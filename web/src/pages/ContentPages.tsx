@@ -22,7 +22,7 @@ export function ResourcesPage({ team }: { team: Team }) {
       <h2>On-device AI</h2>
       <ul>
         <li><Ext href="https://github.com/mlc-ai/web-llm">WebLLM</Ext> (Apache-2.0) by the <Ext href="https://mlc.ai">MLC</Ext> team runs the models in your browser with <Ext href="https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API">WebGPU</Ext>. <Ext href="https://webllm.mlc.ai/models/">Model list</Ext>.</li>
-        {TIERS.map((t) => <li key={t.id}><b>{t.label}</b>: <Ext href={t.source}>{t.f16.replace(/-q4f16_1-MLC$/, '')}</Ext>, {t.sizeGb} GB, licence <Ext href={t.licenceUrl}>{t.licence}</Ext>{t.attribution ? `. ${t.attribution}.` : '.'}</li>)}
+        {TIERS.map((t) => <li key={t.id}><b>{t.label}</b>: <Ext href={t.source}>{t.f16.replace(/-q4f16_1-MLC$/, '')}</Ext>, needs ≈{t.sizeGb} GB graphics memory, licence <Ext href={t.licenceUrl}>{t.licence}</Ext>{t.attribution ? `. ${t.attribution}.` : '.'}</li>)}
       </ul>
       <h2>Platform documentation</h2>
       <ul>

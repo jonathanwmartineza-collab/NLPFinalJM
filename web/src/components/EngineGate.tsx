@@ -58,14 +58,14 @@ export default function EngineGate({ copyText }: { copyText?: string }) {
           <label key={t.id} className="tier" data-on={pick === t.id}>
             <input type="radio" name="tier" value={t.id} checked={pick === t.id} onChange={() => setPick(t.id)} />
             <span>
-              <b>{t.label}</b> · {t.sizeGb} GB{s.recommended === t.id ? ' · Recommended for this device' : ''}{s.cached[t.id] ? ' · Downloaded' : ''}
+              <b>{t.label}</b> · needs ≈{t.sizeGb} GB of graphics memory{s.recommended === t.id ? ' · Recommended for this device' : ''}{s.cached[t.id] ? ' · Downloaded' : ''}
               <span className="small">{t.blurb} Licence: <a href={t.licenceUrl} target="_blank" rel="noreferrer">{t.licence}</a>{t.attribution ? ` (${t.attribution})` : ''}.</span>
             </span>
           </label>
         ))}
       </fieldset>
-      <p className="small">{cached ? 'This model is already saved in this browser.' : <>The model ({tier.sizeGb} GB, one time) downloads from Hugging Face, which sees the download request like any website. It's saved in this browser for next time. <a href="/privacy" onClick={onLinkClick}>Privacy</a></>}{s.storage ? ` Storage used: ${(s.storage.usedMb / 1000).toFixed(1)} GB of ${(s.storage.quotaMb / 1000).toFixed(0)} GB available to this site.` : ''}</p>
-      <button type="button" className="btn" onClick={() => loadTier(pick)}>{cached ? `Turn on AI (${tier.label})` : `Download ${tier.label} model (${tier.sizeGb} GB)`}</button>
+      <p className="small">{cached ? 'This model is already saved in this browser.' : <>The model (a one-time download, smaller than its memory need) comes from Hugging Face, which sees the download request like any website. It's saved in this browser for next time. <a href="/privacy" onClick={onLinkClick}>Privacy</a></>}{s.storage ? ` Storage used: ${(s.storage.usedMb / 1000).toFixed(1)} GB of ${(s.storage.quotaMb / 1000).toFixed(0)} GB available to this site.` : ''}</p>
+      <button type="button" className="btn" onClick={() => loadTier(pick)}>{cached ? `Turn on AI (${tier.label})` : `Download ${tier.label} model`}</button>
     </div>
   );
 }

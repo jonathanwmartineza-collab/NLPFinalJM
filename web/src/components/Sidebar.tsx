@@ -32,7 +32,7 @@ export default function Sidebar({ team, path, costMode, open, onClose, theme, on
       </div>
       <div className="side-tools">
         <label htmlFor="agent-search" className="sr-only">Search experts</label>
-        <input id="agent-search" className="search" type="search" placeholder="Search 29 experts" value={q} onChange={(e) => setQ(e.target.value)} />
+        <input id="agent-search" className="search" type="search" placeholder={`Search ${team.agents.length} experts`} value={q} onChange={(e) => setQ(e.target.value)} />
         <button type="button" className="icon-btn" onClick={onTheme} aria-label={`Theme: ${theme}. Change theme`} title={`Theme: ${theme}`}>
           <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">{theme === 'dark'
             ? <path fill="currentColor" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />

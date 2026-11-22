@@ -175,5 +175,5 @@ You approve each sensitive step when asked. Claude never types passwords or keys
 
 ## 5. Honest limits
 - It needs WebGPU and enough GPU memory. Many phones and older computers can't run it, but the rest of the site still works.
-- The first use downloads 0.9–3.4 GB, once per browser.
+- The first use downloads the model once per browser: about 0.85 GB for Balanced (measured 2026-11-22); Lite is smaller and Quality larger. The sizes shown in the picker are graphics-memory needs.
 - Small models give short, simpler answers. They are good for advice, outlines, copy and filling page templates, and weak at complex reasoning and long code.

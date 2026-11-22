@@ -142,6 +142,7 @@ export async function loadTier(id: TierId): Promise<void> {
     set({ status: 'ready', progress: 1, progressText: '', cached: { ...state.cached, [id]: true } });
   } catch (e) {
     if (seq !== loadSeq) return;
+    console.warn('[BrainyApp2] model load error:', e);
     await unloadEngine(true);
     set({ status: 'error', ...classify(e) });
   }
@@ -199,9 +200,10 @@ export async function chat(messages: ChatMessage[], opts: ChatOptions, onText: (
       if (c?.finish_reason) finish = c.finish_reason;
     }
   } catch (e) {
+    console.warn('[BrainyApp2] generation error:', e);
     const k = classify(e);
     if (k.errorKind === 'device' || k.errorKind === 'oom') { await unloadEngine(true); set({ status: 'error', ...k }); }
-    throw new EngineError(k.errorKind ?? 'other', k.reason ?? 'The AI stopped unexpectedly.');
+    throw new EngineError(k.errorKind ?? 'other', k.errorKind === 'other' ? 'The AI stopped unexpectedly. Please try again.' : k.reason ?? 'The AI stopped unexpectedly.');
   } finally {
     clearTimeout(timer); signal?.removeEventListener('abort', onAbort); running = false;
   }
