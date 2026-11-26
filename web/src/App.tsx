@@ -59,7 +59,7 @@ export default function App() {
   useEffect(() => {
     const t = team?.studio.name ?? 'BrainyApp2';
     const ex = path.startsWith('/expert/') ? team?.agents.find((a) => a.slug === path.slice(8)) : undefined;
-    const sec = ex ? `${ex.name}, ${ex.title}` : path.split('/').filter(Boolean)[0]?.replace(/^\w/, (c) => c.toUpperCase()) ?? '';
+    const sec = ex ? `${ex.name}, ${ex.title}` : path === '/nlp' ? 'NLP Lab (NLTK + spaCy)' : path.split('/').filter(Boolean)[0]?.replace(/^\w/, (c) => c.toUpperCase()) ?? '';
     document.title = path === '/' ? `${t} · Free AI product studio` : `${sec} · ${t}`;
   }, [path, team]);
 

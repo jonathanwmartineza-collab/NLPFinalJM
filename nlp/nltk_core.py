@@ -248,8 +248,11 @@ def coach(text: str, index: dict | None = None) -> dict:
 
 # ---------------------------------------------------------------- team agreement map
 RECOMMEND_RE = re.compile(
-    r"\b(?:i(?:'d| would)? recommend(?:ing)?|we recommend|recommend(?:ed)?|go with|choose|pick|prefer|opt for|use)\s+"
-    r"(?:a |an |the |using |building )?([A-Za-z][\w\-\.]*(?: [A-Za-z][\w\-\.]*)?)", re.I)
+    r"\b(?:recommend(?:ing|ed)?(?: building| using| going with)?|go with|choose|pick|prefer|opt for|"
+    r"would (?:build|use|pick|choose|go with)|start with|switch to|move to|stick with)\s+"
+    r"(?:the [\w\-]+(?: [\w\-]+)? as )?(?:a |an |the )?"
+    r"([A-Za-z][\w\-\.]*(?: (?!(?:to|for|with|instead|later|because|and|so|that|first|now|if|in|on|is)\b)[A-Za-z][\w\-\.]*){0,2})",
+    re.I)
 
 
 def _key_terms(text: str, phrases: list[str], n: int = 10) -> list[str]:

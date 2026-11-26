@@ -84,3 +84,14 @@ def test_agreement_map():
     pair = next(p for p in m["pairs"] if p["a"] == "Imani" and p["b"] == "Mireille")
     assert pair["conflict"] and pair["verdict"] == "disagree"
     assert m["experts"][0]["recommends"][0].startswith("native")
+
+
+def test_agreement_flags_opposite_recommendations():
+    answers = [
+        {"name": "A", "text": "I recommend building the habit tracker as a progressive web app. It is cheap and fast to launch."},
+        {"name": "B", "text": "I would build a native app instead. Reminders and widgets need it, and users will trust it."},
+    ]
+    out = N.agreement(answers, [])
+    assert out["experts"][0]["recommends"] == ["progressive web app"]
+    assert out["experts"][1]["recommends"] == ["native app"]
+    assert out["pairs"][0]["conflict"] is True and out["pairs"][0]["verdict"] == "disagree"
