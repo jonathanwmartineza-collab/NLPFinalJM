@@ -10,7 +10,7 @@ import { Avatar } from '../components/Sidebar';
 import { useEngine } from '../ai/engine';
 import { Thinking, errorText, VoiceControls, ChatFooter } from '../components/ChatParts';
 import EmergencyNotice from '../components/EmergencyNotice';
-import { useClearOptions } from '../components/ClearOptions';
+import { useClearOptions, clearWithUndo } from '../components/ClearOptions';
 
 type Chip = { slug: string; state: 'queued' | 'thinking' | 'writing' | 'done' | 'failed' };
 type Turn = { q: string; answer: string; contributions: { slug: string; text: string }[]; note?: string; failed?: number; stop?: string };
@@ -47,7 +47,7 @@ export default function TeamPage({ team }: { team: Team }) {
     what: 'this team chat',
     canClear: turns.length > 0 && !busy,
     answering: busy,
-    onClear: () => { const snap = turns; setTurns([]); persist([]); setErr(''); return () => { setTurns(snap); persist(snap); }; },
+    onClear: () => { setErr(''); return clearWithUndo(turns, [] as Turn[], (t) => { setTurns(t); persist(t); }); },
     onFreed: () => { ctrl.current?.abort(); setTurns([]); setErr(''); },
   });
   const toSetup = () => {
@@ -170,7 +170,7 @@ export default function TeamPage({ team }: { team: Team }) {
         <div ref={end} />
       </div>
       <div className="composer-wrap" id="ai-setup">
-        {ready ? <Composer placeholder="Ask the whole team…" busy={busy} onSend={ask} onStop={() => ctrl.current?.abort()} seed={seed} />
+        {ready ? <Composer placeholder="Ask the whole team…" busy={busy} onSend={ask} onStop={() => ctrl.current?.abort()} seed={seed} clear={clear.quick('Clear chat')} />
           : <EngineGate />}
         <ChatFooter research={team.studio.researchDate} />
       </div>

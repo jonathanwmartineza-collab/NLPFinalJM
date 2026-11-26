@@ -55,6 +55,26 @@ test('expert chat: Clear erases the chat, Undo restores it, and a new chat works
   await expect(page.locator('.msg.ai .md').last()).toContainText('Bastien here (mock engine)');
 });
 
+test('expert chat: the red Clear chat button beside Send clears in one press, and Undo brings it all back', async ({ page }) => {
+  await open(page, '/expert/ui-designer');
+  await turnOnAI(page);
+  const btn = page.locator('.composer .clear-btn');
+  await expect(btn).toHaveCount(0); // nothing to clear yet
+  await ask(page, 'Suggest a palette for a bakery');
+  await expect(btn).toBeVisible();
+  await expect(btn).toHaveAccessibleName('Clear chat');
+  await expect(btn).toHaveText('Clear chat');
+  const box = await btn.boundingBox();
+  expect(box!.height).toBeGreaterThanOrEqual(44);
+  await btn.click();
+  await expect(page.locator('.msg')).toHaveCount(0);
+  await expect(toast(page)).toContainText('Cleared this chat with Bastien Mwangi.');
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(page.locator('.msg.user')).toContainText('bakery');
+  await page.reload();
+  await expect(page.locator('.msg.user')).toContainText('bakery'); // saved history came back too
+});
+
 test('team chat: Clear works from the keyboard alone', async ({ page }) => {
   await open(page, '/');
   await turnOnAI(page);

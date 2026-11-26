@@ -128,13 +128,14 @@ export default function StudioPage({ library }: { library: LibraryItem[] }) {
           </select>
         </label>
         <label>Your brief
-          <textarea value={brief} onChange={(e) => setBrief(e.target.value)} maxLength={2400} placeholder="A calm, mobile-first page for a yoga studio in Lisbon: class schedule, teacher bios, prices and a contact form." />
+          <textarea id="studio-brief" value={brief} onChange={(e) => setBrief(e.target.value)} maxLength={2400} placeholder="A calm, mobile-first page for a yoga studio in Lisbon: class schedule, teacher bios, prices and a contact form." />
         </label>
         {tpl && !tpl.runsInStudio && <p className="notice">This template is an app, not a page. Use “Get the Claude Code prompt” and build it with Claude Code.</p>}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {ready && (busy ? <button type="button" className="btn ghost" onClick={() => ctrl.current?.abort()}>Stop</button>
             : <button type="button" className="btn" onClick={generate} disabled={brief.trim().length < 10 || (tpl && !tpl.runsInStudio)}>Generate</button>)}
           <button type="button" className="btn ghost" onClick={() => { setCc(claudeCodePrompt(brief, cur?.spec)); setNote(''); }} disabled={busy || brief.trim().length < 10}>Get the Claude Code prompt</button>
+          {clear.quick('Clear page', 'studio-brief')}
         </div>
         {!ready && <EngineGate />}
         <ol className="steps" aria-label="Progress">{steps.map(([s, l]) => <li key={s} data-s={stepState(s)}>{l}</li>)}</ol>

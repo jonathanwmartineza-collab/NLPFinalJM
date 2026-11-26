@@ -8,8 +8,10 @@ import { BUDGET } from '../ai/models';
 const MAX = BUDGET.inputChars;
 const touch = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
 
-export default function Composer({ placeholder, busy, onSend, onStop, seed }: {
+export default function Composer({ placeholder, busy, onSend, onStop, seed, clear }: {
   placeholder: string; busy: boolean; onSend: (t: string) => void; onStop: () => void; seed?: { text: string; n: number };
+  /** The red Clear button, shown beside Send and Stop. */
+  clear?: React.ReactNode;
 }) {
   const [text, setText] = useState('');
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -31,6 +33,7 @@ export default function Composer({ placeholder, busy, onSend, onStop, seed }: {
         <textarea id="composer" ref={ref} value={text} rows={2} maxLength={200_000} aria-describedby="composer-count"
           placeholder={placeholder} onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !touch && !e.nativeEvent.isComposing) { e.preventDefault(); send(); } }} />
+        {clear}
         {busy
           ? <button type="button" className="btn ghost" onClick={stop}>Stop</button>
           : <button type="button" className="btn" onClick={send} disabled={!text.trim() || text.length > MAX}>Send</button>}

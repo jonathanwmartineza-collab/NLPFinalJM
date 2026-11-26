@@ -39,6 +39,11 @@ export function useClearOptions({ what, canClear, answering, onClear, onFreed }:
     trigger.current?.focus();
     showToast(`Cleared ${what}.`, undo);
   };
+  // The same Clear, for the red button beside Send and Stop (see ClearButton below).
+  const quick = (label: string, focusId = 'composer') => (
+    <ClearButton label={label} what={what} canClear={canClear} answering={!!answering} focusId={focusId}
+      onClear={() => { const undo = onClear(); setOpen(false); showToast(`Cleared ${what}.`, undo); }} />
+  );
   const askFree = () => { try { dlg.current?.showModal(); cancel.current?.focus(); } catch { /* no dialog support */ } };
   const free = async () => {
     setBusy(true);
@@ -82,5 +87,35 @@ export function useClearOptions({ what, canClear, answering, onClear, onFreed }:
       </dialog>
     </section>
   ) : null;
-  return { button, panel };
+  return { button, panel, quick };
+}
+
+/**
+ * Erase now, keep a copy for Undo: `apply` shows and saves a value (on screen and in saved history).
+ * Returns the function the toast's Undo calls to put the whole conversation back, saved again.
+ */
+export function clearWithUndo<T>(current: T, empty: T, apply: (v: T) => void): () => void {
+  apply(empty);
+  let used = false;
+  return () => { if (used) return; used = true; apply(current); };
+}
+
+/**
+ * Red "Clear" button in the chat's input row, beside Send and Stop, so a long chat can be cleared without
+ * scrolling up. Red outline, trash icon and the full words at every width (never colour alone, never icon only), spaced away from Send.
+ * One press clears; the toast "Cleared … · Undo" is announced to screen readers and puts it all back for
+ * 8 seconds. Hidden when there is nothing to clear; disabled while an answer is being written (Stop first).
+ */
+export function ClearButton({ label, what, canClear, answering, onClear, focusId }: {
+  label: string; what: string; canClear: boolean; answering: boolean; onClear: () => void; focusId?: string;
+}) {
+  if (!canClear && !answering) return null;
+  return (
+    <button type="button" className="btn ghost danger clear-btn" disabled={!canClear}
+      title={answering ? 'Press Stop first, then clear.' : `Erases ${what}. You can undo for 8 seconds.`}
+      onClick={() => { onClear(); if (focusId) document.getElementById(focusId)?.focus(); }}>
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2zm-3 6h12l-1 12H7L6 9zm4 2v8h2v-8h-2zm4 0v8h2v-8h-2z"/></svg>
+      <span>{label}</span>
+    </button>
+  );
 }

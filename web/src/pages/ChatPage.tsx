@@ -10,7 +10,7 @@ import { Avatar } from '../components/Sidebar';
 import { useEngine } from '../ai/engine';
 import { system } from '../ai/prompts';
 import { Thinking, errorText, VoiceControls, ChatFooter } from '../components/ChatParts';
-import { useClearOptions } from '../components/ClearOptions';
+import { useClearOptions, clearWithUndo } from '../components/ClearOptions';
 import EmergencyNotice from '../components/EmergencyNotice';
 
 export default function ChatPage({ agent }: { agent: Agent }) {
@@ -29,7 +29,7 @@ export default function ChatPage({ agent }: { agent: Agent }) {
     what: `this chat with ${agent.name}`,
     canClear: msgs.length > 0 && !busy,
     answering: busy,
-    onClear: () => { const snap = msgs; ctrl.current?.abort(); setMsgs([]); saveChat(agent.slug, []); setErr(''); return () => { setMsgs(snap); saveChat(agent.slug, snap); }; },
+    onClear: () => { ctrl.current?.abort(); setErr(''); return clearWithUndo(msgs, [] as ChatMsg[], (m) => { setMsgs(m); saveChat(agent.slug, m); }); },
     onFreed: () => { ctrl.current?.abort(); setMsgs([]); setErr(''); },
   });
 
@@ -114,7 +114,7 @@ export default function ChatPage({ agent }: { agent: Agent }) {
         <div ref={end} />
       </div>
       <div className="composer-wrap" id="ai-setup">
-        {ready ? <Composer placeholder={`Ask ${agent.name}…`} busy={busy} onSend={send} onStop={() => ctrl.current?.abort()} seed={seed} />
+        {ready ? <Composer placeholder={`Ask ${agent.name}…`} busy={busy} onSend={send} onStop={() => ctrl.current?.abort()} seed={seed} clear={clear.quick('Clear chat')} />
           : <EngineGate copyText={`${system(agent.slug)}\n\nMy question: `} />}
         <ChatFooter />
       </div>
