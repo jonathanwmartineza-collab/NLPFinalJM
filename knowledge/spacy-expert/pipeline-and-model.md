@@ -5,11 +5,13 @@ model must install reliably from a pinned wheel and the pipeline must be configu
 script, before any text is processed.
 
 ## Versions in play (checked 2026-11-26)
-- spaCy on PyPI: latest 3.8.18 (2026-10-26). Requires-Python `>=3.10, <3.16`; ships cp313 (and cp314)
-  wheels for Linux x86-64, so Python 3.13 on Netlify installs a binary wheel, no compiler needed.
+- spaCy on PyPI: latest 3.8.18 (2026-10-26). Requires-Python `>=3.10, <3.16`; ships cp310 to cp315
+  wheels, including `cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64`, so Python 3.13 on Netlify
+  installs a binary wheel, no compiler needed.
 - The PyPI install text still says "Python <3.13"; that line is outdated versus the package metadata.
-- UNVERIFIED: which early 3.8.x patch releases lack cp313 wheels. Pin a recent 3.8.x (for example the
-  version you tested locally) rather than `spacy>=3.8`, and keep it inside `>=3.8.0,<3.9.0`.
+- The project pins `spacy==3.8.18` (requirements.txt), inside the model's `>=3.8.0,<3.9.0` range; the
+  build recorded spaCy 3.8.18 and Python 3.13.18 in corpus-stats.json on 2026-11-26.
+- UNVERIFIED: which early 3.8.x patch releases lack cp313 wheels (only 3.8.18 was checked).
 
 ## en_core_web_sm 3.8.0 (from its GitHub release page)
 | Field | Value |
@@ -64,7 +66,10 @@ script, before any text is processed.
 - `spacy info --url` prints the correct download URL for the installed spaCy (needs network).
 - Load with `spacy.load("en_core_web_sm")`, or `import en_core_web_sm; nlp = en_core_web_sm.load()`.
   The import form fails fast with `ImportError` if the package is missing, which is what a build wants.
-- Check at load: `nlp.meta["version"]` should be "3.8.0"; log it into the output JSON.
+- Check at load: `nlp.meta["version"]` should be "3.8.0"; log it into the output JSON. The project loads
+  with `spacy.load(MODEL)` and records `f"{MODEL} {spacy.util.get_package_version(MODEL)}"` as spacy.json's
+  `model` ("en_core_web_sm 3.8.0"); tests/python/test_build_output.py asserts it starts with
+  "en_core_web_sm 3.8".
 - Shortcut names like `en` were removed in v3; always use the full package name.
 
 ## Pipeline mechanics
@@ -82,11 +87,14 @@ script, before any text is processed.
   input order. Wrap in `list()` only if you need all at once.
 - `as_tuples=True`: pass `(text, context)` and get `(doc, context)`; handy to carry a document id.
 - Keep `n_process=1` on Netlify: multiprocess start-up cost outweighs gains for a few documents.
-- Process the whole corpus in one `nlp.pipe` call rather than calling `nlp(text)` in a loop.
+- Process the whole corpus in one `nlp.pipe` call rather than calling `nlp(text)` in a loop. The project
+  does: `nlp.pipe(expert_texts, batch_size=8)` for the 36 expert documents, then one `nlp.pipe` over the
+  12 prompts (only the GOAL-line sentence and the demo sentence use `nlp(text)` directly).
 
 ## Build-script checklist
-- [ ] Pin spaCy 3.8.x and the model wheel URL in requirements.txt.
-- [ ] Load once; print `nlp.pipe_names` and model version to the build log.
+- [x] Pin spaCy 3.8.x and the model wheel URL in requirements.txt (`spacy==3.8.18`).
+- [ ] Load once; record `nlp.pipe_names` and model version (the project writes them into spacy.json's
+      `pipeline` / `model` / `spacy` fields and corpus-stats.json rather than the build log).
 - [ ] Add the EntityRuler before ner, then process with `nlp.pipe`.
 - [ ] Write plain JSON (strings, ints, lists); never pickle Docs for the browser.
 - [ ] Exit non-zero if the model fails to load or output is empty.

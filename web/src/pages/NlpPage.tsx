@@ -201,7 +201,7 @@ export function ParsePanel({ sp }: { sp: SpacyOut }) {
       </dl>
       <Arcs toks={p.tokens} />
       <details className="nlp-details"><summary>Token table</summary>
-        <div className="nlp-scroll"><table className="nlp-table"><thead><tr><th>#</th><th>Token</th><th>Lemma</th><th>POS</th><th>Dependency</th><th>Head</th></tr></thead>
+        <div className="nlp-scroll" tabIndex={0} role="region" aria-label="Token table"><table className="nlp-table"><thead><tr><th>#</th><th>Token</th><th>Lemma</th><th>POS</th><th>Dependency</th><th>Head</th></tr></thead>
           <tbody>{p.tokens.map((t) => <tr key={t.i}><td>{t.i}</td><td>{t.text}</td><td>{t.lemma}</td><td title={sp.explain[t.pos]}>{t.pos}</td><td title={sp.explain[t.dep]}>{t.dep}</td><td>{t.dep === 'ROOT' ? '–' : p.tokens[t.head]?.text}</td></tr>)}</tbody></table></div>
       </details>
     </Panel>
@@ -217,7 +217,7 @@ function Arcs({ toks }: { toks: Tok[] }) {
   const H = 40 + Math.min(maxL, 8) * 22;
   const W = 80 + show.length * 92;
   return (
-    <div className="nlp-scroll" role="img" aria-label={`Dependency arcs: ${show.filter((t) => t.dep !== 'ROOT').map((t) => `${t.text} is ${t.dep} of ${toks[t.head]?.text}`).join('; ')}`}>
+    <div className="nlp-scroll" tabIndex={0} role="img" aria-label={`Dependency arcs: ${show.filter((t) => t.dep !== 'ROOT').map((t) => `${t.text} is ${t.dep} of ${toks[t.head]?.text}`).join('; ')}`}>
       <svg width={W} height={H + 50} viewBox={`0 0 ${W} ${H + 50}`} className="nlp-arcs">
         {show.map((t) => {
           if (t.dep === 'ROOT' || !xs.has(t.head)) return null;

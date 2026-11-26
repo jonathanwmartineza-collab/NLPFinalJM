@@ -10,6 +10,8 @@ gate() { local name="$1"; shift; local log; log=$("$@" 2>&1); local code=$?; loc
 gate "Team validation" node scripts/validate-team.mjs
 gate "Generate team data (team.json, lite prompts, version)" bash -c "node scripts/build-team.mjs && node scripts/stamp-version.mjs"
 gate "Skills check" node scripts/check-skills.mjs
+gate "NLP build: NLTK + spaCy to static JSON" python3 nlp/build_nlp.py
+gate "NLP tests (pytest: NLTK core, spaCy gold, build output)" python3 -m pytest -q tests/python
 gate "Type check" npx tsc -p tsconfig.json --noEmit
 gate "Unit tests (Vitest)" npx vitest run
 gate "Production build" npm run build

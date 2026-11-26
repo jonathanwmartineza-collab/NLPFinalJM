@@ -11,13 +11,13 @@ imports the same `nlp/nltk_core.py` the build uses. No server, no Netlify Functi
 
 ## Procedure
 1. **Files the build must publish** (owned with python-build-engineer):
-   - `web/public/nlp/nltk-worker.js` (the worker, plain JS, no bundler needed)
+   - `web/src/nlp/nltk.worker.ts` + `web/src/nlp/boot.ts` (the module worker, bundled by Vite; `client.ts` is the main-thread side)
    - `web/public/nlp/nltk_core.py` (copied from `nlp/nltk_core.py` by `build_nlp.py`, never edited by hand)
    - `web/public/nlp/nltk_data.zip` with `tokenizers/punkt_tab/english/`, `corpora/stopwords/english` and
      `sentiment/vader_lexicon.zip` only; target under 1 MB. Record its SHA-256 in `web/public/nlp/meta.json`.
 2. **Consent first.** Nothing loads until the visitor presses a button that states the download
    (Pyodide runtime + NLTK, several MB, from cdn.jsdelivr.net). The rest of the page works from static JSON.
-3. **Worker** (`nltk-worker.js`):
+3. **Worker** (`nltk.worker.ts` + `boot.ts`):
    ```js
    const PYODIDE = "https://cdn.jsdelivr.net/pyodide/v314.0.8/full/";
    importScripts(PYODIDE + "pyodide.js");

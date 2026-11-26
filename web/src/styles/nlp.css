@@ -1,8 +1,8 @@
 /* NLP Lab and the NLP widgets in chat and team pages. Colours come from tokens.css. */
-.nlp { --nltk: #1d6b8a; --nltk-bg: rgba(29, 107, 138, .12); --spacy: #9b3b8a; --spacy-bg: rgba(155, 59, 138, .12); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .nlp, :root:not([data-theme="light"]) .nlp-result { --nltk: #7cc8e6; --spacy: #f0a3df; } }
-:root[data-theme="dark"] .nlp, :root[data-theme="dark"] .nlp-result { --nltk: #7cc8e6; --spacy: #f0a3df; }
-.nlp-result, .nlp-lib { --nltk: #1d6b8a; --nltk-bg: rgba(29, 107, 138, .12); --spacy: #9b3b8a; --spacy-bg: rgba(155, 59, 138, .12); }
+/* Library colours: NLTK teal, spaCy plum. Text ≥ 4.5:1 on the panels in light and dark. */
+:root { --nltk: #1d6b8a; --nltk-bg: rgba(29, 107, 138, .12); --spacy: #9b3b8a; --spacy-bg: rgba(155, 59, 138, .12); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --nltk: #7cc8e6; --spacy: #f0a3df; --nltk-bg: rgba(124, 200, 230, .14); --spacy-bg: rgba(240, 163, 223, .14); } }
+:root[data-theme="dark"] { --nltk: #7cc8e6; --spacy: #f0a3df; --nltk-bg: rgba(124, 200, 230, .14); --spacy-bg: rgba(240, 163, 223, .14); }
 
 .nlp-lib { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: var(--pill); font-size: 12.5px; border: var(--bw) solid currentColor; white-space: nowrap; }
 .nlp-lib b { letter-spacing: .02em; }
@@ -59,11 +59,11 @@
 .nlp-tone.compact { font-size: 12.5px; }
 
 .nlp-score { display: flex; align-items: center; gap: 14px; margin: 6px 0 10px; }
-.nlp-score-n { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 50%; font-size: 22px; font-weight: 800; color: #fff; flex: none; }
+.nlp-score-n { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 50%; font-size: 22px; font-weight: 800; color: var(--solid); flex: none; }
 .nlp-score-n.good { background: var(--ok); } .nlp-score-n.ok { background: var(--warn); } .nlp-score-n.low { background: var(--err); }
 .nlp-checks { list-style: none; padding: 0; margin: 6px 0; }
 .nlp-checks li { margin: 4px 0; font-size: 14.5px; }
-.nlp-checks li > span:first-child { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; font-weight: 800; color: #fff; }
+.nlp-checks li > span:first-child { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; font-weight: 800; color: var(--solid); }
 .nlp-checks li[data-ok="true"] > span:first-child { background: var(--ok); }
 .nlp-checks li[data-ok="false"] > span:first-child { background: var(--warn); }
 .nlp-result mark { background: rgba(255, 196, 0, .35); color: inherit; border-radius: 4px; padding: 0 3px; }
@@ -71,7 +71,7 @@
 .nlp-chip.only { background: transparent; border-color: var(--spacy, var(--control)); }
 .nlp-sharper { background: var(--glass-soft); border-left: 4px solid var(--accent); border-radius: var(--radius-sm); padding: 10px 14px; margin: 6px 0; }
 
-.nlp-verdict { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: var(--pill); color: #fff; }
+.nlp-verdict { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: var(--pill); color: var(--solid); }
 .nlp-verdict.agree { background: var(--ok); } .nlp-verdict.disagree { background: var(--err); } .nlp-verdict.different-angles { background: var(--soft); }
 .nlp-experts { list-style: none; padding: 0; display: grid; gap: 10px; }
 .nlp-experts li { background: var(--glass-soft); border: var(--bw) solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; }

@@ -4,11 +4,11 @@ Read this index first, then the notes that fit the task. Name the notes you used
 
 ## Quick reference
 - Pyodide 314.0.8 = Python 3.14.2; ES-module only: create the worker with `{ type: "module" }` (classic workers fail).
-- Import `loadPyodide` from the pinned jsDelivr `v314.0.8/full/pyodide.mjs`; `loadPyodide({ packages: ["nltk"] })`.
-- nltk 3.9.4 and regex are Pyodide packages; spaCy is not (build-time only).
-- NLTK data: fetch the site's zip, `unpackArchive(buf, "zip", { extractDir: "/nltk_data" })`, then `nltk.data.path.insert(0, "/nltk_data")`.
+- The app (web/src/nlp/boot.ts, nltk.worker.ts): dynamic `import()` of the pinned jsDelivr `v314.0.8/full/pyodide.mjs`, `loadPyodide({ indexURL: PYODIDE_CDN })`, then `py.loadPackage('nltk')` in parallel with fetching the data zip, `nltk_core.py` and `topic-index.json`.
+- nltk 3.9.4 and regex 2026.3.32 are Pyodide packages; spaCy is not (build-time only).
+- NLTK data: fetch `/nlp/nltk_data.zip`, `unpackArchive(buf, "zip", { extractDir: "/nltk_data" })`, then `nltk.data.path.insert(0, "/nltk_data")`.
 - Return results as JSON strings; never post a PyProxy; destroy proxies you create.
-- CSP: keep `'wasm-unsafe-eval'`, add jsDelivr to script-src and connect-src; never `'unsafe-eval'`.
+- CSP (meta tag in web/index.html, as of 2026-11-26): `'wasm-unsafe-eval'` plus `https://cdn.jsdelivr.net` in script-src and connect-src are already present; never `'unsafe-eval'`.
 - Load only after the visitor's click; measure and show the first-load size.
 
 ## Notes

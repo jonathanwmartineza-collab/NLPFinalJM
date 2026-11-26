@@ -43,10 +43,16 @@ it looks plausible. A small gold set scored with precision, recall and F1 (by ha
 | ID | Sentence | Gold entities |
 |---|---|---|
 | N1 | Apple is looking at buying U.K. startup for $1 billion. | Apple ORG, U.K. GPE, $1 billion MONEY |
-| N2 | We parse text with NLTK and spaCy on Netlify. | NLTK, spaCy as the ruler's custom label; Netlify as the ruler/patterns say |
-| N3 | Pyodide runs Python in the browser. | Pyodide as the ruler's custom label |
+| N2 | We parse text with NLTK and spaCy on Netlify. | NLTK TECH, spaCy TECH, Netlify TECH (nlp/patterns.jsonl) |
+| N3 | Pyodide runs Python in the browser. | Pyodide TECH, Python TECH (nlp/patterns.jsonl) |
 - N1 is the docs' classic example sentence; good as a statistical sanity check.
-- Take expected custom labels from the project's patterns file; do not invent labels in the test.
+- Take expected custom labels from the project's patterns file (labels TECH, STANDARD, METHOD; 107
+  patterns); do not invent labels in the test.
+- What the repo already asserts (tests/python/test_build_output.py on spacy.json): a WCAG entity labelled
+  STANDARD for accessibility-specialist, `["Portland", "GPE"]` in the demo sentence, TECH total > 50,
+  STANDARD total > 10, and entity_ruler placed before ner. spacy.json stores entities as
+  `[text, label, count]` without offsets, so span-level P/R/F needs a fresh pipeline run, loaded exactly
+  as `nlp/spacy_core.py load()` does.
 - Store gold data as JSON/py fixtures next to the Python tests so the same set runs in CI and locally.
 
 ## How to compute by hand (no spaCy scorer needed)

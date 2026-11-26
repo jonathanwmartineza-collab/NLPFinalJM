@@ -4,10 +4,13 @@ Why this matters for pyodide-engineer: the site already ships a strict Content-S
 tag in the HTML entry file. Pyodide needs WebAssembly and a cross-origin CDN, so the policy must be
 widened exactly as far as needed and no further. First-load weight must be disclosed to visitors.
 
-## What the current site policy allows (read from the repo on 2026-11-26)
-- `script-src 'self' 'wasm-unsafe-eval'`: WebAssembly already allowed (added for WebLLM).
-- `worker-src 'self' blob:`: same-origin workers allowed (the project's worker is the static `/nlp/nltk-worker.js`).
-- `connect-src 'self'` plus Hugging Face and raw.githubusercontent.com hosts (WebLLM). No jsDelivr.
+## What the current site policy allows (read from web/index.html on 2026-11-26)
+- `script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net`: WebAssembly allowed and the CDN
+  loader can be imported.
+- `worker-src 'self' blob:`: same-origin workers allowed. The project's worker is
+  web/src/nlp/nltk.worker.ts, bundled by Vite and served from the site's own origin.
+- `connect-src 'self'` plus Hugging Face and raw.githubusercontent.com hosts (WebLLM) and
+  `https://cdn.jsdelivr.net` (Pyodide wasm, stdlib, lock file and wheels).
 
 ## CSP facts (MDN)
 - Without `'wasm-unsafe-eval'` (or `'unsafe-eval'`) in `script-src`, WebAssembly is blocked from loading
@@ -15,7 +18,7 @@ widened exactly as far as needed and no further. First-load weight must be discl
 - `worker-src` governs creating Worker scripts; if absent it falls back to `child-src`, then
   `script-src`, then `default-src`.
 
-## Changes the policy will need (for the security engineer to confirm)
+## Changes the policy needed (both now present in web/index.html as of 2026-11-26)
 | Directive | Add | Why |
 |---|---|---|
 | `script-src` | `https://cdn.jsdelivr.net` | worker imports `pyodide.mjs` and `pyodide.asm.mjs` from the CDN |
@@ -36,8 +39,11 @@ widened exactly as far as needed and no further. First-load weight must be discl
   packages, not the whole tarball.
 - UNVERIFIED: exact first-load bytes for core + nltk + regex on 314.0.8 (docs give no per-file sizes).
   Measure in DevTools Network (transfer size, cache disabled) and write the number on the page.
-- Project data adds the trimmed nltk_data zip (English punkt_tab, English stopwords, VADER lexicon;
-  the full packages are 4.3 MB + 38 KB + 90 KB zipped before trimming).
+- Project data adds the trimmed nltk_data zip (English punkt_tab, English stopwords, VADER lexicon):
+  192,016 B as built on 2026-11-26 (the full packages are 4.3 MB + 38 KB + 90 KB zipped before
+  trimming), plus nltk_core.py and topic-index.json (61,016 B).
+- The page tells visitors "about 15 MB the first time, then cached" (web/src/nlp/ui.tsx, client.ts);
+  that figure is still UNVERIFIED until measured as described above.
 - Repeat visits come from the browser HTTP cache (jsDelivr is versioned and cacheable).
 - UX rule: load Pyodide only when the visitor opens or uses the live box, never on page load; show the
   approximate size and a progress message.
@@ -45,7 +51,11 @@ widened exactly as far as needed and no further. First-load weight must be discl
 ## Testing tips
 - Playwright can run the live box in Chromium; first run downloads from the CDN, so allow a long
   timeout (for example 120 s) and mark it NOT RUN if the network is blocked rather than skipping silently.
-- In unit tests, test the shared NLTK core in CPython instead of Pyodide; same nltk version.
+- In unit tests, test the shared NLTK core in CPython instead of Pyodide; same nltk version
+  (tests/python/test_nltk_core.py).
+- The project also runs the real browser code path in Node: tests/node/pyodide-nltk.mjs imports
+  web/src/nlp/boot.ts, boots Pyodide (jsDelivr, or `PYODIDE_INDEX` for a local copy) and asserts parity
+  with the CPython build's nltk.json sample.
 
 ## Pitfalls checklist
 - [ ] Worker created with `{ type: "module" }` (classic workers fail on 314.x).

@@ -27,12 +27,23 @@ reader can see. Output must be plain JSON the React page renders itself, which a
 - Noun chunks depend on the parser; they disappear if the parser is excluded.
 - Count chunk texts (lowercased) across the corpus to show "most frequent noun phrases".
 
-## Recommended JSON for one sentence
-- `tokens`: list of `{"i", "text", "pos", "dep", "head"}` where `head` is the head's `i`.
-- `chunks`: list of `{"text", "root", "rootDep", "rootHead"}`.
-- `ents`: as in the NER note.
-- Keep per-sentence objects small; cap the number of sentences shown (for example the first 5) to keep
-  the JSON and the page light.
+## JSON for one sentence (what nlp/spacy_core.py `parse()` emits)
+- `tokens`: list of `{"i", "text", "lemma", "pos", "tag", "dep", "head"}`; `i` and `head` are indices
+  relative to the sentence start (`t.i - sent.start`), so the ROOT token's `head` equals its own `i`.
+- Summary fields: `root` (root lemma), `root_pos`, `object` (the root's dobj/obj/attr/oprd with its
+  compounds, or the object of an xcomp/ccomp/conj verb), `describers` (amod/nummod), `for` (pobj of a
+  "for"/"to" preposition), plus `text`.
+- Only one sentence per prompt is parsed (the first sentence of its GOAL line) plus one demo sentence,
+  which keeps the JSON light. The page draws the parse as a table (index, token, lemma, POS, dep, head).
+- Noun chunks are not emitted raw per expert; they become `topics` (next section). Only `demo.noun_chunks`
+  lists chunk texts.
+
+## Noun-chunk topics in this project (`chunk_topic()` / `topics()`)
+- Drop tokens whose POS is DET, PRON, PUNCT, SPACE, NUM, SYM, PART, CCONJ or ADP, stopwords, and
+  non-alphabetic tokens (hyphen or slash allowed); skip chunks longer than 4 tokens.
+- Nouns are lemmatised (`lemma_.lower()`), other words lower-cased; chunks in the `GENERIC` set
+  ("the user", "output template", ...) are dropped.
+- Counted per expert (top 14 shown, top 40 feed the topic index used live by the Prompt coach).
 
 ## displaCy (spaCy's visualizer)
 | Call | Output |
@@ -60,7 +71,11 @@ reader can see. Output must be plain JSON the React page renders itself, which a
 ## Common relation labels to explain on the page (UNVERIFIED glosses from general knowledge; confirm each with spacy.explain)
 - `nsubj` nominal subject, `dobj` direct object, `prep` preposition, `pobj` object of preposition,
   `amod` adjective modifier, `det` determiner, `compound` compound noun, `aux` auxiliary, `ROOT` root.
-- Use `spacy.explain` at build time to generate the glossary instead of hand-typing it.
+- Use `spacy.explain` at build time to generate the glossary instead of hand-typing it. The build does
+  this: `explain()` in nlp/spacy_core.py writes every entity and dependency label it emitted into
+  spacy.json's `explain` map, and the page shows it as the cell's title.
+- The label set itself is confirmed by the model's release page (parser labels include nsubj, dobj,
+  prep, pobj, amod, det, compound, aux, ROOT).
 
 ## Pitfalls
 - Excluding the parser to "save time" removes sentences, noun chunks and the dependency panel.
@@ -72,3 +87,4 @@ reader can see. Output must be plain JSON the React page renders itself, which a
   checked against the same page's text)
 - https://spacy.io/usage/visualizers (accessed 2026-11-26)
 - https://spacy.io/usage/processing-pipelines (accessed 2026-11-26)
+- https://github.com/explosion/spacy-models/releases/tag/en_core_web_sm-3.8.0 (accessed 2026-11-26; parser label list)

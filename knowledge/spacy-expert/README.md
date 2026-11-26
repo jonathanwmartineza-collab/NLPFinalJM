@@ -3,9 +3,9 @@
 Read this index first, then the notes that fit the task. Name the notes you used in your answer.
 
 ## Quick reference
-- spaCy runs at build time only (not in Pyodide); pin spaCy 3.8.x and the en_core_web_sm 3.8.0 wheel URL in requirements.txt.
+- spaCy runs at build time only (not in Pyodide); requirements.txt pins `spacy==3.8.18` and the en_core_web_sm 3.8.0 wheel URL.
 - en_core_web_sm 3.8.0: 12 MB, MIT, 18 OntoNotes NER labels, entity F 84.33 on its own eval data.
-- EntityRuler: `nlp.add_pipe("entity_ruler", before="ner")`; patterns `{label, pattern, id}`; longer match wins.
+- EntityRuler: `nlp.add_pipe("entity_ruler", before="ner", config={"phrase_matcher_attr": "LOWER", "overwrite_ents": True})`, then `ruler.from_disk("nlp/patterns.jsonl")`: 107 phrase patterns `{label, pattern, id}` with custom labels TECH (54), METHOD (29), STANDARD (24); longer match wins.
 - After ner, the ruler skips overlaps unless `overwrite_ents=True`.
 - Noun chunks and sentences need the parser; never exclude it.
 - Emit JSON and draw in React; do not inject displaCy HTML (XSS risk per spaCy docs).

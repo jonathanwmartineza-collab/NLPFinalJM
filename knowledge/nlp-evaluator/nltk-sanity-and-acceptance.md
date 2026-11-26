@@ -29,12 +29,16 @@ skill holds the exact procedure and verdict rules.
 ## Frequency sanity
 - `fd.N()` equals the number of tokens after filtering; `fd.B()` <= `fd.N()`.
 - No stopword (for example "the") and no punctuation appears in the top-words list when filtering is on.
-- Counts are positive integers, sorted descending; ties do not need a fixed order unless the build sorts
-  them (the build note asks for `(-count, word)`).
+- Counts are positive integers, sorted descending; nlp/nltk_core.py `top_words()` sorts ties by word
+  (`(-count, word)`), so exact order can be asserted.
+- The app's filter is not plain `isalpha()`: tokens like "requirements.txt" or "n't" can appear (see the
+  nltk-expert FreqDist note); assert "no stopword, no punctuation-only token" instead.
 - A planted word repeated k times in a fixture text appears with count k.
 
 ## Collocation sanity
-- Every reported pair occurs at least `min_freq` times (if a frequency filter is applied).
+- Every reported pair occurs at least `min_freq` times: nltk.json collocations are
+  `[w1, w2, llr, count]`, ranked by likelihood ratio only, with `min_freq` 4 for the corpus (so every
+  `count` should be >= 4).
 - PMI is undefined-ish for one-off pairs: with no filter, the top PMI pairs are rare names (the NLTK
   howto shows this on Genesis); a filter of 2 or 3 should change the list toward repeated phrases.
 - Unit-test the measure functions with the howto's published values: PMI 18.38 for
@@ -45,7 +49,9 @@ skill holds the exact procedure and verdict rules.
 ## Labeling requirement (exam)
 - Every results panel shows which library produced it: a visible heading or badge with exactly
   "NLTK" or "spaCy"; no panel claims both.
-- The JSON also carries `engine: "NLTK"` / `engine: "spaCy"`, so labels can be checked without a browser.
+- The JSON has no `engine` field: the library is identified by the file (nltk.json vs spacy.json) and its
+  version key (`"nltk": "3.9.4"`, `"spacy": "3.8.18"`). On the page the badge is the `Lib` component
+  (web/src/nlp/ui.tsx, `lib: 'NLTK' | 'spaCy'`, `where: 'live' | 'build'`).
 - Accessible labeling: the badge text is real text (not only an icon or color), inside the panel's
   heading or named region.
 
@@ -55,7 +61,8 @@ skill holds the exact procedure and verdict rules.
 3. Enter a positive sentence: label Positive, compound >= 0.05. Negative sentence: Negative.
 4. Second analysis of about 100 words returns within 2 s (warm).
 5. Parity: the live result for a fixed sentence equals the build's JSON value for the same sentence
-   (same nltk 3.9.4 on both sides).
+   (same nltk 3.9.4 on both sides). tests/node/pyodide-nltk.mjs automates this: it runs `analyze` on
+   nltk.json's `sample.text` in Pyodide and deep-compares `sentiment` and `top_words`.
 6. Error path: block the CDN (DevTools request blocking) and confirm a friendly error and a retry button.
 - No browser or no network available: mark live rows NOT RUN with the reason; the verdict is PARTIAL,
   never PASS.

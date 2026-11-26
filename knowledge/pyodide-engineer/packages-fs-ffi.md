@@ -22,7 +22,8 @@ proxies or breaking `postMessage`.
 - `loadPackagesFromImports(code)` scans code for imports of Pyodide-built packages.
 - `micropip.install()` handles PyPI pure-Python wheels and resolves deps; not needed here because nltk
   is a built-in Pyodide package. A custom wheel URL needs CORS and a valid wheel filename.
-- Use `messageCallback` to drive a loading message.
+- Use `messageCallback` to drive a loading message. (The project passes `messageCallback: () => {}` to
+  silence package logs and reports its own named steps through `io.progress` instead.)
 
 ## File system
 - Default FS is MEMFS: in memory, gone on reload. Fine for nltk_data (re-fetched; the browser HTTP cache
@@ -57,8 +58,8 @@ proxies or breaking `postMessage`.
   `JSON.parse`. Strings convert implicitly, nothing to destroy, and the shape matches the static JSON.
 
 ## Checklist
-- [ ] `loadPyodide({ packages: ["nltk"] })` succeeds; `pyodide.runPython("import nltk; nltk.__version__")`
-      returns "3.9.4".
+- [ ] `py.loadPackage('nltk')` succeeds (the project loads it after `loadPyodide`);
+      `pyodide.runPython("import nltk; nltk.__version__")` returns "3.9.4".
 - [ ] nltk_data zip unpacked; `nltk.data.find("tokenizers/punkt_tab/english/")` does not raise.
 - [ ] Results cross as JSON strings; no PyProxy reaches `postMessage`.
 - [ ] Same input gives the same numbers as the build's JSON.

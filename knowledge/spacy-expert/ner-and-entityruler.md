@@ -13,10 +13,15 @@ names added by rules. Getting the ruler's placement and overlap behavior right d
 - Setting entities by hand: `doc.set_ents([Span(doc, start_tok, end_tok, label="ORG")])`, or build a span
   from characters with `doc.char_span(start, end, label="ORG")` (returns None if not on token boundaries).
 
-## JSON shape for the site
-- `{"text": ..., "label": ..., "start": start_char, "end": end_char, "source": "model" | "rule"}`.
-- Decide `source` by checking whether `ent.ent_id_` is set or whether the span matches a ruler pattern;
-  giving every rule pattern an `id` makes this trivial.
+## JSON shape in web/public/nlp/spacy.json (nlp/spacy_core.py `entities()`)
+- Per expert: `entities` = `[[text, label, count], ...]`, counted case-insensitively, most frequent first,
+  top 14 kept (top 8 per prompt). No character offsets are emitted.
+- Only labels in `LABELS_SHOWN` are kept (TECH, STANDARD, METHOD, ORG, PRODUCT, PERSON, GPE, NORP, LAW,
+  WORK_OF_ART); statistical entities written all in lower case are dropped as noise.
+- Rule vs model is told by the label: TECH, STANDARD and METHOD (`RULER_LABELS`) come only from the ruler.
+  Every pattern also carries an `id`, so `ent.ent_id_` could be used instead.
+- Also emitted: `label_totals` (`[[label, n]]`), `explain` (label to description; custom labels get the
+  module's own text, others `spacy.explain`), and `demo.entities` as `[[text, label]]`.
 
 ## EntityRuler basics
 - Factory name: `"entity_ruler"`. Add with
@@ -43,7 +48,11 @@ names added by rules. Getting the ruler's placement and overlap behavior right d
 | `before="ner"` | ruler sets entities first; the statistical NER respects them and predicts around them. Docs say this can noticeably improve accuracy. |
 | `after="ner"` | ruler only adds spans that do not overlap model entities, unless `overwrite_ents=True` |
 | alone (no ner) | pure rule-based NER |
-- Project decision: `before="ner"`, so course-specific names always get our label.
+- Project decision (nlp/spacy_core.py `load()`): `before="ner"` with `phrase_matcher_attr="LOWER"` and
+  `overwrite_ents=True`, so course-specific names always get our label. The resulting pipeline, as
+  written to spacy.json: tok2vec, tagger, parser, attribute_ruler, lemmatizer, entity_ruler, ner.
+- `validate` is left at its default (False) in the project config; the build's `check()` instead fails
+  if the ruler finds no TECH entity.
 - Among overlapping rule matches: the longer match wins; for equal length, the earlier one wins.
 
 ## Useful ruler methods and properties
@@ -63,8 +72,9 @@ names added by rules. Getting the ruler's placement and overlap behavior right d
 - Attribute names are case-insensitive keys.
 
 ## Custom labels
-- A ruler may use a new label (for example "COURSE"); `displacy` needs a color for it via
-  `options={"colors": {"COURSE": "#..."}}`, and the site legend must list it.
+- A ruler may use a new label; this project uses TECH, STANDARD and METHOD (nlp/patterns.jsonl).
+  `displacy` would need a color for each via `options={"colors": {"TECH": "#..."}}`; the site draws its
+  own legend from spacy.json's `explain` map instead.
 - Keep custom labels few and documented; explain on the page that they come from rules, not the model.
 
 ## Pitfalls

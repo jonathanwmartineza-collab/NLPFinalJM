@@ -22,7 +22,7 @@ This repository is the NLP final project. It adds Python NLP to BrainyApp2 with 
 How it is built:
 
 - `nlp/build_nlp.py` runs during the Netlify build. It reads the team (`web/public/team.json`, `.claude/agents/*.md`, `knowledge/`) and the prompt library, runs NLTK and spaCy (`en_core_web_sm` + `nlp/patterns.jsonl`), and writes static JSON to `web/public/nlp/`. It fails the build if any result is empty.
-- The live box loads Pyodide 314.0.8 (which ships NLTK 3.9.4, the same version the build uses) in a module Web Worker, plus `nltk_core.py` and a 187 KB NLTK data zip. Nothing downloads until you press **Load NLTK** or a coach button.
+- The live box loads Pyodide 314.0.8 from jsDelivr (it ships NLTK 3.9.4, the same version the build uses) in a module Web Worker (`web/src/nlp/nltk.worker.ts`), plus `nltk_core.py` and a 188 KB NLTK data zip (about 15 MB in all the first time, then cached). Nothing downloads until you press a button that uses NLTK (**Load NLTK**, **Coach my question**, **Analyse with NLTK** or **Map agreement**). Your text stays on your device.
 - `requirements.txt` pins NLTK 3.9.4, spaCy 3.8.18 and the `en_core_web_sm` 3.8.0 wheel; `netlify.toml` sets `PYTHON_VERSION = "3.13"`, the build command and `publish = "web/dist"`.
 
 The agent team (`.claude/agents`, `.claude/skills`, `knowledge/`, `CLAUDE.md`) gained an NLP department: Nora Lindahl (NLTK expert), Santiago Reyes (spaCy expert), Petra Novak (Pyodide engineer), Bruno Adeyemi (Python build engineer) and Esther Kwon (NLP evaluator). See `docs/expert-roster.md`, `docs/agent-brains.md` and the research in `docs/research/`.
@@ -30,8 +30,11 @@ The agent team (`.claude/agents`, `.claude/skills`, `knowledge/`, `CLAUDE.md`) g
 ### Deploy the NLP final on Netlify
 1. In Netlify, choose **Add new project → Import an existing project → GitHub** and pick `NLPFinalJM`.
 2. Keep the settings Netlify reads from `netlify.toml` (build command `node scripts/build-team.mjs && python3 nlp/build_nlp.py && npm run build`, publish directory `web/dist`, Python 3.13, Node 22). No environment variables are needed.
-3. Deploy. The build log shows `build_nlp: OK ...` when NLTK and spaCy finished.
-4. Open `/nlp`: every panel shows an NLTK or spaCy label; press **Try an example** in the Prompt coach to see the live NLTK result.
+3. Deploy. Netlify installs Python 3.13 and `requirements.txt`, then runs the build. The build log shows `build_nlp: OK ...` when NLTK and spaCy finished; if any NLP result is empty the build fails and nothing is deployed.
+4. New Netlify projects start private: click **Make public**, then open https://nlpfinaljm.netlify.app/nlp.
+5. Check `/nlp`: every panel shows an NLTK or spaCy label; press **Try an example** in the Prompt coach to see the live NLTK result.
+
+Later pushes deploy automatically. `netlify.toml` has an `ignore` command (`scripts/should-build.sh`) that skips the build when a push changes none of the paths in `scripts/build-paths.txt` (for example a README-only push).
 
 ### Run the NLP part locally
 ```bash
@@ -39,9 +42,39 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt pytest
 npm install
 npm run build:all                 # team.json, then NLTK + spaCy JSON, then the site
-npm run test:py                   # NLTK core + build output tests (spaCy gold checks)
 npm run dev                       # open http://localhost:5173/nlp
 ```
+
+### Run the tests
+```bash
+npm run test:py                   # pytest: NLTK core (tokens, stopwords, FreqDist, collocations, VADER, coach,
+                                  # agreement) and the build output (spaCy entities, EntityRuler, topics, parses)
+npm test                          # Vitest unit tests (team build, router, safety, Studio, models)
+PYODIDE_INDEX=/path/to/pyodide/ node tests/node/pyodide-nltk.mjs
+                                  # runs the browser's NLTK code (web/src/nlp/boot.ts) in Node with Pyodide and
+                                  # checks it matches the CPython build output in web/public/nlp/nltk.json
+```
+Run `npm run build:nlp` (or `build:all`) before `test:py` and the Pyodide test, because both read `web/public/nlp/`. The Pyodide test needs Node 22.18 or later (it imports a `.ts` file). `PYODIDE_INDEX` must point to a full local Pyodide 314.0.8 distribution (the folder with `pyodide.mjs` and `nltk-3.9.4-py3-none-any.whl`); the `pyodide` npm package alone does not include the NLTK wheel. Without `PYODIDE_INDEX` the test downloads Pyodide from jsDelivr.
+
+### Where each exam requirement lives
+| Requirement | Files | Where to see it |
+|---|---|---|
+| README with deploy steps | `README.md` | this file |
+| Resources page (docs, repo, guide) | `web/src/pages/ContentPages.tsx` (`ResourcesPage`) | `/resources`, linked from the header (`web/src/App.tsx`), the sidebar and the chat footer |
+| Every panel labelled NLTK or spaCy | `Lib` and `Panel` in `web/src/nlp/ui.tsx`, used in `web/src/pages/NlpPage.tsx` | the label at the top of each `/nlp` panel |
+| NLTK: tokenize and stopwords | `tokenize`, `content_words` in `nlp/nltk_core.py` | `/nlp` Chat insights (live) |
+| NLTK: VADER | `sentiment`, `analyze` in `nlp/nltk_core.py` | Chat insights (tone per sentence), Prompt coach, Team agreement map, Words and tone across the studio |
+| NLTK: FreqDist and collocations | `top_words`, `collocations` in `nlp/nltk_core.py` | Chat insights (live); Words and tone across the studio (build) |
+| spaCy: named entities and EntityRuler | `load`, `entities` in `nlp/spacy_core.py`; 107 patterns in `nlp/patterns.jsonl` (TECH, STANDARD, METHOD) | What each expert knows |
+| spaCy: noun chunks | `topics` in `nlp/spacy_core.py` | What each expert knows (Topics); also the topic index the Prompt coach uses |
+| spaCy: dependency parse | `parse` in `nlp/spacy_core.py` | Dependency parse (arcs and token table) |
+| Build-time pipeline to static JSON | `nlp/build_nlp.py`, `netlify.toml`, `requirements.txt` → `web/public/nlp/` (`spacy.json`, `nltk.json`, `topic-index.json`, `corpus-stats.json`) | corpus line at the top of `/nlp` (versions and build time) |
+| Live NLTK in Pyodide | `web/src/nlp/nltk.worker.ts`, `boot.ts`, `client.ts`; runs the same `nlp/nltk_core.py` | Prompt coach, Chat insights, Team agreement map (**Load NLTK**) |
+| Agent team | `.claude/agents/` (36 agents), `.claude/skills/` (49 skills), `knowledge/`, `CLAUDE.md`, `docs/expert-roster.md`, `docs/agent-brains.md` | Resources page, Team line |
+| Research | `docs/research/` (`README.md` and `01` to `07`) | Resources page, Research line |
+| Tests | `tests/python/`, `tests/node/pyodide-nltk.mjs`, `tests/unit/` | see Run the tests |
+
+## BrainyApp2 (the app the NLP Lab is built on)
 
 
 - **Free and private.** The AI runs on your own device with [WebLLM](https://webllm.mlc.ai) and WebGPU. What you type never leaves your browser. There are no accounts, no API keys and no cost per answer.

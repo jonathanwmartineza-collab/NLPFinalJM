@@ -1,7 +1,7 @@
 """NLTK part of the NLP Lab: one module, run twice.
 
 * At build time on Netlify (CPython 3.13, nltk 3.9.4) by nlp/build_nlp.py, which writes web/public/nlp/nltk.json.
-* Live in the visitor's browser (Pyodide 314.0.8, which ships nltk 3.9.4) by web/public/nlp/nltk-worker.js,
+* Live in the visitor's browser (Pyodide 314.0.8, which ships nltk 3.9.4) by the module worker web/src/nlp/nltk.worker.ts (+ boot.ts),
   which copies this exact file into Pyodide's file system.
 
 Rules: standard library + nltk only, no printing, no file or network access, deterministic output (sorted,

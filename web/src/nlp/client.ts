@@ -20,7 +20,14 @@ function getWorker() {
     const p = pending.get(m.id); if (!p) return; pending.delete(m.id);
     m.ok ? p.ok(m) : p.fail(new Error(m.error));
   };
-  worker.onerror = (e) => { set({ status: 'error', error: e.message || 'The NLTK worker failed to start.' }); };
+  worker.onerror = (e) => {
+    // A dead worker (for example its file is gone after a redeploy) fails every waiting call and is dropped,
+    // so "Try again" starts a fresh one instead of posting to the dead one.
+    const err = new Error(e.message || 'The NLTK worker failed to start.');
+    pending.forEach((p) => p.fail(err)); pending.clear();
+    worker?.terminate(); worker = null;
+    set({ status: 'error', error: err.message });
+  };
   return worker;
 }
 function send(fn: Fn | 'boot', args?: unknown): Promise<any> {

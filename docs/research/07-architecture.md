@@ -21,7 +21,7 @@ flowchart LR
     V["vite build → web/dist"]
   end
   subgraph CDN["Netlify static hosting"]
-    J["/nlp/*.json · /nlp/nltk_data.zip<br/>/nlp/nltk-worker.js · /nlp page"]
+    J["/nlp/*.json · /nlp/nltk_data.zip<br/>assets/nltk.worker-*.js · /nlp page"]
   end
   subgraph Browser["Visitor's browser"]
     UI["NLP Lab page /nlp<br/>spaCy tab · NLTK tab"]
@@ -65,7 +65,7 @@ flowchart LR
 | `web/public/nlp/experts.json` | per expert: spaCy entities, TECH/STANDARD, topics, sample parse; NLTK top words, collocations, VADER | both |
 | `web/public/nlp/corpus-stats.json` | document and word counts, versions, build time | — |
 | `web/public/nlp/nltk_data.zip` | English `punkt_tab`, `stopwords`, `vader_lexicon` in NLTK's folder layout | NLTK |
-| `web/public/nlp/nltk-worker.js` | module worker: `loadPyodide`, `loadPackage("nltk")`, `unpackArchive`, run `nltk_core.analyse` | NLTK |
+| `web/src/nlp/nltk.worker.ts` + `boot.ts` | module worker (bundled by Vite): `loadPyodide`, `loadPackage("nltk")`, `unpackArchive`, run `nltk_core.analyze`, `coach`, `agreement` | NLTK |
 | `web/src/pages/NlpLab.tsx` (route `/nlp`) | two clearly labelled sections: "spaCy — what each expert knows" and "NLTK — analyse your chat (live)" | — |
 | `tests/` | pytest for `nlp/*_core.py`; vitest/Playwright for the page | — |
 

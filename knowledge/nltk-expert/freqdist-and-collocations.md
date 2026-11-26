@@ -22,12 +22,15 @@ PMI in particular rewards rare pairs unless you filter.
   counts directly.
 - Type-token ratio for a quick richness figure: `fd.B() / fd.N()`.
 
-## Pre-processing before counting (project rule)
-1. Tokenize with `word_tokenize`.
-2. Lowercase.
-3. Keep alphabetic tokens only (`w.isalpha()`), which drops punctuation and numbers.
-4. Drop English stopwords (set from `stopwords.words('english')`).
-5. Count with `FreqDist`; report `most_common(20)`.
+## Pre-processing before counting (what nlp/nltk_core.py does)
+1. `tokenize()`: `word_tokenize`, then drop tokens with no letter or digit (punctuation-only tokens).
+2. `content_words()`: lowercase, strip quote marks (`'`, `’`, backtick), keep a token only if it is longer
+   than one character, has at least one letter (so "wcag-2" or "requirements.txt" survive; plain
+   `isalpha()` is NOT used), and is not in `stopwords.words('english')` plus the module's `EXTRA_STOP` set.
+3. Build only (nlp/build_nlp.py): words found in more than half of the expert documents ("house words")
+   are removed before the corpus counts and collocations.
+4. `top_words()`: count with `FreqDist`, sort by `(-count, word)`, keep the first n (30 for the corpus,
+   8 per expert, 12 for live `analyze`, 6 per prompt).
 - Say on the page which of these steps were applied, so the numbers can be reproduced.
 
 ## Collocations: building the finder
@@ -63,7 +66,8 @@ PMI in particular rewards rare pairs unless you filter.
 
 - The howto shows PMI on Genesis: without a filter the top pairs are one-off names; after
   `apply_freq_filter(3)` it shifts to recurring expressions such as "Most High".
-- Show PMI and likelihood ratio side by side and say what each favors.
+- The app shows likelihood ratio only (Dunning's LLR, `BigramAssocMeasures.likelihood_ratio`); if PMI is
+  added later, show it beside LLR and say what each favors.
 
 ## Checked values (from the howto, useful as unit tests of the measure functions)
 | Call | Result |
@@ -75,15 +79,19 @@ PMI in particular rewards rare pairs unless you filter.
 - Arguments are contingency marginals: `(n_ii, (n_ix, n_xi), n_xx)` = pair count, counts of each word,
   total.
 
-## Output shape for the static JSON
-- Top words: list of `{"word": str, "count": int}`.
-- Collocations: list of `{"pair": [w1, w2], "score": float}` per measure, scores rounded to 3 places.
-- Record the settings used (`min_freq`, `window_size`, stopwords on or off) next to the results.
+## Output shape in web/public/nlp/nltk.json (and the live `analyze` result)
+- Top words: list of `[word, count]` pairs.
+- Collocations: list of `[w1, w2, llr_score, pair_count]`, LLR rounded to 2 places, sorted by score then
+  pair; adjacent bigrams only (no `window_size`).
+- `min_freq`: 4 for the build corpus (`collocations(all_words, 20, 4)`); live text uses 2 when it has more
+  than 60 content words, else 1. Fewer than 3 words returns `[]`.
+- Record the settings used (`min_freq`, stopwords on or off) next to the results.
 
 ## Pitfalls
-- Short live-box input: collocations need repeated pairs; on a few sentences show "not enough text"
-  rather than a meaningless PMI list.
-- Ties: `most_common` order among equal counts follows insertion; do not assert exact order of ties.
+- Short live-box input: with `min_freq` 1 every pair scores alike (the build's sample text shows eight
+  pairs all at 7.61); on a few sentences say "not enough text" rather than presenting a ranking.
+- Ties: `FreqDist.most_common` orders equal counts by insertion; the app avoids this by sorting on
+  `(-count, word)`, so exact order can be asserted for the app's output.
 
 ## Sources
 - https://www.nltk.org/api/nltk.probability.FreqDist.html (accessed 2026-11-26)

@@ -74,11 +74,6 @@
     Cache-Control = "no-cache"
 
 [[headers]]
-  for = "/nlp/*"
-  [headers.values]
-    Cache-Control = "public, max-age=3600"
-
-[[headers]]
   for = "/team.json"
   [headers.values]
     Cache-Control = "no-cache"

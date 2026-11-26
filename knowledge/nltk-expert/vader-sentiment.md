@@ -78,10 +78,14 @@ need to be explained honestly on the page.
 - Sentence-level scoring (split with `sent_tokenize`, score each) is more informative than one score
   for a whole document; the NLTK howto does exactly this.
 
-## Pattern for this project
-- One function `sentiment(text) -> {"compound", "pos", "neu", "neg", "label"}` in the shared NLTK core
+## Pattern for this project (nlp/nltk_core.py)
+- One function `sentiment(text) -> {"neg", "neu", "pos", "compound", "label"}` in the shared NLTK core
   module, used by the build script and by Pyodide, so both produce identical numbers.
-- Return plain Python dicts and floats rounded to 4 places; convert to JSON for the browser.
+- The analyzer is built once (`_vader()`, cached) and the boot glue warms it with `sentiment("warm up")`.
+- Scores are rounded to 3 places (`round(v, 3)`), so 0.4404 shows as 0.44 and a 0.001 tolerance is the
+  right check against the README values; `label()` applies the thresholds above.
+- `analyze()` scores the whole text plus each sentence (first 40 sentences, text cut to 300 characters);
+  the result is JSON-ready and crosses to the browser as a JSON string.
 
 ## Sources
 - https://www.nltk.org/api/nltk.sentiment.vader.html (accessed 2026-11-26)

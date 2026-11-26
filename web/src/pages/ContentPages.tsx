@@ -10,6 +10,8 @@ const Page = ({ children }: { children: React.ReactNode }) => <div className="pa
 const REPO = 'https://github.com/jonathanwmartineza-collab/NLPFinalJM';
 const RESEARCH: [string, string][] = [['README.md', 'Research index'], ['01-use-case.md', 'Use case'], ['02-nltk.md', 'NLTK'], ['03-spacy.md', 'spaCy'], ['04-dataset.md', 'Dataset'], ['05-netlify.md', 'Netlify'], ['06-pyodide.md', 'Pyodide'], ['07-architecture.md', 'Architecture']];
 
+const STUDIO_DOCS = ['01-roles.md', '02-app-types.md', '03-ux-ui-standards.md', '04-one-shot-prompting.md', '05-claude-code.md', '06-skills.md', '07-netlify.md', '08-claude-api.md', '09-reference-teardown.md', 'HANDOFF.md', 'MASTER_PROMPT.md', 'OPERATING_MANUAL.md', 'decisions.md', 'how-to-talk-to-your-team.md', 'models.md', 'real-model-test-script.md', 'skills-lock.md', 'skills-matrix.md', 'threat-model.md'];
+
 export function ResourcesPage({ team }: { team: Team }) {
   return (
     <Page>
@@ -22,7 +24,8 @@ export function ResourcesPage({ team }: { team: Team }) {
         <li><Ext href="https://claude.ai/artifact/K55JqCeSxXULMmzki6yv73">Final project guide</Ext></li>
         <li>Research: {RESEARCH.map(([f, t], i) => <span key={f}>{i > 0 && ' · '}<Ext href={`${REPO}/blob/main/docs/research/${f}`}>{t}</Ext></span>)}</li>
         <li>Team: <Ext href={`${REPO}/blob/main/docs/expert-roster.md`}>Expert roster</Ext> · <Ext href={`${REPO}/blob/main/docs/agent-brains.md`}>Agent brains (models and personalities)</Ext> · <Ext href={`${REPO}/blob/main/CLAUDE.md`}>CLAUDE.md</Ext> · <Ext href={`${REPO}/tree/main/.claude/agents`}>Agents</Ext> · <Ext href={`${REPO}/tree/main/.claude/skills`}>Skills</Ext> · <Ext href={`${REPO}/tree/main/knowledge`}>Knowledge notes</Ext> · <Ext href={`${REPO}/blob/main/docs/README.md`}>All docs</Ext></li>
-        <li>Code: <Ext href={`${REPO}/tree/main/nlp`}>Python NLP pipeline (nlp/)</Ext> · <Ext href={`${REPO}/blob/main/netlify.toml`}>netlify.toml</Ext> · <Ext href={`${REPO}/blob/main/requirements.txt`}>requirements.txt</Ext></li>
+        <li>Studio docs: {STUDIO_DOCS.map((f, i) => <span key={f}>{i > 0 && ' · '}<Ext href={`${REPO}/blob/main/docs/${f}`}>{f.replace(/\.md$/, '')}</Ext></span>)} · <Ext href={`${REPO}/tree/main/docs/adr`}>Architecture decisions (adr/)</Ext> · <Ext href={`${REPO}/tree/main/docs`}>docs/ folder</Ext></li>
+        <li>Code: <Ext href={`${REPO}/tree/main/nlp`}>Python NLP pipeline (nlp/)</Ext> · <Ext href={`${REPO}/blob/main/netlify.toml`}>netlify.toml</Ext> · <Ext href={`${REPO}/blob/main/requirements.txt`}>requirements.txt</Ext> · <Ext href={`${REPO}/tree/main/tests`}>Tests</Ext></li>
         <li>Libraries: <Ext href="https://www.nltk.org/">NLTK</Ext> · <Ext href="https://www.nltk.org/howto/sentiment.html">NLTK VADER</Ext> · <Ext href="https://spacy.io/">spaCy</Ext> · <Ext href="https://spacy.io/api/entityruler">spaCy EntityRuler</Ext> · <Ext href="https://pyodide.org/">Pyodide</Ext> · <Ext href="https://docs.netlify.com/configure-builds/available-software-at-build-time/">Netlify build software (Python)</Ext></li>
       </ul>
       <h2>On-device AI</h2>

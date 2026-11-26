@@ -7,7 +7,7 @@ Any request to change the project is handled end to end, without asking for go-a
 1. Sync with `origin/main`. 2. Route the request to its files and owner agent (manual §2). 3. Change only what's needed.
 4. Test, then run `./scripts/gates.sh` until it exits 0. 5. One commit, then `git push origin HEAD:main`. Netlify deploys `main` automatically.
 6. Run `./scripts/verify-live.sh` (or check the Netlify Deploys page in Chrome if it says UNREACHABLE). 7. Report: change · gates · commit · live result.
-- Live: https://brainyapp2.netlify.app (deployed commit at `/version.json`) · Netlify project `brainyapp2` · Deploys: https://app.netlify.com/projects/brainyapp2/deploys
+- Live (NLP final): https://nlpfinaljm.netlify.app (NLP Lab at `/nlp`) · Netlify project `nlpfinaljm` · Repo: https://github.com/jonathanwmartineza-collab/NLPFinalJM. The original BrainyApp2 (https://brainyapp2.netlify.app) is a separate project; never deploy this repo there.
 - Ask the owner only when a request is ambiguous **and** expensive to redo, or before Netlify dashboard changes (settings, domain, visibility). Never touch env vars, billing, deletion, passwords or tokens.
 - `docs/MASTER_PROMPT.md` is the original build spec: its hard constraints (§3) always apply; don't re-run its phases.
 - Verify before you claim. Anything you could not run is marked **NOT RUN**, never "passed". Real-model checks need a WebGPU device.
@@ -39,7 +39,7 @@ Full table: `docs/agent-brains.md` (generated).
 
 ## NLP final exam (this repo)
 This repo is the NLP final project (repository: https://github.com/jonathanwmartineza-collab/NLPFinalJM). It adds an **NLP Lab** page at `/nlp` (`web/src/pages/NlpPage.tsx`) that analyses the app's own texts (expert profiles and `prompts/library.json`); every panel is labelled **NLTK** or **spaCy**.
-- **Where NLTK runs:** at build time in CPython 3.13 on Netlify (`nlp/build_nlp.py` → `web/public/nlp/nltk.json`), and live in the visitor's browser through Pyodide v314.0.8 (jsDelivr) in a Web Worker (`web/public/nlp/nltk-worker.js`) with an `nltk_data` zip; both import the same `nlp/nltk_core.py`. Nothing loads in the browser before the visitor's click.
+- **Where NLTK runs:** at build time in CPython 3.13 on Netlify (`nlp/build_nlp.py` → `web/public/nlp/nltk.json`), and live in the visitor's browser through Pyodide v314.0.8 (jsDelivr) in a module Web Worker (`web/src/nlp/nltk.worker.ts` (bundled by Vite, with `web/src/nlp/boot.ts`)) with an `nltk_data` zip; both import the same `nlp/nltk_core.py`. Nothing loads in the browser before the visitor's click.
 - **Where spaCy runs:** build time only (`nlp/spacy_core.py`, `en_core_web_sm` 3.8.0, EntityRuler patterns in `nlp/patterns.jsonl`) → `web/public/nlp/spacy.json` (entities, noun-chunk topics, dependency parses).
 - **Static site:** no Netlify Functions, no server Python, no secrets. Netlify sets `PYTHON_VERSION` and installs `requirements.txt` (nltk 3.9.4, spaCy 3.8.x, en_core_web_sm 3.8.0 wheel).
 - **Tests:** `tests/python/` (pytest) and `tests/unit/` (Vitest); acceptance checks are in the `nlp-eval` skill.

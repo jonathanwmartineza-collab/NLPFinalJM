@@ -26,30 +26,37 @@ created. Getting this wrong means a blank box or a frozen page.
 ## loadPyodide options
 | Option | Default | Use here |
 |---|---|---|
-| `indexURL` | folder of `pyodide.mjs` | leave default when importing from the CDN |
-| `packages` | none | pass `["nltk"]` to load during bootstrap (more efficient than a later call) |
+| `indexURL` | folder of `pyodide.mjs` | the project passes `PYODIDE_CDN` explicitly, because boot.ts is shared with the Node test (which may pass a local `PYODIDE_INDEX`) |
+| `packages` | none | docs: loading here during bootstrap is more efficient; the project instead calls `loadPackage('nltk')` right after, in parallel with its own data fetches |
 | `stdout` / `stderr` | console | route to a debug log; never to the visible page unescaped |
 | `lockFileURL` | `${indexURL}/pyodide-lock.json` | leave default |
 | `checkAPIVersion` | true | keep: catches loader/runtime mismatch |
 
-## Worker shape (from the official web worker page, adapted)
-1. Worker file is an ES module that imports `loadPyodide` from the pinned CDN `pyodide.mjs` URL.
-2. Start loading once at module top level: `const ready = loadPyodide({ packages: ["nltk"] })`.
-3. On each message `{ id, text }`: `await ready`, run the analysis, `postMessage({ id, result })` or
-   `postMessage({ id, error })`.
-4. Main thread (project layout): the worker is a static file served from the site's `/nlp/` folder,
-   created with `new Worker("/nlp/nltk-worker.js", { type: "module" })`. `type: "module"` is required
-   with 314.x. (A Vite-bundled worker via `new URL(..., import.meta.url)` would also work.)
-5. Match replies to requests by an incrementing `id`; remove one-shot listeners after use.
+## Worker shape
+- Official web worker page: "Pyodide requires a module-type worker because pyodide.asm.mjs is an ES
+  module. Classic workers using importScripts() are not supported."
+Docs example: an ES-module worker that imports `loadPyodide` from the pinned CDN `pyodide.mjs` and starts
+`loadPyodide()` at top level. The project's actual layout:
+1. Main thread (web/src/nlp/client.ts): `new Worker(new URL('./nltk.worker.ts', import.meta.url),
+   { type: 'module' })`, a Vite-bundled module worker, created lazily on the first `send()`.
+2. Worker (web/src/nlp/nltk.worker.ts): on the first message it calls `boot()` from
+   web/src/nlp/boot.ts, which dynamic-imports `${PYODIDE_CDN}pyodide.mjs` (`PYODIDE_VERSION = '314.0.8'`).
+   A failed boot resets the promise so the visitor can retry.
+3. Messages are `{ id, fn, args }` with `fn` in `analyze`, `coach`, `agreement` (or `boot`); replies are
+   `{ id, ok, result, ms }` or `{ id, ok: false, error }`; progress steps come as `{ id: 0, progress }`.
+4. Replies are matched to requests by an incrementing `id` in a `pending` map.
 
-## Startup sequence for the NLP box
-1. Show "Loading Python (first time only)..." with a progress hint; keep the textarea usable.
-2. `loadPyodide({ packages: ["nltk"] })` (loads nltk 3.9.4 and its dependency regex).
-3. Fetch the project's nltk_data zip and unpack it into the in-memory FS (see the packages note).
-4. Fetch the shared `nltk_core.py` text and run it once to define functions (`runPythonAsync`).
-5. Post a "ready" message; enable the Analyze button.
-6. For each request, call the Python function with the text passed as a global or argument, never by
-   pasting user text into Python source.
+## Startup sequence for the NLP box (boot.ts)
+1. The page shows "Loading NLTK in your browser: <step>…" with the progress step names.
+2. `loadPyodide({ indexURL: PYODIDE_CDN })`.
+3. In parallel: `py.loadPackage('nltk')` (pulls regex), fetch `/nlp/nltk_data.zip`, `/nlp/nltk_core.py`
+   and `/nlp/topic-index.json`.
+4. `unpackArchive` the zip into `/nltk_data`; `FS.mkdirTree('/home/pyodide/nlp')` and `FS.writeFile` the
+   core module there.
+5. `py.globals.set('INDEX_JSON', index)` then `py.runPython(GLUE)` (synchronous): puts the paths in
+   place, imports `nltk_core`, defines `_call(fn, args_json)` and warms VADER with `sentiment("warm up")`.
+6. Each request calls the `_call` proxy with `JSON.stringify(args)`; user text travels as data, never
+   pasted into Python source, and the result comes back as a JSON string for `JSON.parse`.
 
 ## Running code
 - `pyodide.runPython(code)` is synchronous; `runPythonAsync(code, { globals })` allows top-level await.

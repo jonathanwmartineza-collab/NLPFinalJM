@@ -14,24 +14,32 @@ goes live, the final test fails in a way nobody notices until grading.
 - [ ] Read inputs in sorted order (`sorted(Path(...).glob(...))`), never directory order.
 - [ ] Sort every list you emit that has no natural order (for example ties in counts: sort by
       `(-count, word)`).
-- [ ] Round floats (VADER to 4 places, PMI/likelihood to 3) before writing.
-- [ ] `json.dump(data, f, ensure_ascii=False, sort_keys=True, indent=2)` with `encoding="utf-8"` and
-      `newline="\n"`.
-- [ ] No timestamps inside data files; put build time only in a separate metadata field if needed, or
-      reuse the repo's existing version stamp.
+- [ ] Round floats before writing. The project: VADER scores to 3 places, likelihood ratio to 2, spaCy
+      topic-index weights to 3.
+- [ ] Serialise the same way every time. The project's `write()` uses
+      `json.dumps(data, ensure_ascii=False, separators=(",", ":"))` with `encoding="utf-8"` (compact, no
+      `sort_keys`), so key order comes from the code's dict literals and is still stable run to run.
+- [ ] No timestamps inside data files. The project keeps build time only in corpus-stats.json (`built`,
+      `seconds`, also `python`), so that one file differs between runs; the other outputs should not.
 - [ ] No randomness. Expected: spaCy CPU inference with a loaded model gives the same result for the same input (UNVERIFIED in docs; prove it by running twice and diffing).
 - [ ] Bundle NLTK data from a pinned download into a known directory; do not depend on whatever is in
       the machine's default nltk_data paths.
-- [ ] Build the nltk_data zip with sorted entries and fixed timestamps so the zip is stable across builds
-      (zip entries carry dates; set a constant `date_time` in `zipfile.ZipInfo`).
+- [x] Build the nltk_data zip with sorted entries and fixed timestamps so the zip is stable across builds
+      (zip entries carry dates; the project's `nltk_zip()` sets `date_time=(2026, 1, 1, 0, 0, 0)` in
+      `zipfile.ZipInfo`).
 
 ## Fail-loudly checklist
-- [ ] `nltk.download(..., raise_on_error=True)`; its default only prints an error.
-- [ ] Import the model as a package (`import en_core_web_sm`) so a missing model is an ImportError.
-- [ ] Assert outputs are not empty: tokens > 0, at least one entity, at least one VADER score.
+- [x] `nltk.download(..., raise_on_error=True)`; its default only prints an error (`nltk_setup()`).
+- [x] Make a missing model fail the build. The project uses `spacy.load("en_core_web_sm")`, which raises
+      an error (not a silent fallback) when the package is absent; `import en_core_web_sm` would also do.
+- [x] Assert outputs are not empty: the project's `check()` fails the build when an expert has no topics,
+      there are fewer than 50 entities, no TECH entity, under 200 index phrases, fewer than 30 top words or
+      5 collocations, or no positive VADER profile.
 - [ ] Validate JSON shape before writing (required keys present, types correct).
-- [ ] Top-level `main()` wrapped so any exception prints a clear message and `sys.exit(1)`.
-- [ ] In netlify.toml join steps with `&&` (`python nlp/build_nlp.py && npm run build`).
+- [x] Any uncaught exception already ends Python with exit code 1; `fail()` adds a clear
+      "build_nlp: FAILED" message and `sys.exit(1)` for known failures.
+- [x] In netlify.toml join steps with `&&`
+      (`node scripts/build-team.mjs && python3 nlp/build_nlp.py && npm run build`).
 - [ ] Never `|| true` or `try: ... except: pass` around NLP steps.
 
 ## Installing spaCy models at build time
@@ -41,12 +49,15 @@ goes live, the final test fails in a way nobody notices until grading.
 | `python -m spacy download en_core_web_sm` in the build command | works, but picks a version at build time and adds a step |
 | Committing the model to the repo | avoid: 12 MB binary churn |
 - `spacy info --url` prints the matching URL for the installed spaCy, useful when bumping versions.
-- After load, log `nlp.meta["version"]` and `nlp.pipe_names`.
+- After load, log `nlp.meta["version"]` and `nlp.pipe_names` (the project writes `model`, `spacy` and
+  `pipeline` into spacy.json).
 
 ## Sharing code with the browser
 - The NLTK logic lives in one module imported by the build script and run by Pyodide; the build must
   copy that exact file into the public `nlp/` folder so the worker fetches the same source.
-- Add a check that the served copy is byte-identical to the source module (hash compare in a test).
+- The project does this with `shutil.copyfile(nlp/nltk_core.py, web/public/nlp/nltk_core.py)`.
+- Add a check that the served copy is byte-identical to the source module (hash compare in a test). Not
+  present yet: tests/python/test_build_output.py only checks that nltk_core.py exists and is non-empty.
 
 ## Local reproduction (what the README tells students and graders)
 1. Create a venv with Python 3.13.
@@ -64,7 +75,7 @@ goes live, the final test fails in a way nobody notices until grading.
 
 ## Sources
 - https://docs.netlify.com/build/configure-builds/manage-dependencies (accessed 2026-11-26)
-- https://docs.netlify.com/configure-builds/file-based-configuration/ (accessed 2026-11-26)
+- https://docs.netlify.com/build/configure-builds/file-based-configuration/ (accessed 2026-11-26)
 - https://spacy.io/usage/models (accessed 2026-11-26)
 - https://www.nltk.org/api/nltk.downloader.html (accessed 2026-11-26)
 - Python standard library `zipfile` and `json` docs: https://docs.python.org/3/library/zipfile.html and

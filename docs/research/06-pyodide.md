@@ -31,7 +31,7 @@ Python inside the browser (or Node), with a JavaScript ↔ Python bridge. Versio
 ## Running in a Web Worker (required here)
 - Pyodide's docs say it **requires a module-type worker** (`pyodide.asm.mjs` is an ES module); classic
   workers using `importScripts()` are **not supported**. So:
-  `new Worker("/nlp/nltk-worker.js", { type: "module" })`.
+  `new Worker(new URL("./nltk.worker.ts", import.meta.url), { type: "module" })` (as built: `web/src/nlp/client.ts`).
 - Pattern from the docs: initialise once; on each message `{ id, python, context }` run code with
   `runPythonAsync` and reply `{ id, result }` or `{ id, error }`; the main thread matches replies by id.
 - Why a worker: loading and running Python never blocks typing, scrolling or the chat UI.

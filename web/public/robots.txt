@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://brainyapp2.netlify.app/sitemap.xml
+Sitemap: https://nlpfinaljm.netlify.app/sitemap.xml

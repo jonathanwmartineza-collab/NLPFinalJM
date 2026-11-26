@@ -73,7 +73,7 @@ def nltk_setup() -> None:
 
 
 def nltk_zip(dest: Path) -> int:
-    """Only what the browser needs (English), about 0.4 MB instead of 15 MB."""
+    """Only what the browser needs (English), about 0.2 MB instead of 15 MB."""
     picks = []
     for f in sorted((DATA / "tokenizers" / "punkt_tab" / "english").rglob("*")):
         picks.append(f)

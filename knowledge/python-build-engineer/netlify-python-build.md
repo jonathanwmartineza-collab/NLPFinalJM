@@ -33,18 +33,20 @@ script before Vite copies its output into the published folder. Netlify Function
 | Line | Why |
 |---|---|
 | `nltk==3.9.4` | same version as Pyodide 314.0.8, so live box and build agree |
-| `spacy==3.8.<patch>` | 3.8.x line; pick a patch with cp313 Linux wheels (3.8.18 has them) |
+| `spacy==3.8.18` | 3.8.x line; 3.8.18 has a cp313 manylinux x86-64 wheel (PyPI, checked 2026-11-26) |
 | `en_core_web_sm @ <GitHub release wheel URL for 3.8.0>` | model as a normal dependency, no `spacy download` at build |
 - The model wheel URL pattern: releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
   under github.com/explosion/spacy-models (full URL in Sources; returned HTTP 200 on 2026-11-26).
 - spaCy docs recommend treating pipeline packages as regular dependencies in requirements.txt and CI.
 
 ## netlify.toml shape
-- `[build] command`: run Python first, then the site build, joined with `&&` so a Python failure stops
-  the deploy: `python nlp/build_nlp.py && npm run build`.
+- `[build] command`: steps joined with `&&` so a Python failure stops the deploy. The repo's command is
+  `node scripts/build-team.mjs && python3 nlp/build_nlp.py && npm run build`: build-team.mjs writes
+  web/public/team.json, which build_nlp.py reads (it fails loudly if that file is missing).
 - `[build] publish = "web/dist"` stays; the script writes to `web/public/nlp/`, which Vite copies into
   `web/dist/nlp/`.
-- `[build.environment]`: add `PYTHON_VERSION = "3.13"` next to `NODE_VERSION`.
+- `[build.environment]`: `PYTHON_VERSION = "3.13"` next to `NODE_VERSION = "22"` (present in netlify.toml;
+  the 2026-11-26 build recorded Python 3.13.18 in corpus-stats.json).
 - Precedence: values in netlify.toml override the same settings in the Netlify UI.
 - Context blocks (`[context.production]`, `[context.deploy-preview]`) can override command or env.
 - Netlify does not expand `$VAR` inside TOML values.
@@ -53,9 +55,9 @@ script before Vite copies its output into the published folder. Netlify Function
 ## Ignore-build script in this repo (important)
 - netlify.toml has `ignore = "bash scripts/should-build.sh"`; it builds only if a path in
   `scripts/build-paths.txt` changed.
-- As read on 2026-11-26, build-paths.txt lists web, scripts, knowledge, netlify.toml, package files...
-  but NOT `nlp` or `requirements.txt`. A push changing only the Python NLP code would skip the deploy.
-  Add `nlp` and `requirements.txt` to build-paths.txt.
+- As re-read on 2026-11-26, build-paths.txt lists web, scripts, .claude/agents, knowledge, prompts,
+  netlify.toml, package files, tsconfig.json, and now also `nlp` and `requirements.txt`, so a push that
+  changes only the Python NLP code does trigger a deploy. Keep both entries when editing the list.
 
 ## Limits
 - Build time limit: 15 minutes by default; longer limits are granted by Netlify support, not
@@ -67,7 +69,10 @@ script before Vite copies its output into the published folder. Netlify Function
 
 ## Functions are not part of this design
 - Netlify's Functions docs cover JavaScript, TypeScript and Go; Python is not offered for Functions in the
-  pages fetched. Lambda compatibility mode is deprecated (deploys with it refused from 2027-07-01).
+  pages fetched (the get-started page's language selector shows TypeScript, JavaScript, Go).
+  UNVERIFIED: an earlier note said Lambda compatibility mode is deprecated with deploys refused from
+  2027-07-01; the Lambda compatibility page fetched on 2026-11-26 did not state this. Irrelevant here,
+  since the project uses no Functions.
 - So Python only runs at build time; the browser gets static JSON plus Pyodide for the live box.
 
 ## Troubleshooting
@@ -78,10 +83,10 @@ script before Vite copies its output into the published folder. Netlify Function
 - `exit status 128` usually means Netlify lost permission to clone the repo.
 
 ## Sources
-- https://docs.netlify.com/configure-builds/available-software-at-build-time/ (accessed 2026-11-26)
+- https://docs.netlify.com/build/configure-builds/available-software-at-build-time/ (accessed 2026-11-26)
 - https://docs.netlify.com/build/configure-builds/manage-dependencies (accessed 2026-11-26)
-- https://docs.netlify.com/configure-builds/file-based-configuration/ (accessed 2026-11-26)
-- https://docs.netlify.com/configure-builds/overview/ (accessed 2026-11-26)
+- https://docs.netlify.com/build/configure-builds/file-based-configuration/ (accessed 2026-11-26)
+- https://docs.netlify.com/build/configure-builds/overview/ (accessed 2026-11-26)
 - https://docs.netlify.com/build/configure-builds/troubleshooting-tips (accessed 2026-11-26)
 - https://docs.netlify.com/build/functions/get-started (accessed 2026-11-26)
 - https://docs.netlify.com/build/functions/lambda-compatibility/ (accessed 2026-11-26)
