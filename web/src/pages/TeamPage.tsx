@@ -9,6 +9,7 @@ import EngineGate, { DeviceBadge } from '../components/EngineGate';
 import { Avatar } from '../components/Sidebar';
 import { useEngine } from '../ai/engine';
 import { Thinking, errorText, VoiceControls, ChatFooter } from '../components/ChatParts';
+import { useClearOptions } from '../components/ClearOptions';
 
 type Chip = { slug: string; state: 'queued' | 'thinking' | 'writing' | 'done' | 'failed' };
 type Turn = { q: string; answer: string; contributions: { slug: string; text: string }[]; note?: string; failed?: number; stop?: string };
@@ -32,7 +33,7 @@ export default function TeamPage({ team }: { team: Team }) {
   const ctrl = useRef<AbortController | null>(null);
   const end = useRef<HTMLDivElement>(null);
   const speech = useSpeech();
-  const nova = team.agents.find((a) => a.slug === 'orchestrator')!;
+  const director = team.agents.find((a) => a.slug === 'orchestrator')!;
   const by = (s: string) => team.agents.find((a) => a.slug === s);
   const engine = useEngine();
   const ready = engine.status === 'ready';
@@ -40,6 +41,12 @@ export default function TeamPage({ team }: { team: Team }) {
   useEffect(() => { if (turns.length || busy) end.current?.scrollIntoView({ block: 'end' }); }, [turns, draft, chips, busy]);
   useEffect(() => () => ctrl.current?.abort(), []);
   const persist = (t: Turn[]) => saveChat('__team', t as any);
+  const clear = useClearOptions({
+    what: 'this team chat',
+    canClear: turns.length > 0 && !busy,
+    onClear: () => { const snap = turns; setTurns([]); persist([]); setErr(''); return () => { setTurns(snap); persist(snap); }; },
+    onFreed: () => { ctrl.current?.abort(); setTurns([]); setErr(''); },
+  });
   const toSetup = () => {
     const box = document.getElementById('ai-setup');
     box?.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
@@ -47,7 +54,7 @@ export default function TeamPage({ team }: { team: Team }) {
   };
 
   async function ask(q: string) {
-    setErr(''); setDraft(''); setChips([]); setBusy(true); setSince(Date.now()); setPhase(`${nova.name} is choosing experts`); setLive(`${nova.name} is choosing experts`);
+    setErr(''); setDraft(''); setChips([]); setBusy(true); setSince(Date.now()); setPhase(`${director.name} is choosing experts`); setLive(`${director.name} is choosing experts`);
     const c = (ctrl.current = new AbortController());
     const setChip = (slug: string, state: Chip['state']) => setChips((cs) => cs.map((x) => (x.slug === slug ? { ...x, state } : x)));
     try {
@@ -72,13 +79,13 @@ export default function TeamPage({ team }: { team: Team }) {
       if (!contribs.length) throw new Error('None of the experts could answer. Please try again.');
       const inputs = [...contribs];
       if (plan.stakes.length) {
-        setChips((cs) => [...cs, { slug: 'red-team-reviewer', state: 'thinking' }]); setPhase('Morgan is stress-testing the answers');
+        setChips((cs) => [...cs, { slug: 'red-team-reviewer', state: 'thinking' }]); setPhase('Yusra is stress-testing the answers');
         try {
           const rv = await streamModel({ mode: 'review', question: q, contributions: contribs.map((x) => ({ slug: x.slug, text: x.text.slice(0, 6000) })), runToken: token }, () => {}, c.signal);
           if (rv.text) { inputs.push({ slug: 'red-team-reviewer', text: rv.text }); setChip('red-team-reviewer', 'done'); } else setChip('red-team-reviewer', 'failed');
         } catch { setChip('red-team-reviewer', 'failed'); }
       }
-      setPhase(`${nova.name} is combining the answers`); setLive(`${nova.name} is combining the answers`);
+      setPhase(`${director.name} is combining the answers`); setLive(`${director.name} is combining the answers`);
       let acc = '';
       const s = await streamModel({ mode: 'synth', question: q, contributions: inputs.map((x) => ({ slug: x.slug, text: x.text.slice(0, 6000) })), runToken: token }, (t) => { acc += t; setDraft(acc); }, c.signal);
       const failed = plan.experts.length - contribs.length;
@@ -95,16 +102,17 @@ export default function TeamPage({ team }: { team: Team }) {
   return (
     <div className={`chat${ready ? '' : ' gated'}`}>
       <header className="chat-head">
-        <Avatar a={nova} lg />
+        <Avatar a={director} lg />
         <div style={{ flex: 1 }}>
           <h1>Ask the whole team <DeviceBadge /></h1>
-          <p>{nova.name} (the studio director) picks the right experts by topic, they answer one after another on your device, Morgan stress-tests big decisions, and {nova.name} combines it all into one answer.</p>
+          <p>{director.name} (the studio director) picks the right experts by topic, they answer one after another on your device, Yusra stress-tests big decisions, and {director.name} combines it all into one answer.</p>
           <VoiceControls speech={speech} />
         </div>
         <div className="head-actions">
-          {turns.length > 0 && <button type="button" className="btn ghost sm" onClick={() => { setTurns([]); persist([]); setErr(''); }}>New chat</button>}
+          {clear.button}
         </div>
       </header>
+      {clear.panel}
       <div className="messages" aria-label="Team conversation">
         {turns.length === 0 && !busy && (
           <div className="examples">
@@ -116,9 +124,9 @@ export default function TeamPage({ team }: { team: Team }) {
                   : <>Download the recommended model once. <button type="button" className="link-btn" onClick={toSetup}>Go to the model picker</button></>}</span>
               </li>
               <li><b>Ask the team</b><span>Tap an example below or type your own question.</span></li>
-              <li><b>Get one answer</b><span>{nova.name} combines the experts' answers. Open “Who contributed” to see each one.</span></li>
+              <li><b>Get one answer</b><span>{director.name} combines the experts' answers. Open “Who contributed” to see each one.</span></li>
             </ol>
-            <p>Ask a question that spans several areas. {nova.name} will bring in the right experts and give you one answer. For example:</p>
+            <p>Ask a question that spans several areas. {director.name} will bring in the right experts and give you one answer. For example:</p>
             {EXAMPLES.map((p) => <button key={p} type="button" className="chip-btn" onClick={() => setSeed({ text: p, n: Date.now() })}>{p}</button>)}
           </div>
         )}
@@ -126,7 +134,7 @@ export default function TeamPage({ team }: { team: Team }) {
           <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div className="msg user">{t.q}</div>
             <div className="msg ai">
-              <div className="msg-meta"><Avatar a={nova} /> {nova.name} for the team</div>
+              <div className="msg-meta"><Avatar a={director} /> {director.name} for the team</div>
               <Markdown text={t.answer} />
               {t.note && <p className="notice">{t.note}</p>}
               {!!t.failed && <p className="notice warn">{t.contributions.filter((c) => c.slug !== 'red-team-reviewer').length} of {t.contributions.filter((c) => c.slug !== 'red-team-reviewer').length + t.failed} experts answered.</p>}
@@ -148,7 +156,7 @@ export default function TeamPage({ team }: { team: Team }) {
                 {chips.map((c) => { const a = by(c.slug); return a ? <span key={c.slug} className="st" data-s={c.state}><Avatar a={a} /> {a.name} <span className="sr-only">{c.state}</span></span> : null; })}
               </div>
             )}
-            {draft && <div className="msg ai"><div className="msg-meta"><Avatar a={nova} /> {nova.name}</div><Markdown text={draft} /></div>}
+            {draft && <div className="msg ai"><div className="msg-meta"><Avatar a={director} /> {director.name}</div><Markdown text={draft} /></div>}
           </div>
         )}
         {err && <p className="notice err" role="alert">{err}</p>}
@@ -157,7 +165,7 @@ export default function TeamPage({ team }: { team: Team }) {
       <div className="composer-wrap" id="ai-setup">
         {ready ? <Composer placeholder="Ask the whole team…" busy={busy} onSend={ask} onStop={() => ctrl.current?.abort()} seed={seed} />
           : <EngineGate />}
-        <ChatFooter research={team.studio.researchDate} onCleared={() => setTurns([])} />
+        <ChatFooter research={team.studio.researchDate} />
       </div>
       <div className="sr-only" role="status" aria-live="polite">{live}</div>
     </div>

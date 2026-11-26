@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { LibraryItem } from '../lib/types';
-import { saveBuild, lastBuild } from '../lib/storage';
+import { saveBuild, lastBuild, clearBuilds } from '../lib/storage';
+import { useClearOptions } from '../components/ClearOptions';
 import EngineGate from '../components/EngineGate';
 import { useEngine } from '../ai/engine';
 import { buildFromBrief, refineSpec, claudeCodePrompt } from '../ai/studio/generate';
@@ -51,7 +52,21 @@ export default function StudioPage({ library }: { library: LibraryItem[] }) {
   }, [html]);
   useEffect(() => { if (html) setFrameKey((k) => k + 1); }, [html]);
 
-  const persist = (vs: Version[]) => saveBuild({ id: 'current', brief, versions: vs.map((v) => v.html), v2: vs, at: Date.now() } as any);
+  const persist = (vs: Version[], b = brief) => saveBuild({ id: 'current', brief: b, versions: vs.map((v) => v.html), v2: vs, at: Date.now() } as any);
+  const reset = () => { ctrl.current?.abort(); setVersions([]); setVi(0); setBrief(''); setChange(''); setCc(''); setStream(''); setErr(''); setNote(''); setStage('idle'); setTemplateId(''); };
+  const clear = useClearOptions({
+    what: 'this Studio page, its versions and its brief',
+    canClear: (versions.length > 0 || brief.trim().length > 0 || !!cc) && !busy,
+    onClear: () => {
+      const snap = { versions, vi, brief, change, cc, stage, templateId };
+      reset(); clearBuilds();
+      return () => {
+        setVersions(snap.versions); setVi(snap.vi); setBrief(snap.brief); setChange(snap.change); setCc(snap.cc); setStage(snap.stage); setTemplateId(snap.templateId);
+        if (snap.versions.length) persist(snap.versions, snap.brief);
+      };
+    },
+    onFreed: reset,
+  });
 
   async function generate() {
     setErr(''); setNote(''); setCc(''); setStream(''); setView('preview');
@@ -102,7 +117,8 @@ export default function StudioPage({ library }: { library: LibraryItem[] }) {
   return (
     <div className="studio">
       <section className="studio-form" aria-labelledby="studio-title">
-        <h1 id="studio-title">One-shot Studio</h1>
+        <div className="studio-head"><h1 id="studio-title">One-shot Studio</h1>{clear.button}</div>
+        {clear.panel}
         <p style={{ margin: 0, color: 'var(--soft)', fontSize: 14 }}>Describe a website page: a landing page, a small business site, a portfolio or a shop front. The on-device AI writes the content and the Studio builds an accessible page from tested blocks, then previews it safely. For apps, dashboards and games, use “Get the Claude Code prompt”.</p>
         <label>Start from a template
           <select value={templateId} onChange={(e) => setTemplateId(e.target.value)}>

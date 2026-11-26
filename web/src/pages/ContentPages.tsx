@@ -85,7 +85,7 @@ export function PrivacyPage() {
       <h2>Your messages stay on your device</h2>
       <ul>
         <li>The AI runs in your browser. What you type to the experts and the Studio is processed on your device and is not sent to us or to any AI company.</li>
-        <li>Your chats and Studio pages are saved in this browser (localStorage and IndexedDB). Use “Clear all chats” at the bottom of any chat to delete them.</li>
+        <li>Your chats and Studio pages are saved in this browser (localStorage and IndexedDB). Use “Clear options” in any chat or in the Studio: “Clear” erases that tool's work (with Undo), and “Free up space” deletes everything this site stored, including the downloaded model.</li>
         <li>This site has no accounts, no analytics and no cookies.</li>
       </ul>
       <h2>The model download</h2>

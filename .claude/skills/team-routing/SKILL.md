@@ -6,7 +6,7 @@ description: "Use when a request is addressed to the whole studio, spans more th
 
 ## Purpose
 Turn one request into the smallest expert panel that can answer it well, run that panel in parallel,
-and merge the answers into one checked reply. The orchestrator (Nova) owns this skill and never routes
+and merge the answers into one checked reply. The orchestrator (Soraya) owns this skill and never routes
 to itself. The formal JSON Schema, the roster cheat sheet and worked examples are in
 [reference.md](reference.md).
 

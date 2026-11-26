@@ -145,7 +145,7 @@ error states are known only from the guide's screenshot captions (R2) — marked
 
 | Their element | Our version |
 |---------------|-------------|
-| Orchestrator card | Pinned card for our orchestrator (Nova in the roster seed), our wording |
+| Orchestrator card | Pinned card for our orchestrator (Soraya in the roster seed), our wording |
 | 11 departments | Our departments from `roster.seed.json` (29 agents) |
 | Per-agent voice picker | Optional, phase 2 |
 | Plain example text | Clickable chips from each agent's `examplePrompts` |

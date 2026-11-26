@@ -18,13 +18,13 @@ Any request to change the project is handled end to end, without asking for go-a
 - Long session? Run `/handoff`. Fuzzy requirements? Run `/grill-me`.
 
 ## Roster (name · title · model)
-Leadership: Nova · Studio Director (Orchestrator) · opus — Owen · Delivery Lead · sonnet
-Product: Maya · Product Strategist · opus — Ravi · UX Researcher · sonnet — Lucas · Growth & Analytics · sonnet
-Design: Iris · UX Architect · opus — Kai · UI Designer — Lena · Design Systems — Jonah · UX Writer — Noor · Accessibility — Sasha · Motion — Valentina · Brand (all sonnet)
-Engineering: Marco · Software Architect · opus — Quinn · AI Engineer · opus — **Ada · Edge AI Engineer · opus** — Sage · Prompt Engineer · opus — Zara · Front-end — Diego · Back-end — Hana · Mobile — Felix · Data — Juno · Creative Tech & Games — **Theo · Template Systems** (sonnet)
-Quality: Rhea · Security · opus — Ivy · QA — Arjun · Performance & SEO (sonnet)
-Launch: Tess · Netlify DevOps — Milo · Technical Writer (sonnet)
-Governance: Morgan · Red Team · opus — Amara · Privacy — Orion · Meta Agent — Elise · Knowledge Curator (sonnet)
+Leadership: Soraya Lindqvist · Studio Director (Orchestrator) · opus — Benedikt Okafor · Delivery Lead · sonnet
+Product: Imani Castellanos · Product Strategist · opus — Priya Halvorsen · UX Researcher · sonnet — Dario Feldmann · Growth & Analytics · sonnet
+Design: Ottilie Brandt · UX Architect · opus — Bastien Mwangi · UI Designer — Camila Nordstrom · Design Systems — Anouk Varga · UX Writer — Desta Albrecht · Accessibility — Esme Takahashi · Motion — Farrah Quintero · Brand (all sonnet)
+Engineering: Hiroshi Valdez · Software Architect · opus — Ines Abernathy · AI Engineer · opus — **Greta Solberg · Edge AI Engineer · opus** — Jasper Moreau · Prompt Engineer · opus — Pavel Okonjo · Front-end — Kofi Lindgren · Back-end — Mireille Osei · Mobile — Liesl Nakamura · Data — Nikolai Ferreira · Creative Tech & Games — **Odessa Kowalczyk · Template Systems** (sonnet)
+Quality: Rosalind Achterberg · Security · opus — Ulla Brennan · QA — Tobias Reinholt · Performance & SEO (sonnet)
+Launch: Xavi Montenegro · Netlify DevOps — Wren Castillo · Technical Writer (sonnet)
+Governance: Yusra Kaldani · Red Team · opus — Agnes Thorvald · Privacy — Zuri Pellegrino · Meta Agent — Hugo Ferrante · Knowledge Curator (sonnet)
 Full table: `docs/agent-brains.md` (generated).
 
 ## Working agreements

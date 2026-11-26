@@ -18,9 +18,9 @@ async function turnOnAI(page: Page, path = '/') {
 
 test('sidebar lists all 31 experts by department', async ({ page }) => {
   await open(page);
-  expect(await page.locator('aside .row').count()).toBe(31); // 30 experts + "Ask the whole team" (Nova)
+  expect(await page.locator('aside .row').count()).toBe(31); // 30 experts + "Ask the whole team" (Soraya)
   for (const d of ['Leadership', 'Product', 'Design', 'Engineering', 'Quality', 'Launch', 'Governance']) await expect(page.getByRole('heading', { name: d })).toBeVisible();
-  await page.getByLabel('Search experts').fill('Ada');
+  await page.getByLabel('Search experts').fill('Greta');
   await expect(page.locator('aside .row:not(.team)')).toHaveCount(1);
 });
 
@@ -46,7 +46,7 @@ test('download shows progress, then one expert streams an answer that survives a
   await expect(page.getByText('On your device · Balanced')).toBeVisible();
   await page.locator('#composer').fill('Suggest a palette for a calm yoga studio');
   await page.keyboard.press('Enter');
-  await expect(page.locator('.msg.ai .md').last()).toContainText('Kai here (mock engine)');
+  await expect(page.locator('.msg.ai .md').last()).toContainText('Bastien here (mock engine)');
   await expect(page.getByRole('status').filter({ hasText: 'Reply complete' })).toHaveCount(1);
   await page.reload();
   await expect(page.locator('.msg.user')).toContainText('calm yoga studio');

@@ -19,16 +19,27 @@ const idb = (): Promise<IDBDatabase> => new Promise((res, rej) => {
   r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
 });
 export async function saveBuild(b: Build) {
-  try { const db = await idb(); await new Promise((res, rej) => { const tx = db.transaction('builds', 'readwrite'); tx.objectStore('builds').put(b); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); } catch { /* storage unavailable */ }
+  try {
+    const db = await idb();
+    try { await new Promise((res, rej) => { const tx = db.transaction('builds', 'readwrite'); tx.objectStore('builds').put(b); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); } finally { db.close(); }
+  } catch { /* storage unavailable */ }
 }
 export async function lastBuild(): Promise<Build | null> {
   try {
     const db = await idb();
-    return await new Promise((res) => {
-      const out: Build[] = []; const c = db.transaction('builds').objectStore('builds').openCursor();
-      c.onsuccess = () => { const cur = c.result; if (cur) { out.push(cur.value); cur.continue(); } else res(out.sort((a, b) => b.at - a.at)[0] ?? null); };
-      c.onerror = () => res(null);
-    });
+    try {
+      return await new Promise((res) => {
+        const out: Build[] = []; const c = db.transaction('builds').objectStore('builds').openCursor();
+        c.onsuccess = () => { const cur = c.result; if (cur) { out.push(cur.value); cur.continue(); } else res(out.sort((a, b) => b.at - a.at)[0] ?? null); };
+        c.onerror = () => res(null);
+      });
+    } finally { db.close(); }
   } catch { return null; }
 }
-export async function clearBuilds() { try { indexedDB.deleteDatabase('ba2-studio'); } catch { /* ignore */ } }
+/** Empty the Studio's saved pages (connections are closed after every use, so this is never blocked). */
+export async function clearBuilds() {
+  try {
+    const db = await idb();
+    try { await new Promise((res, rej) => { const tx = db.transaction('builds', 'readwrite'); tx.objectStore('builds').clear(); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); } finally { db.close(); }
+  } catch { /* storage unavailable */ }
+}

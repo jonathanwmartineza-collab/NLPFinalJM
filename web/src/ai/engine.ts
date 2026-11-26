@@ -153,7 +153,9 @@ export async function loadTier(id: TierId): Promise<void> {
 export async function cancelLoad() {
   loadSeq++;
   await unloadEngine(true);
-  set({ status: 'idle', progress: 0, progressText: '' });
+  // Only a device that can run the AI goes back to "idle"; unsupported or not-yet-checked devices keep their status.
+  if (['loading', 'ready', 'error', 'elsewhere'].includes(state.status)) set({ status: 'idle', progress: 0, progressText: '' });
+  else set({ progress: 0, progressText: '' });
 }
 
 async function unloadEngine(release: boolean) {

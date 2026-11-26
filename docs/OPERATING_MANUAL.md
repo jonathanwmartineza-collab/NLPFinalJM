@@ -48,7 +48,7 @@ This manual is for any Claude Code session opened on this repository. Its job: t
 | Privacy / licences text | `PrivacyPage`/`ResourcesPage` in `web/src/pages/ContentPages.tsx`, `docs/models.md` | privacy-compliance | e2e privacy |
 | Netlify build/deploy settings | `netlify.toml`, `scripts/build-paths.txt` | devops-engineer | `npm run build`; live check |
 | Docs only | `README.md`, `docs/*` | technical-writer | none (doesn't deploy) |
-| Big or cross-cutting work | many | orchestrator (Nova) plans, delegates by the rows above | all gates |
+| Big or cross-cutting work | many | orchestrator (Soraya) plans, delegates by the rows above | all gates |
 
 ---
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { LibraryItem, Team } from './lib/types';
 import { usePath } from './lib/router';
 import OwnerLogo, { COPYRIGHT } from './components/OwnerLogo';
+import Toaster from './components/Toaster';
 import { getPref, setPref } from './lib/storage';
 import Sidebar from './components/Sidebar';
 import ChatPage from './pages/ChatPage';
@@ -97,6 +98,7 @@ export default function App() {
         </div>
       </div>
       <footer className="site-foot">{COPYRIGHT}</footer>
+      <Toaster />
     </>
   );
 }

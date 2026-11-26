@@ -10,6 +10,7 @@ import { Avatar } from '../components/Sidebar';
 import { useEngine } from '../ai/engine';
 import { system } from '../ai/prompts';
 import { Thinking, errorText, VoiceControls, ChatFooter } from '../components/ChatParts';
+import { useClearOptions } from '../components/ClearOptions';
 
 export default function ChatPage({ agent }: { agent: Agent }) {
   const [msgs, setMsgs] = useState<ChatMsg[]>(() => loadChats()[agent.slug] ?? []);
@@ -23,6 +24,12 @@ export default function ChatPage({ agent }: { agent: Agent }) {
   const end = useRef<HTMLDivElement>(null);
   const speech = useSpeech();
   const ready = useEngine().status === 'ready';
+  const clear = useClearOptions({
+    what: `this chat with ${agent.name}`,
+    canClear: msgs.length > 0 && !busy,
+    onClear: () => { const snap = msgs; ctrl.current?.abort(); setMsgs([]); saveChat(agent.slug, []); setErr(''); return () => { setMsgs(snap); saveChat(agent.slug, snap); }; },
+    onFreed: () => { ctrl.current?.abort(); setMsgs([]); setErr(''); },
+  });
 
   useEffect(() => { if (msgs.length) end.current?.scrollIntoView({ block: 'end' }); }, [msgs, busy]);
   useEffect(() => () => ctrl.current?.abort(), []);
@@ -63,9 +70,10 @@ export default function ChatPage({ agent }: { agent: Agent }) {
           <VoiceControls speech={speech} />
         </div>
         <div className="head-actions">
-          {msgs.length > 0 && <button type="button" className="btn ghost sm" onClick={() => { ctrl.current?.abort(); setMsgs([]); saveChat(agent.slug, []); setErr(''); }}>New chat</button>}
+          {clear.button}
         </div>
       </header>
+      {clear.panel}
       <div className="messages" aria-label={`Conversation with ${agent.name}`}>
         {msgs.length === 0 && (
           <div className="examples">
@@ -88,7 +96,7 @@ export default function ChatPage({ agent }: { agent: Agent }) {
       <div className="composer-wrap" id="ai-setup">
         {ready ? <Composer placeholder={`Ask ${agent.name}…`} busy={busy} onSend={send} onStop={() => ctrl.current?.abort()} seed={seed} />
           : <EngineGate copyText={`${system(agent.slug)}\n\nMy question: `} />}
-        <ChatFooter onCleared={() => setMsgs([])} />
+        <ChatFooter />
       </div>
       <div className="sr-only" role="status" aria-live="polite">{live}</div>
     </div>

@@ -26,7 +26,7 @@ BrainyApp2 is the free, public edition of the BrainyApp agent studio. It has the
 | 12 | There was no watchdog for a hung GPU, and no recovery after the GPU device is lost. | Low | 90 s with no tokens → stop the answer and offer a reload. If the device is lost, the engine is unloaded and recreated on the next request. |
 | 13 | "Benchmark the models yourself" isn't possible in a cloud session with no GPU. | Low | Real-model checks are marked NOT RUN, with a 6-step manual smoke test for the owner. |
 | 14 | No budget for page weight. | Low | Initial JS ≤ 250 KB gzip. WebLLM loads lazily, only after consent. Lighthouse is run without the model downloaded. |
-| 15 | The agent team had no experts for on-device AI or for template generation. | Medium | Two new agents: **Ada**, Edge AI Engineer, and **Theo**, Template Systems Engineer. The team grows to 31 experts. |
+| 15 | The agent team had no experts for on-device AI or for template generation. | Medium | Two new agents: **Greta**, Edge AI Engineer, and **Odessa**, Template Systems Engineer. The team grows to 31 experts. |
 | 16 | Found in the live test: JSON mode crashed the Studio on the real model, and the picker showed memory needs as download sizes. | High | JSON-mode fallback to plain text (constraint 8); sizes relabelled (constraint 3). Verified live. |
 
 ---
@@ -35,24 +35,24 @@ BrainyApp2 is the free, public edition of the BrainyApp agent studio. It has the
 
 | Agent | Role in this build | Owns (only the owner edits) |
 |---|---|---|
-| Nova · orchestrator | Plans phases, assigns owners, merges, final answer | `docs/decisions.md`, phase order |
-| Owen · delivery-lead | Milestones, acceptance criteria, risk log, honest status | `reports/launch-readiness.md` (with Morgan) |
-| Marco · software-architect | Static-only architecture, ADRs | `docs/adr/0005–0008` |
-| **Ada · edge-ai-engineer (new)** | WebLLM worker and engine, model tiers, capability check, token budgets, recovery | `web/src/ai/` (except `studio/`) |
-| **Theo · template-systems-engineer (new)** | Studio JSON schema, repair, renderer, blocks, palettes | `web/src/ai/studio/` |
-| Sage · prompt-engineer | Lite system prompts and task prompts sized for 4K context | `scripts/build-team.mjs` (lite prompt part), `web/src/ai/prompts.ts` |
-| Zara · frontend-engineer | Integrating the engine into the app; removing the password gate | `web/src/pages/`, `web/src/components/`, `web/src/App.tsx` |
-| Iris · ux-architect + Jonah · content-designer | Engine states and their words: consent, download, ready, no WebGPU, out of memory, other tab | the state copy in `web/src/components/EngineGate.tsx` |
-| Kai · ui-designer + Lena · design-systems-lead | Model picker card, progress bar, on-device badge in the BrainyApp look | `web/src/styles/` |
-| Tess · devops-engineer | Static `netlify.toml`, CSP, headers, deploy, making the site public | `netlify.toml`, `web/index.html` CSP |
-| Diego · backend-engineer | Removing the server: functions, SDK, Blobs, env vars | deletions under `netlify/` |
-| Ivy · qa-engineer | Mock engine tests, e2e, axe, gates | `tests/`, `scripts/gates.sh` |
-| Rhea · security-engineer | CSP review, sandbox isolation, escaping tests, audit | security findings in `reports/` |
-| Arjun · performance-seo-engineer | Lazy loading, bundle budget, Lighthouse, meta and sitemap | `web/vite.config.ts`, `web/public/robots.txt`, `sitemap.xml` |
-| Amara · privacy-compliance | Privacy page; model licences and attributions | `web/src/pages/ContentPages.tsx` (Privacy section), `docs/models.md` |
-| Milo · technical-writer | README, Guide, Resources, troubleshooting | `README.md`, Guide and Resources sections |
-| Orion · meta-agent + Elise · knowledge-curator | New agents, knowledge notes, roster docs | `.claude/agents/`, `knowledge/` |
-| Morgan · red-team-reviewer | Release gate against this prompt | pass / partial / fail table |
+| Soraya · orchestrator | Plans phases, assigns owners, merges, final answer | `docs/decisions.md`, phase order |
+| Benedikt · delivery-lead | Milestones, acceptance criteria, risk log, honest status | `reports/launch-readiness.md` (with Yusra) |
+| Hiroshi · software-architect | Static-only architecture, ADRs | `docs/adr/0005–0008` |
+| **Greta · edge-ai-engineer (new)** | WebLLM worker and engine, model tiers, capability check, token budgets, recovery | `web/src/ai/` (except `studio/`) |
+| **Odessa · template-systems-engineer (new)** | Studio JSON schema, repair, renderer, blocks, palettes | `web/src/ai/studio/` |
+| Jasper · prompt-engineer | Lite system prompts and task prompts sized for 4K context | `scripts/build-team.mjs` (lite prompt part), `web/src/ai/prompts.ts` |
+| Pavel · frontend-engineer | Integrating the engine into the app; removing the password gate | `web/src/pages/`, `web/src/components/`, `web/src/App.tsx` |
+| Ottilie · ux-architect + Anouk · content-designer | Engine states and their words: consent, download, ready, no WebGPU, out of memory, other tab | the state copy in `web/src/components/EngineGate.tsx` |
+| Bastien · ui-designer + Camila · design-systems-lead | Model picker card, progress bar, on-device badge in the BrainyApp look | `web/src/styles/` |
+| Xavi · devops-engineer | Static `netlify.toml`, CSP, headers, deploy, making the site public | `netlify.toml`, `web/index.html` CSP |
+| Kofi · backend-engineer | Removing the server: functions, SDK, Blobs, env vars | deletions under `netlify/` |
+| Ulla · qa-engineer | Mock engine tests, e2e, axe, gates | `tests/`, `scripts/gates.sh` |
+| Rosalind · security-engineer | CSP review, sandbox isolation, escaping tests, audit | security findings in `reports/` |
+| Tobias · performance-seo-engineer | Lazy loading, bundle budget, Lighthouse, meta and sitemap | `web/vite.config.ts`, `web/public/robots.txt`, `sitemap.xml` |
+| Agnes · privacy-compliance | Privacy page; model licences and attributions | `web/src/pages/ContentPages.tsx` (Privacy section), `docs/models.md` |
+| Wren · technical-writer | README, Guide, Resources, troubleshooting | `README.md`, Guide and Resources sections |
+| Zuri · meta-agent + Hugo · knowledge-curator | New agents, knowledge notes, roster docs | `.claude/agents/`, `knowledge/` |
+| Yusra · red-team-reviewer | Release gate against this prompt | pass / partial / fail table |
 
 ---
 
@@ -60,14 +60,14 @@ BrainyApp2 is the free, public edition of the BrainyApp agent studio. It has the
 
 ```text
 ROLE
-You are Nova, studio director of BrainyApp2 (.claude/agents/orchestrator.md). Delegate each part to the
+You are Soraya, studio director of BrainyApp2 (.claude/agents/orchestrator.md). Delegate each part to the
 owner in the crew table in docs/MASTER_PROMPT.md §2 with the Agent tool; if an agent type isn't loaded,
 start a general-purpose subagent whose prompt begins with the full text of .claude/agents/<slug>.md.
 Only a path's owner edits it.
 
 GOAL
 Build BrainyApp2: a free, public, fully static website on Netlify
-(https://brainyapp2.netlify.app) where 31 AI experts (the 29 originals + Ada, edge-ai-engineer, and Theo,
+(https://brainyapp2.netlify.app) where 31 AI experts (the 29 originals + Greta, edge-ai-engineer, and Odessa,
 template-systems-engineer) answer IN THE VISITOR'S BROWSER through WebLLM on WebGPU. No API keys, no
 server-side AI, no password, no budgets, no per-answer cost. Same layout and features as the source studio:
 sidebar by department, chat with one expert, "Ask the whole team", One-shot Studio, Prompt Library,
@@ -93,8 +93,8 @@ HARD CONSTRAINTS
    chars, user input ≤ 2,400 chars, max_tokens ≤ 700. Lite agent prompts are generated at build time from
    .claude/agents (identity + mission + top 5 principles + web rules) and unit-tested against the cap.
 7. Team mode: a deterministic keyword router picks 2–3 experts (no model call); experts answer one after
-   another (≤ 300 tokens each); Morgan adds a short review when money/security/legal/release words appear;
-   Nova synthesises (≤ 600 tokens) from inputs truncated to fit. Progress chips as before.
+   another (≤ 300 tokens each); Yusra adds a short review when money/security/legal/release words appear;
+   Soraya synthesises (≤ 600 tokens) from inputs truncated to fit. Progress chips as before.
 8. One-shot Studio: the model never writes HTML. It fills a small JSON content object (zod schema with
    defaults). Try WebLLM JSON mode first; if the engine rejects it (0.2.89 + Qwen2.5 throws
    GrammarMatcherInitError), fall back to plain text for the session. A repair step extracts and coerces JSON; on failure a fallback spec is built from the brief.
@@ -121,7 +121,7 @@ HARD CONSTRAINTS
 
 PHASES (finish, verify, commit, `git push origin HEAD:main`, show `git log origin/main --oneline -3`)
 1. Copy: clone SOURCE_REPO (the agent-studio repository the owner names in chat) without .git; rename to
-   BrainyApp2 (studio.config.json, README, CLAUDE.md, meta tags, sitemap, robots, OG image text); add Ada and Theo with knowledge indexes and a
+   BrainyApp2 (studio.config.json, README, CLAUDE.md, meta tags, sitemap, robots, OG image text); add Greta and Odessa with knowledge indexes and a
    sourced note knowledge/_shared/webllm-on-device.md. DONE WHEN validate-team passes with 31 agents.
 2. Decide: ADRs 0005 static + on-device AI, 0006 model tiers and licences, 0007 context budget and team
    mode, 0008 schema-driven Studio. DONE WHEN each ADR states verified facts with dates.

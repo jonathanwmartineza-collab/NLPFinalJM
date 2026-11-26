@@ -1,6 +1,6 @@
 # Launch readiness: BrainyApp2
 
-Red-team release gate (Morgan) against docs/MASTER_PROMPT.md §3. Date: 2026-11-22. Evidence: reports/gates.md.
+Red-team release gate (Yusra) against docs/MASTER_PROMPT.md §3. Date: 2026-11-22. Evidence: reports/gates.md.
 
 | Requirement | Result | Evidence |
 |---|---|---|
@@ -18,7 +18,7 @@ Red-team release gate (Morgan) against docs/MASTER_PROMPT.md §3. Date: 2026-11-
 | 12. Model output treated as data | PASS | Markdown skipHtml; zod; escaping tests |
 | 13. Privacy and Resources pages | PASS | e2e privacy; Resources lists licences |
 | 14. Evidence rule | PASS | reports/gates.md |
-| Real model on a WebGPU device (live site, owner's Chrome, Balanced) | PASS | 2026-11-22: consent → download ≈0.84 GB (30 shards, ~5 min) → "On your device · Balanced"; Ada answered on-device; Studio built a Massa Mae bakery page; team mode answered with 3 contributors |
+| Real model on a WebGPU device (live site, owner's Chrome, Balanced) | PASS | 2026-11-22: consent → download ≈0.84 GB (30 shards, ~5 min) → "On your device · Balanced"; Greta answered on-device; Studio built a Massa Mae bakery page; team mode answered with 3 contributors |
 | Live deploy | PASS | https://brainyapp2.netlify.app public; static build; nothing downloaded before the click |
 
 Blockers: none.

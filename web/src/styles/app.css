@@ -293,3 +293,39 @@ details.contrib .one { border-top: var(--bw) solid var(--line); padding: 10px 0;
   .btn, .icon-btn, .chip-btn, .seg, .filters button, .tier, .nav-studio a { border: 1px solid ButtonText; }
   .btn:disabled { color: GrayText; border-color: GrayText; }
 }
+
+/* ---------- clear options, confirm dialog, toast ---------- */
+.clear-panel { display: grid; gap: 10px; margin: 0 clamp(16px, 3vw, 30px); padding: 14px 16px; border: var(--bw) solid var(--rim); border-radius: var(--radius); background: var(--glass-strong); box-shadow: inset 0 1px 0 var(--edge), var(--shadow-sm); }
+.chat > .clear-panel { margin-top: 12px; }
+.studio-form .clear-panel { margin: 0; }
+.clear-row { display: grid; grid-template-columns: minmax(150px, auto) minmax(0, 1fr); gap: 8px 14px; align-items: start; }
+.clear-row .btn { justify-self: start; white-space: nowrap; }
+.clear-note { margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--soft); }
+.clear-note b { color: var(--ink); }
+.btn.danger { background: var(--err); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 6px 16px -8px var(--err); }
+.btn.danger:hover:not(:disabled) { background: var(--err); filter: brightness(.92); }
+.btn.ghost.danger { background: var(--glass-soft); color: var(--err); border-color: var(--err); box-shadow: inset 0 1px 0 var(--edge); }
+.btn.ghost.danger:hover:not(:disabled) { background: var(--glass-hover); filter: none; }
+:root[data-theme="dark"] .btn.danger:not(.ghost) { color: #1c1917; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.danger:not(.ghost) { color: #1c1917; } }
+.studio-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+dialog.confirm { border: var(--bw) solid var(--rim); border-radius: var(--radius-lg); padding: 22px 24px; max-width: 480px; width: calc(100% - 32px); background: var(--solid); color: var(--ink); box-shadow: var(--shadow); }
+dialog.confirm::backdrop { background: rgba(12, 15, 28, .5); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+dialog.confirm h2 { margin: 0 0 8px; font-size: 20px; }
+dialog.confirm p { margin: 0 0 18px; color: var(--soft); }
+.confirm-acts { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+.toast-region { position: fixed; left: 50%; bottom: 44px; transform: translateX(-50%); z-index: 60; width: min(560px, calc(100% - 24px)); pointer-events: none; }
+.toast { pointer-events: auto; display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 18px; border-radius: var(--pill); background: var(--ink); color: var(--solid); box-shadow: var(--shadow); font-size: 14px; animation: toast-in var(--t) var(--ease); }
+.toast > span { flex: 1; }
+.toast .icon-btn { background: transparent; color: inherit; border-color: transparent; box-shadow: none; }
+.toast .icon-btn:hover { background: rgba(127, 127, 127, .25); }
+.toast .btn { background: var(--solid); color: var(--ink); box-shadow: none; }
+.toast .btn:hover:not(:disabled) { background: var(--solid); filter: brightness(.94); }
+.toast :focus-visible { outline-color: var(--solid); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (max-width: 520px) {
+  .chat-head .head-actions { flex-basis: 100%; }
+  .clear-row { grid-template-columns: minmax(0, 1fr); }
+  .toast { border-radius: 20px; }
+}
+:root[data-contrast="high"] .btn.danger:not(.ghost) { background: var(--err); }
