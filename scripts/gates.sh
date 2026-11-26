@@ -17,7 +17,7 @@ gate "Unit tests (Vitest)" npx vitest run
 gate "Production build" npm run build
 gate "Initial JS budget (<= 250 KB gzip, WebLLM lazy)" bash -c 'f=$(grep -o "assets/index-[^\"]*\.js" web/dist/index.html | head -1); s=$(gzip -c "web/dist/$f" | wc -c); echo "$f gzip $s bytes"; grep -q "web-llm\|CreateWebWorkerMLCEngine" web/dist/index.html && { echo "WebLLM in entry HTML"; exit 1; }; [ "$s" -le 256000 ]'
 gate "End-to-end + axe (Playwright, mock engine)" npx playwright test --reporter=line
-gate "No server AI, secrets or private-edition links in the bundle" bash -c '! grep -rlE "/api/|sk-ant-|ANTHROPIC_API_KEY|APP_PASSWORD|SESSION_SECRET|brainyapp-stud[i]o" web/dist --include=*.html --include=index-*.js && echo "clean: no /api/ calls, secrets or private-edition links in web/dist"'
+gate "No server AI, secrets or private-edition links in the bundle" bash -c '! grep -rlE "[^A-Za-z0-9.]/api/|sk-ant-|ANTHROPIC_API_KEY|APP_PASSWORD|SESSION_SECRET|brainyapp-stud[i]o" web/dist --include=*.html --include=index-*.js && echo "clean: no relative /api/ calls, secrets or private-edition links in web/dist (external docs such as spacy.io/api/ are allowed)"'
 gate "No bare wildcard in the CSP" bash -c 'c=$(grep -o "Content-Security-Policy\" content=\"[^\"]*" web/index.html); echo "$c"; ! echo "$c" | grep -qE "(^|[ ;])\*( |;|$)|https://\*( |;|$)"'
 gate "Dependency audit (production)" npm audit --omit=dev --audit-level=high
 echo "gates failed: $fails"; exit $fails

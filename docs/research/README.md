@@ -8,12 +8,25 @@ The site stays fully static. During the Netlify build (Ubuntu 24.04 image, Pytho
 `PYTHON_VERSION`, packages from `requirements.txt`), `nlp/build_nlp.py` runs **spaCy 3.8 with
 `en_core_web_sm` 3.8.0** (named entities, an EntityRuler placed before `ner` for custom TECH/STANDARD
 labels, noun-chunk topics, dependency parses) and **NLTK 3.9.4** (tokenization, stopword removal,
-`FreqDist`, bigram collocations by PMI and likelihood ratio, VADER sentiment) over the app's own corpus —
+`FreqDist`, bigram collocations by likelihood ratio, VADER sentiment) over the app's own corpus —
 the 36 expert profiles (31 at time of writing + 5 NLP experts) and the 12-prompt library, MIT-licensed —
 and writes static JSON to `web/public/nlp/`. In the browser, a **module Web Worker loads Pyodide 314.0.8
 from jsDelivr**, which ships nltk 3.9.4, unpacks a small prebuilt NLTK data zip into Pyodide's virtual file
 system, and runs the *same* `nltk_core.py` live on the user's own chat. spaCy stays build-time only
 (not in Pyodide; Netlify Functions don't run Python).
+
+## As built (where the code differs from this research)
+This folder is the research written before the build. What shipped differs in these points; the code is the
+reference (`nlp/build_nlp.py`, `nlp/spacy_core.py`, `nlp/nltk_core.py`):
+- Collocations are ranked by Dunning's log-likelihood ratio only (no PMI column).
+- The EntityRuler has TECH, STANDARD and METHOD patterns (`nlp/patterns.jsonl`) plus the team roster (names as
+  PERSON, job titles as a hidden ROLE label), and statistical entities that are clearly not names are filtered.
+- Each expert document is the agent's profile and prompt plus its own `knowledge/<slug>/` folder (an index for
+  most experts; the five NLP experts also have their own notes). Build output: 36 + 12 = 48 documents,
+  about 50,500 words (`web/public/nlp/corpus-stats.json`).
+- Parses are of each library prompt's GOAL line plus one demo sentence, drawn in React from JSON (no displaCy).
+- The NLP Lab is one page with six labelled panels (`web/src/pages/NlpPage.tsx`), not two tabs; spaCy results
+  are in `spacy.json` and `topic-index.json` (no `experts.json`).
 
 ## Files
 

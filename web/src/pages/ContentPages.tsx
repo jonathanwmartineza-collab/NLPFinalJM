@@ -4,7 +4,7 @@ import { onLinkClick } from '../lib/router';
 import { TIERS } from '../ai/models';
 import { deleteModels, useEngine, initEngine } from '../ai/engine';
 
-const Ext = ({ href, children }: { href: string; children: React.ReactNode }) => <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>;
+const Ext = ({ href, children }: { href: string; children: React.ReactNode }) => <a href={href} target="_blank" rel="noopener noreferrer">{children}<span className="sr-only"> (opens in a new tab)</span></a>;
 const Page = ({ children }: { children: React.ReactNode }) => <div className="page" tabIndex={0} role="region" aria-label="Page content"><div className="page-inner prose">{children}</div></div>;
 
 const REPO = 'https://github.com/jonathanwmartineza-collab/NLPFinalJM';

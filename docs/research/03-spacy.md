@@ -29,7 +29,7 @@ PERCENT, PERSON, PRODUCT, QUANTITY, TIME, WORK_OF_ART.
 Each entity is a `Span` with `.text` and `.label_` (e.g. `ORG`, `PRODUCT`). Run over every expert
 profile, it shows which organisations, products and laws each expert mentions.
 
-### 2. EntityRuler for custom labels (TECH, STANDARD)
+### 2. EntityRuler for custom labels (TECH, STANDARD; as built also METHOD and the team roster)
 The general model does not know that "WCAG 2.2", "React" or "OAuth" are technologies or standards. An
 `entity_ruler` adds rule-based entities from patterns:
 - A pattern is `{"label": "TECH", "pattern": "React"}` (exact phrase) or a list of token dicts
@@ -46,9 +46,9 @@ Flat base noun phrases ("accessible web pages", "prompt caching"), each with a `
 `root.dep_` and `root.head`. We lemmatise and count the chunk roots/phrases to get each expert's topics.
 
 ### 4. Dependency parse (`token.dep_`, `token.head`, `token.children`)
-Every token has exactly one head and an arc label. We store a sample parse per expert (e.g. its mission
-sentence) and render it with **displaCy** (`displacy.render(doc, style="dep")`), which returns markup we
-can save as static SVG/HTML at build time. Entities can be rendered with `style="ent"`.
+Every token has exactly one head and an arc label. (Plan: a sample parse per expert rendered with displaCy.
+As built: the GOAL line of each library prompt plus one demo sentence are parsed, saved as JSON and drawn as
+arcs in React, which keeps the page free of generated HTML.)
 
 ## Why spaCy for the "explore experts" part
 - One call gives NER + parse + noun chunks: perfect for precomputing rich results for ~40 documents.

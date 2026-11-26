@@ -31,8 +31,8 @@ Python and the in-browser Python run identical NLTK code.
 - `apply_freq_filter(k)` drops pairs seen fewer than *k* times; `apply_word_filter(...)` drops stopwords.
 - `nbest(BigramAssocMeasures.pmi, 10)` ranks by **pointwise mutual information** (how much more often
   the pair occurs than chance). PMI rewards rare pairs, so a frequency filter is essential.
-- `nbest(BigramAssocMeasures.likelihood_ratio, 10)` ranks by **likelihood ratio**, which is more
-  stable on small texts. We show both, side by side, to teach the difference.
+- `nbest(BigramAssocMeasures.likelihood_ratio, 10)` ranks by **likelihood ratio** (Dunning 1993), which is
+  more stable on small texts. As built, the app shows the likelihood ratio only.
 
 ### 5. Sentiment with VADER (`nltk.sentiment.vader.SentimentIntensityAnalyzer`)
 - VADER (Hutto & Gilbert, ICWSM 2014) is a **lexicon- and rule-based** model built for short social-media

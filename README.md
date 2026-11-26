@@ -12,12 +12,12 @@ This repository is the NLP final project. It adds Python NLP to BrainyApp2 with 
 
 | Part | Library | Where it runs | What it does |
 |---|---|---|---|
-| Prompt coach (NLP Lab and under every chat box) | NLTK + spaCy topic index | Live in the browser (Pyodide) | Flags vague words and hedges, scores the question on 5 checks, finds key topics and the best experts, writes a sharper question |
+| Prompt coach (NLP Lab and under every chat box) | NLTK + spaCy topic index | Live in the browser (Pyodide) | Flags vague words and hedges from fixed lists, gives a rule-based clarity score (5 checks × 20 points, minus 5 per hedge), matches Porter-stemmed topic phrases against the BM25-weighted spaCy topic index to suggest experts, writes a sharper question |
 | Chat insights | NLTK | Live in the browser | Tokens, stopwords, FreqDist top words, collocations, VADER tone per sentence |
-| Team agreement map (NLP Lab and under every whole-team answer) | NLTK + spaCy | Live in the browser | Main ideas per expert, tone per expert, shared ideas, agree or disagree per pair |
-| What each expert knows | spaCy | Deploy time (Python on Netlify) | Named entities with an EntityRuler (TECH, STANDARD, METHOD) before the statistical NER, noun-chunk topics |
+| Team agreement map (NLP Lab and under every whole-team answer) | NLTK + spaCy | Live in the browser | Main ideas per expert (FreqDist + spaCy topic phrases), VADER tone per expert, shared ideas, and a lexical verdict per pair: disagree only when the recommendations conflict, otherwise agree (Jaccard overlap of stems ≥ 0.2) or different angles; a tone difference only adds a note |
+| What each expert knows | spaCy | Deploy time (Python on Netlify) | Named entities with an EntityRuler (TECH, STANDARD, METHOD, plus the team roster) before the statistical NER and a filter for its obvious mistakes, noun-chunk topics |
 | Dependency parse | spaCy | Deploy time | Parse of each library prompt's goal, drawn as arcs, with a token table |
-| Words and tone across the studio | NLTK | Deploy time | FreqDist, collocations and VADER over all 36 expert profiles |
+| Words and tone across the studio | NLTK | Deploy time | FreqDist, log-likelihood-ratio collocations and VADER over all 36 expert profiles |
 
 How it is built:
 
@@ -50,6 +50,7 @@ npm run dev                       # open http://localhost:5173/nlp
 npm run test:py                   # pytest: NLTK core (tokens, stopwords, FreqDist, collocations, VADER, coach,
                                   # agreement) and the build output (spaCy entities, EntityRuler, topics, parses)
 npm test                          # Vitest unit tests (team build, router, safety, Studio, models)
+python3 nlp/eval_routing.py       # expert matching: 30 dev + 16 held-out questions (top-1 / top-3)
 PYODIDE_INDEX=/path/to/pyodide/ node tests/node/pyodide-nltk.mjs
                                   # runs the browser's NLTK code (web/src/nlp/boot.ts) in Node with Pyodide and
                                   # checks it matches the CPython build output in web/public/nlp/nltk.json
@@ -65,8 +66,8 @@ Run `npm run build:nlp` (or `build:all`) before `test:py` and the Pyodide test, 
 | NLTK: tokenize and stopwords | `tokenize`, `content_words` in `nlp/nltk_core.py` | `/nlp` Chat insights (live) |
 | NLTK: VADER | `sentiment`, `analyze` in `nlp/nltk_core.py` | Chat insights (tone per sentence), Prompt coach, Team agreement map, Words and tone across the studio |
 | NLTK: FreqDist and collocations | `top_words`, `collocations` in `nlp/nltk_core.py` | Chat insights (live); Words and tone across the studio (build) |
-| spaCy: named entities and EntityRuler | `load`, `entities` in `nlp/spacy_core.py`; 107 patterns in `nlp/patterns.jsonl` (TECH, STANDARD, METHOD) | What each expert knows |
-| spaCy: noun chunks | `topics` in `nlp/spacy_core.py` | What each expert knows (Topics); also the topic index the Prompt coach uses |
+| spaCy: named entities and EntityRuler | `load`, `roster_patterns`, `entities`, `not_a_name` in `nlp/spacy_core.py`; 232 patterns in `nlp/patterns.jsonl` (mostly TECH, STANDARD, METHOD; synonyms share an id) plus the team's names and titles | What each expert knows |
+| spaCy: noun chunks | `topics` in `nlp/spacy_core.py` | What each expert knows (Topics); also the BM25-weighted topic index the Prompt coach uses (`run` in `nlp/spacy_core.py`; check it with `python nlp/eval_routing.py`) |
 | spaCy: dependency parse | `parse` in `nlp/spacy_core.py` | Dependency parse (arcs and token table) |
 | Build-time pipeline to static JSON | `nlp/build_nlp.py`, `netlify.toml`, `requirements.txt` → `web/public/nlp/` (`spacy.json`, `nltk.json`, `topic-index.json`, `corpus-stats.json`) | corpus line at the top of `/nlp` (versions and build time) |
 | Live NLTK in Pyodide | `web/src/nlp/nltk.worker.ts`, `boot.ts`, `client.ts`; runs the same `nlp/nltk_core.py` | Prompt coach, Chat insights, Team agreement map (**Load NLTK**) |

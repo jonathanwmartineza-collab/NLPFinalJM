@@ -22,7 +22,7 @@
 {"label": "TECH", "pattern": "Figma", "id": "figma"}
 {"label": "TECH", "pattern": "Claude Code", "id": "claude-code"}
 {"label": "TECH", "pattern": "Claude", "id": "claude"}
-{"label": "TECH", "pattern": "PostgreSQL", "id": "postgresql"}
+{"label": "TECH", "pattern": "PostgreSQL", "id": "postgres"}
 {"label": "TECH", "pattern": "Postgres", "id": "postgres"}
 {"label": "TECH", "pattern": "SQLite", "id": "sqlite"}
 {"label": "TECH", "pattern": "Supabase", "id": "supabase"}
@@ -60,7 +60,7 @@
 {"label": "STANDARD", "pattern": "OWASP Top 10", "id": "owasp-top-10"}
 {"label": "STANDARD", "pattern": "HTTPS", "id": "https"}
 {"label": "STANDARD", "pattern": "CSP", "id": "csp"}
-{"label": "STANDARD", "pattern": "Content Security Policy", "id": "content-security-policy"}
+{"label": "STANDARD", "pattern": "Content Security Policy", "id": "csp"}
 {"label": "STANDARD", "pattern": "ARIA", "id": "aria"}
 {"label": "STANDARD", "pattern": "SEO", "id": "seo"}
 {"label": "STANDARD", "pattern": "Core Web Vitals", "id": "core-web-vitals"}
@@ -77,31 +77,156 @@
 {"label": "STANDARD", "pattern": "JWT", "id": "jwt"}
 {"label": "STANDARD", "pattern": "AA", "id": "aa"}
 {"label": "METHOD", "pattern": "A/B test", "id": "a/b-test"}
-{"label": "METHOD", "pattern": "A/B testing", "id": "a/b-testing"}
-{"label": "METHOD", "pattern": "jobs to be done", "id": "jobs-to-be-done"}
+{"label": "METHOD", "pattern": "A/B testing", "id": "a/b-test"}
+{"label": "METHOD", "pattern": "jobs to be done", "id": "jtbd"}
 {"label": "METHOD", "pattern": "JTBD", "id": "jtbd"}
 {"label": "METHOD", "pattern": "usability test", "id": "usability-test"}
 {"label": "METHOD", "pattern": "user interview", "id": "user-interview"}
-{"label": "METHOD", "pattern": "user interviews", "id": "user-interviews"}
+{"label": "METHOD", "pattern": "user interviews", "id": "user-interview"}
 {"label": "METHOD", "pattern": "design system", "id": "design-system"}
 {"label": "METHOD", "pattern": "design tokens", "id": "design-tokens"}
 {"label": "METHOD", "pattern": "user journey", "id": "user-journey"}
 {"label": "METHOD", "pattern": "persona", "id": "persona"}
-{"label": "METHOD", "pattern": "personas", "id": "personas"}
+{"label": "METHOD", "pattern": "personas", "id": "persona"}
 {"label": "METHOD", "pattern": "threat model", "id": "threat-model"}
 {"label": "METHOD", "pattern": "red team", "id": "red-team"}
 {"label": "METHOD", "pattern": "prompt injection", "id": "prompt-injection"}
-{"label": "METHOD", "pattern": "north star metric", "id": "north-star-metric"}
+{"label": "METHOD", "pattern": "north star metric", "id": "north-star"}
 {"label": "METHOD", "pattern": "MVP", "id": "mvp"}
 {"label": "METHOD", "pattern": "OKR", "id": "okr"}
 {"label": "METHOD", "pattern": "retention", "id": "retention"}
 {"label": "METHOD", "pattern": "conversion rate", "id": "conversion-rate"}
 {"label": "METHOD", "pattern": "acceptance criteria", "id": "acceptance-criteria"}
 {"label": "METHOD", "pattern": "user story", "id": "user-story"}
-{"label": "METHOD", "pattern": "user stories", "id": "user-stories"}
+{"label": "METHOD", "pattern": "user stories", "id": "user-story"}
 {"label": "METHOD", "pattern": "sentiment analysis", "id": "sentiment-analysis"}
-{"label": "METHOD", "pattern": "named entity recognition", "id": "named-entity-recognition"}
+{"label": "METHOD", "pattern": "named entity recognition", "id": "ner"}
 {"label": "METHOD", "pattern": "dependency parse", "id": "dependency-parse"}
 {"label": "METHOD", "pattern": "tokenization", "id": "tokenization"}
 {"label": "METHOD", "pattern": "collocations", "id": "collocations"}
 {"label": "METHOD", "pattern": "stopwords", "id": "stopwords"}
+{"label": "TECH", "pattern": "API", "id": "api"}
+{"label": "TECH", "pattern": "UI", "id": "ui"}
+{"label": "TECH", "pattern": "AI", "id": "ai"}
+{"label": "TECH", "pattern": "CPU", "id": "cpu"}
+{"label": "TECH", "pattern": "GPU", "id": "gpu"}
+{"label": "TECH", "pattern": "CDN", "id": "cdn"}
+{"label": "TECH", "pattern": "DOM", "id": "dom"}
+{"label": "TECH", "pattern": "LLM", "id": "llm"}
+{"label": "TECH", "pattern": "SQL", "id": "sql"}
+{"label": "TECH", "pattern": "YAML", "id": "yaml"}
+{"label": "TECH", "pattern": "XML", "id": "xml"}
+{"label": "TECH", "pattern": "CI", "id": "ci"}
+{"label": "TECH", "pattern": "Chrome", "id": "chrome"}
+{"label": "TECH", "pattern": "Bash", "id": "bash"}
+{"label": "TECH", "pattern": "Astro", "id": "astro"}
+{"label": "TECH", "pattern": "WebGL", "id": "webgl"}
+{"label": "TECH", "pattern": "CPython", "id": "cpython"}
+{"label": "TECH", "pattern": "PyPI", "id": "pypi"}
+{"label": "TECH", "pattern": "jsDelivr", "id": "jsdelivr"}
+{"label": "TECH", "pattern": "DevTools", "id": "devtools"}
+{"label": "TECH", "pattern": "VADER", "id": "vader"}
+{"label": "TECH", "pattern": "FreqDist", "id": "freqdist"}
+{"label": "TECH", "pattern": "Punkt", "id": "punkt"}
+{"label": "TECH", "pattern": "punkt_tab", "id": "punkt_tab"}
+{"label": "TECH", "pattern": "EntityRuler", "id": "entityruler"}
+{"label": "TECH", "pattern": "iOS", "id": "ios"}
+{"label": "TECH", "pattern": "Android", "id": "android"}
+{"label": "TECH", "pattern": "PyProxy", "id": "pyproxy"}
+{"label": "TECH", "pattern": "AbortController", "id": "abortcontroller"}
+{"label": "TECH", "pattern": "AudioContext", "id": "audiocontext"}
+{"label": "TECH", "pattern": "FlatList", "id": "flatlist"}
+{"label": "TECH", "pattern": "Howler.js", "id": "howler.js"}
+{"label": "TECH", "pattern": "Expo", "id": "expo"}
+{"label": "METHOD", "pattern": "NLP", "id": "nlp"}
+{"label": "METHOD", "pattern": "NER", "id": "ner"}
+{"label": "METHOD", "pattern": "PMI", "id": "pmi"}
+{"label": "METHOD", "pattern": "LLR", "id": "llr"}
+{"label": "METHOD", "pattern": "RICE", "id": "rice"}
+{"label": "METHOD", "pattern": "North Star", "id": "north-star"}
+{"label": "METHOD", "pattern": "Lehr's rule", "id": "lehrs-rule"}
+{"label": "METHOD", "pattern": "heuristic evaluation", "id": "heuristic-evaluation"}
+{"label": "STANDARD", "pattern": "F1", "id": "f1"}
+{"label": "STANDARD", "pattern": "F1 score", "id": "f1"}
+{"label": "STANDARD", "pattern": "SemVer", "id": "semver"}
+{"label": "STANDARD", "pattern": "Semantic Versioning", "id": "semver"}
+{"label": "ORG", "pattern": "Nielsen Norman Group", "id": "nielsen-norman-group"}
+{"label": "PERSON", "pattern": "Jakob Nielsen", "id": "jakob-nielsen"}
+{"label": "PERSON", "pattern": "Nielsen", "id": "nielsen"}
+{"label": "TECH", "pattern": "VoiceOver", "id": "voiceover"}
+{"label": "TECH", "pattern": "NVDA", "id": "nvda"}
+{"label": "TECH", "pattern": "TalkBack", "id": "talkback"}
+{"label": "TECH", "pattern": "JAWS", "id": "jaws"}
+{"label": "TECH", "pattern": "VRAM", "id": "vram"}
+{"label": "METHOD", "pattern": "RAG", "id": "rag"}
+{"label": "METHOD", "pattern": "retrieval-augmented generation", "id": "rag"}
+{"label": "METHOD", "pattern": "retrieval augmented generation", "id": "rag"}
+{"label": "TECH", "pattern": "large language model", "id": "llm"}
+{"label": "TECH", "pattern": "large language models", "id": "llm"}
+{"label": "TECH", "pattern": "LLMs", "id": "llm"}
+{"label": "TECH", "pattern": "chatbot", "id": "chatbot"}
+{"label": "TECH", "pattern": "chatbots", "id": "chatbot"}
+{"label": "METHOD", "pattern": "embeddings", "id": "embedding"}
+{"label": "TECH", "pattern": "vector database", "id": "vector-database"}
+{"label": "TECH", "pattern": "vector databases", "id": "vector-database"}
+{"label": "TECH", "pattern": "vector store", "id": "vector-database"}
+{"label": "TECH", "pattern": "pgvector", "id": "pgvector"}
+{"label": "TECH", "pattern": "Pinecone", "id": "pinecone"}
+{"label": "TECH", "pattern": "LangChain", "id": "langchain"}
+{"label": "TECH", "pattern": "LlamaIndex", "id": "llamaindex"}
+{"label": "TECH", "pattern": "FAISS", "id": "faiss"}
+{"label": "TECH", "pattern": "GPT-4o", "id": "gpt-4o"}
+{"label": "TECH", "pattern": "ChatGPT", "id": "chatgpt"}
+{"label": "TECH", "pattern": "Ollama", "id": "ollama"}
+{"label": "TECH", "pattern": "ONNX", "id": "onnx"}
+{"label": "TECH", "pattern": "Transformers.js", "id": "transformers.js"}
+{"label": "TECH", "pattern": [{"ORTH": "Whisper"}], "id": "whisper"}
+{"label": "TECH", "pattern": [{"ORTH": "Gemini"}], "id": "gemini"}
+{"label": "METHOD", "pattern": "fine-tuning", "id": "fine-tuning"}
+{"label": "METHOD", "pattern": "few-shot", "id": "few-shot"}
+{"label": "METHOD", "pattern": "chain-of-thought", "id": "chain-of-thought"}
+{"label": "METHOD", "pattern": "prompt engineering", "id": "prompt-engineering"}
+{"label": "METHOD", "pattern": "named entity", "id": "ner"}
+{"label": "METHOD", "pattern": "named entities", "id": "ner"}
+{"label": "METHOD", "pattern": "tokenisation", "id": "tokenization"}
+{"label": "METHOD", "pattern": "lemmatization", "id": "lemmatization"}
+{"label": "METHOD", "pattern": "lemmatisation", "id": "lemmatization"}
+{"label": "METHOD", "pattern": "stemming", "id": "stemming"}
+{"label": "METHOD", "pattern": "Porter stemmer", "id": "stemming"}
+{"label": "METHOD", "pattern": "dependency parsing", "id": "dependency-parse"}
+{"label": "METHOD", "pattern": "part-of-speech tagging", "id": "pos-tagging"}
+{"label": "METHOD", "pattern": "POS tagging", "id": "pos-tagging"}
+{"label": "METHOD", "pattern": "noun chunks", "id": "noun-chunks"}
+{"label": "METHOD", "pattern": "TF-IDF", "id": "tf-idf"}
+{"label": "METHOD", "pattern": "BM25", "id": "bm25"}
+{"label": "TECH", "pattern": "WordNet", "id": "wordnet"}
+{"label": "TECH", "pattern": "PhraseMatcher", "id": "phrasematcher"}
+{"label": "TECH", "pattern": "en_core_web_sm", "id": "en_core_web_sm"}
+{"label": "STANDARD", "pattern": "Cohen's kappa", "id": "cohens-kappa"}
+{"label": "STANDARD", "pattern": "precision and recall", "id": "precision-recall"}
+{"label": "TECH", "pattern": "Vue", "id": "vue"}
+{"label": "TECH", "pattern": "Svelte", "id": "svelte"}
+{"label": "TECH", "pattern": "Angular", "id": "angular"}
+{"label": "TECH", "pattern": "Express.js", "id": "express"}
+{"label": "TECH", "pattern": "Django", "id": "django"}
+{"label": "TECH", "pattern": "Flask", "id": "flask"}
+{"label": "TECH", "pattern": "FastAPI", "id": "fastapi"}
+{"label": "TECH", "pattern": "Prisma", "id": "prisma"}
+{"label": "TECH", "pattern": "MongoDB", "id": "mongodb"}
+{"label": "TECH", "pattern": "Redis", "id": "redis"}
+{"label": "TECH", "pattern": "Firebase", "id": "firebase"}
+{"label": "TECH", "pattern": "Vercel", "id": "vercel"}
+{"label": "TECH", "pattern": "AWS", "id": "aws"}
+{"label": "TECH", "pattern": "D3.js", "id": "d3"}
+{"label": "TECH", "pattern": [{"ORTH": "D3"}], "id": "d3"}
+{"label": "TECH", "pattern": "CSV", "id": "csv"}
+{"label": "TECH", "pattern": "WebSocket", "id": "websocket"}
+{"label": "TECH", "pattern": "WebSockets", "id": "websocket"}
+{"label": "TECH", "pattern": "Chrome extension", "id": "chrome-extension"}
+{"label": "TECH", "pattern": "browser extension", "id": "chrome-extension"}
+{"label": "STANDARD", "pattern": "Manifest V3", "id": "manifest-v3"}
+{"label": "STANDARD", "pattern": "OpenAPI", "id": "openapi"}
+{"label": "STANDARD", "pattern": "schema.org", "id": "schema.org"}
+{"label": "STANDARD", "pattern": "JSON-LD", "id": "json-ld"}
+{"label": "ORG", "pattern": "OpenAI", "id": "openai"}
+{"label": "ORG", "pattern": "Anthropic", "id": "anthropic"}

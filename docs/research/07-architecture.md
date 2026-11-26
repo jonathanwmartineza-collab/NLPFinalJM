@@ -15,8 +15,8 @@ flowchart LR
   end
   subgraph Build["Netlify build (Ubuntu 24.04)"]
     I["pip install -r requirements.txt<br/>nltk 3.9.4 · spaCy 3.8 · en_core_web_sm 3.8.0"]
-    S["spaCy: NER + EntityRuler TECH/STANDARD<br/>noun chunks · dependency parse"]
-    N["NLTK: tokens · stopwords · FreqDist<br/>collocations PMI/LR · VADER"]
+    S["spaCy: NER + EntityRuler TECH/STANDARD/METHOD<br/>noun chunks · topic index · dependency parse"]
+    N["NLTK: tokens · stopwords · FreqDist<br/>collocations (log-likelihood ratio) · VADER"]
     D["NLTK data → nltk_data.zip<br/>(punkt_tab en, stopwords, vader_lexicon)"]
     V["vite build → web/dist"]
   end
@@ -24,7 +24,7 @@ flowchart LR
     J["/nlp/*.json · /nlp/nltk_data.zip<br/>assets/nltk.worker-*.js · /nlp page"]
   end
   subgraph Browser["Visitor's browser"]
-    UI["NLP Lab page /nlp<br/>spaCy tab · NLTK tab"]
+    UI["NLP Lab page /nlp<br/>six panels, each labelled NLTK or spaCy"]
     W["Module Web Worker<br/>Pyodide 314.0.8 + nltk 3.9.4"]
     JD["cdn.jsdelivr.net/pyodide/v314.0.8"]
   end
@@ -38,7 +38,7 @@ flowchart LR
   UI -- "text (postMessage)" --> W
   JD --> W
   J -- "nltk_data.zip + nltk_core.py" --> W
-  W -- "tokens, top words, collocations, VADER" --> UI
+  W -- "analyze · coach · agreement results" --> UI
 ```
 
 ## Data flow
@@ -49,25 +49,28 @@ flowchart LR
    the three NLTK data packages, and writes `web/public/nlp/`.
 4. **Bundle:** `npm run build` (Vite) copies `web/public/` into `web/dist/` and builds the `/nlp` route.
 5. **Serve:** Netlify CDN serves everything as static files.
-6. **spaCy tab:** the page fetches `/nlp/experts.json` (and friends) and renders entities, topics, parse.
-7. **NLTK tab:** on first open, the page starts the worker; the worker loads Pyodide + nltk from jsDelivr,
-   fetches and unpacks `nltk_data.zip`, loads `nltk_core.py`, then answers `analyse(text)` messages.
+6. **Build-time panels:** the page fetches `/nlp/spacy.json`, `/nlp/nltk.json` and `/nlp/corpus-stats.json`
+   and renders entities, topics, parses, corpus frequencies and tone.
+7. **Live panels:** on the visitor's first click, the page starts the worker; the worker loads Pyodide + nltk
+   from jsDelivr, fetches and unpacks `nltk_data.zip`, loads `nltk_core.py` and `topic-index.json`, then answers
+   `analyze`, `coach` and `agreement` calls.
 
 ## File map
 
 | Path | Role | Library |
 |---|---|---|
-| `requirements.txt` | pins `nltk==3.9.4`, `spacy>=3.8,<3.9`, `en_core_web_sm` 3.8.0 wheel URL | both |
+| `requirements.txt` | pins `nltk==3.9.4`, `spacy==3.8.18`, `en_core_web_sm` 3.8.0 wheel URL | both |
 | `netlify.toml` | `PYTHON_VERSION=3.13`; build command runs the Python step first; `/nlp` redirect | — |
-| `nlp/spacy_core.py` | `load_nlp()` adds `entity_ruler` **before `ner`** with TECH/STANDARD patterns; `analyse_doc()` → entities, noun-chunk topics, dep parse | **spaCy** |
-| `nlp/nltk_core.py` | `analyse(text)` → tokens, stopword-filtered `FreqDist`, bigram PMI + likelihood ratio, VADER (compound + label at ±0.05). Same file used at build time **and** in the browser. | **NLTK** |
-| `nlp/build_nlp.py` | loads corpus, runs both cores, writes JSON + `nltk_data.zip`, copies `nltk_core.py` to `web/public/nlp/` | both |
-| `web/public/nlp/experts.json` | per expert: spaCy entities, TECH/STANDARD, topics, sample parse; NLTK top words, collocations, VADER | both |
+| `nlp/spacy_core.py` | `load()` adds `entity_ruler` **before `ner`** with the TECH/STANDARD/METHOD patterns and the team roster; `run()` → entities, noun-chunk topics, the BM25 topic index, dependency parses | **spaCy** |
+| `nlp/nltk_core.py` | `analyze(text)` → tokens, stopword-filtered `FreqDist`, bigram likelihood-ratio collocations, VADER (compound + label at ±0.05); `coach()`, `agreement()`. Same file used at build time **and** in the browser. | **NLTK** |
+| `nlp/build_nlp.py` | loads and cleans the corpus, runs both cores, writes JSON + `nltk_data.zip`, copies `nltk_core.py` to `web/public/nlp/` | both |
+| `web/public/nlp/spacy.json`, `topic-index.json` | per expert: entities, topics; prompt parses; the phrase → experts index for the live coach | spaCy |
+| `web/public/nlp/nltk.json` | corpus top words, collocations, VADER per expert profile, per-prompt counts | NLTK |
 | `web/public/nlp/corpus-stats.json` | document and word counts, versions, build time | — |
 | `web/public/nlp/nltk_data.zip` | English `punkt_tab`, `stopwords`, `vader_lexicon` in NLTK's folder layout | NLTK |
 | `web/src/nlp/nltk.worker.ts` + `boot.ts` | module worker (bundled by Vite): `loadPyodide`, `loadPackage("nltk")`, `unpackArchive`, run `nltk_core.analyze`, `coach`, `agreement` | NLTK |
-| `web/src/pages/NlpLab.tsx` (route `/nlp`) | two clearly labelled sections: "spaCy — what each expert knows" and "NLTK — analyse your chat (live)" | — |
-| `tests/` | pytest for `nlp/*_core.py`; vitest/Playwright for the page | — |
+| `web/src/pages/NlpPage.tsx` (route `/nlp`) | six panels, each labelled with the library that produced it and where it ran | — |
+| `tests/` | pytest for `nlp/nltk_core.py` and the build output; a Node + Pyodide parity test; Vitest/Playwright for the page | — |
 
 Generated files in `web/public/nlp/` can be git-ignored (they are rebuilt on every deploy) or committed
 for local dev; decide once and document it.

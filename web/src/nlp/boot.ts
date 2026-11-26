@@ -23,12 +23,14 @@ PHRASES = [p for p, _ in INDEX["phrases"] if " " in p]
 
 def _call(fn, args_json):
     args = json.loads(args_json)
+    if not isinstance(args, dict):
+        args = {}
     if fn == "analyze":
-        out = nltk_core.analyze(args["text"])
+        out = nltk_core.analyze(args.get("text", ""))
     elif fn == "coach":
-        out = nltk_core.coach(args["text"], INDEX)
+        out = nltk_core.coach(args.get("text", ""), INDEX)
     elif fn == "agreement":
-        out = nltk_core.agreement(args["answers"], PHRASES)
+        out = nltk_core.agreement(args.get("answers") or [], PHRASES)
     else:
         raise ValueError("unknown function")
     return json.dumps(out)
@@ -56,4 +58,18 @@ export async function boot(io: Io): Promise<(fn: Fn, args: unknown) => unknown> 
     if (!FUNCTIONS.includes(fn)) throw new Error(`Unknown NLTK function ${fn}`);
     return JSON.parse(call(fn, JSON.stringify(args)));
   };
+}
+
+/** A short, readable message for the visitor: the last line of a Python traceback ("TypeError: ..."), or what to
+ * check when Python itself could not be downloaded (offline, blocked CDN, content blocker). */
+export function friendlyError(fn: Fn | 'boot', err: unknown): string {
+  const raw = String((err as Error)?.message ?? err ?? 'Unknown error').trim();
+  if (fn === 'boot') {
+    const net = /fetch|network|import|load|HTTP|NetworkError|CSP|Content Security/i.test(raw);
+    const first = raw.split('\n')[0].slice(0, 200);
+    return net ? `${first}. Check your internet connection or content blocker: Python is downloaded from cdn.jsdelivr.net the first time` : first;
+  }
+  const lines = raw.split('\n').map((l) => l.trim()).filter(Boolean);
+  const last = (lines[lines.length - 1] ?? raw).slice(0, 200);
+  return `NLTK could not process this text (${last}).`;
 }

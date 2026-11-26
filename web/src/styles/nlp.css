@@ -1,6 +1,7 @@
 /* NLP Lab and the NLP widgets in chat and team pages. Colours come from tokens.css. */
-/* Library colours: NLTK teal, spaCy plum. Text ≥ 4.5:1 on the panels in light and dark. */
-:root { --nltk: #1d6b8a; --nltk-bg: rgba(29, 107, 138, .12); --spacy: #9b3b8a; --spacy-bg: rgba(155, 59, 138, .12); }
+/* Library colours: NLTK teal, spaCy plum. Badge text ≥ 5:1 on every panel in light and dark (measured over the
+   most tinted field colour, glass and solid); bars and arcs ≥ 3:1. */
+:root { --nltk: #18627f; --nltk-bg: rgba(24, 98, 127, .12); --spacy: #8f3580; --spacy-bg: rgba(143, 53, 128, .12); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --nltk: #7cc8e6; --spacy: #f0a3df; --nltk-bg: rgba(124, 200, 230, .14); --spacy-bg: rgba(240, 163, 223, .14); } }
 :root[data-theme="dark"] { --nltk: #7cc8e6; --spacy: #f0a3df; --nltk-bg: rgba(124, 200, 230, .14); --spacy-bg: rgba(240, 163, 223, .14); }
 
@@ -9,14 +10,15 @@
 .nlp-lib.nlp-nltk { color: var(--nltk); background: var(--nltk-bg); }
 .nlp-lib.nlp-spacy { color: var(--spacy); background: var(--spacy-bg); }
 .nlp-legend { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
-.nlp-toc { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 8px; font-size: 14px; }
+.nlp-toc { display: flex; flex-wrap: wrap; gap: 0 14px; margin: 0 0 8px; font-size: 14px; }
+.nlp-toc a { display: inline-flex; align-items: center; min-height: 44px; }
 
-.nlp-panel { background: var(--glass); border: var(--bw) solid var(--rim); border-radius: var(--radius); box-shadow: inset 0 1px 0 var(--edge), var(--shadow-sm); padding: 18px clamp(14px, 3vw, 24px); margin: 22px 0; }
+.nlp-panel { overflow-wrap: break-word; background: var(--glass); border: var(--bw) solid var(--rim); border-radius: var(--radius); box-shadow: inset 0 1px 0 var(--edge), var(--shadow-sm); padding: 18px clamp(14px, 3vw, 24px); margin: 22px 0; }
 .nlp-panel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
 .nlp-panel-head h2 { margin: 0 !important; }
 .nlp-libs { display: flex; flex-wrap: wrap; gap: 6px; }
 .nlp-intro { color: var(--soft); margin: 8px 0 12px; }
-.nlp-panel h3, .nlp-result h3 { font-size: 15px; margin: 16px 0 6px; }
+.nlp-panel h3, .nlp-result h3, .nlp-result h2 { font-size: 15px; margin: 16px 0 6px; }
 
 .nlp-gate { margin: 8px 0; }
 .nlp-spin { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent); vertical-align: -2px; animation: nlp-spin 800ms linear infinite; }
@@ -25,7 +27,9 @@
 
 .nlp-label { display: block; font-weight: 700; font-size: 14px; margin: 8px 0 4px; }
 .nlp-text { width: 100%; box-sizing: border-box; font: inherit; color: var(--ink); background: var(--glass-strong); border: var(--bw) solid var(--control); border-radius: var(--radius-sm); padding: 10px 12px; resize: vertical; }
-.nlp-select { font: inherit; color: var(--ink); background: var(--glass-strong); border: var(--bw) solid var(--control); border-radius: var(--radius-sm); padding: 6px 10px; min-height: 36px; max-width: 100%; }
+.nlp-select { font: inherit; color: var(--ink); background: var(--glass-strong); border: var(--bw) solid var(--control); border-radius: var(--radius-sm); padding: 6px 10px; min-height: 44px; max-width: 100%; }
+.nlp-text::placeholder { color: var(--faint); opacity: 1; }
+.nlp-text:focus-visible, .nlp-select:focus-visible { outline-offset: 1px; }
 .nlp-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
 
 .nlp-result { margin-top: 12px; }
@@ -43,7 +47,7 @@
 
 .nlp-bars { list-style: none; padding: 0; margin: 4px 0; }
 .nlp-bars li { display: grid; grid-template-columns: minmax(90px, 9em) 1fr 3em; align-items: center; gap: 8px; font-size: 14px; margin: 3px 0; }
-.nlp-bars .k { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nlp-bars .k { overflow-wrap: anywhere; } /* wraps instead of truncating, so long topics stay readable */
 .nlp-bars .bar { height: 10px; background: var(--line); border-radius: var(--pill); overflow: hidden; }
 .nlp-bars .bar i { display: block; height: 100%; background: var(--nltk, var(--accent)); border-radius: var(--pill); }
 .nlp-bars .v { text-align: right; font-variant-numeric: tabular-nums; color: var(--soft); }
@@ -83,7 +87,7 @@
 .nlp-ent.l-METHOD { background: rgba(155, 59, 138, .14); } .nlp-ent.l-ORG { background: rgba(180, 83, 42, .14); }
 .nlp-ent.l-GPE, .nlp-ent.l-LOC { background: rgba(14, 111, 125, .14); } .nlp-ent.l-PRODUCT { background: rgba(138, 90, 0, .14); }
 .nlp-details { margin: 10px 0; }
-.nlp-details summary { cursor: pointer; font-weight: 700; }
+.nlp-details summary { cursor: pointer; font-weight: 700; min-height: 44px; padding: 10px 0; box-sizing: border-box; }
 .nlp-scroll { overflow-x: auto; max-width: 100%; }
 .nlp-table { border-collapse: collapse; font-size: 13.5px; min-width: 100%; }
 .nlp-table th, .nlp-table td { border-bottom: var(--bw) solid var(--line); padding: 4px 8px; text-align: left; }
@@ -97,6 +101,19 @@
 .nlp li .small, .nlp-result li .small, .nlp-panel li .small { display: inline; }
 .nlp-result .nlp-experts li .small { display: block; }
 .nlp-inline { margin: 8px 0 0; }
-.nlp-inline-box { margin-top: 8px; background: var(--glass-soft); border: var(--bw) solid var(--line); border-radius: var(--radius); padding: 12px 14px; max-height: 60vh; overflow-y: auto; }
-.nlp-inline-box .nlp-libs { display: flex; align-items: center; gap: 8px; margin: 0; }
+/* The box flows with the page (no inner scroller), except under the chat box, where the composer must stay on screen. */
+.nlp-inline-box { margin-top: 8px; background: var(--glass-soft); border: var(--bw) solid var(--line); border-radius: var(--radius); padding: 12px 14px; overflow-wrap: break-word; }
+.composer-wrap .nlp-inline-box { max-height: 40vh; overflow-y: auto; }
+.nlp-inline-box .nlp-libs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
 .nlp-inline-box .nlp-libs .btn { margin-left: auto; }
+
+/* Phones: library labels wrap instead of overflowing a 360px screen. */
+@media (max-width: 480px) { .nlp-lib { white-space: normal; border-radius: var(--radius-sm); } }
+/* Windows High Contrast / forced colours: backgrounds are dropped, so bars and badges get outlines. */
+@media (forced-colors: active) {
+  .nlp-bars .bar, .nlp-tone-bar { forced-color-adjust: none; background: Canvas; border: 1px solid CanvasText; }
+  .nlp-bars .bar i, .nlp-tone-bar i, .nlp-tone-bar::after { background: CanvasText; }
+  .nlp-lib, .nlp-verdict, .nlp-score-n, .nlp-checks li > span:first-child, .nlp-chip, .nlp-ent { border: 1px solid CanvasText; }
+  .nlp-chip.only { border-width: 2px; border-style: dashed; }
+  .nlp-arcs .arc { stroke: CanvasText; } .nlp-arcs text, .nlp-arcs .lbl, .nlp-arcs .p { fill: CanvasText; } .nlp-arcs .lbl { stroke: Canvas; }
+}

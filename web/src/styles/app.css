@@ -336,7 +336,24 @@ dialog.confirm p { margin: 0 0 18px; color: var(--soft); }
 }
 :root[data-contrast="high"] .btn.danger:not(.ghost) { background: var(--err); }
 .topbar-links { display: flex; gap: 4px; margin-left: 8px; }
-.topbar-links a { padding: 6px 12px; border-radius: var(--pill); font-weight: 600; font-size: 14px; color: var(--ink); text-decoration: none; }
+.topbar-links a { display: inline-flex; align-items: center; min-height: 44px; padding: 6px 12px; border-radius: var(--pill); font-weight: 600; font-size: 14px; color: var(--ink); text-decoration: none; }
 .topbar-links a:hover, .topbar-links a[aria-current="page"] { background: var(--accent-soft); }
+/* The tint alone is too faint to mark the current page (1.4.11), so it is underlined too. */
+.topbar-links a[aria-current="page"] { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; }
 .site-foot a { color: inherit; }
+.topbar .owner { flex: none; }
+.topbar-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 860px) { .topbar-links a { padding: 6px 8px; font-size: 13px; } }
+/* Phones (360px): the logo, menu and studio name stay on the first row and the NLP links get their own row,
+   instead of the bar overflowing the screen (1.4.10). */
+@media (max-width: 600px) {
+  .topbar { flex-wrap: wrap; row-gap: 0; }
+  .topbar-links { order: 3; flex-basis: 100%; margin: 0 0 2px; gap: 8px; }
+}
+/* Scroll regions fill a clipped .main, so their focus ring is drawn inside. */
+.page:focus-visible { outline-offset: -3px; }
+/* Placeholders are examples, not labels; keep them readable (≥ 4.5:1). */
+textarea::placeholder, input::placeholder { color: var(--faint); opacity: 1; }
+/* Busy buttons can use aria-disabled instead of disabled, so keyboard focus is not dropped while work runs. */
+.btn[aria-disabled="true"], .btn[aria-disabled="true"]:hover { background: var(--disabled-bg); color: var(--disabled-ink); box-shadow: none; cursor: progress; border-color: transparent; transform: none; }
+.btn.ghost[aria-disabled="true"], .btn.ghost[aria-disabled="true"]:hover { background: transparent; border-color: var(--disabled-bg); }

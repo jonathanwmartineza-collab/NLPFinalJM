@@ -6,7 +6,7 @@ web/public/nlp/:
 
   spacy.json        entities, noun-chunk topics, dependency parses        (spaCy)
   topic-index.json  phrase -> experts index for the live Prompt coach     (spaCy, used live by NLTK)
-  nltk.json         word frequencies, collocations, VADER per expert      (NLTK)
+  nltk.json         word frequencies, collocations, VADER per expert      (NLTK; expert profiles only)
   corpus-stats.json document and word counts, versions, build time
   nltk_data.zip     the NLTK data the browser needs (punkt_tab/english, stopwords/english, vader_lexicon)
   nltk_core.py      the same NLTK module the worker runs in Pyodide
@@ -36,12 +36,40 @@ def fail(msg: str) -> None:
 
 
 def clean(md: str) -> str:
+    """Markdown -> plain prose for the NLP tools.
+
+    Each heading, list item and table row becomes its own sentence (a final full stop is added when it has none),
+    so headings such as "## Boundaries" do not run into the next line and confuse the sentence splitter, the
+    parser and the NER. Underscores inside identifiers (en_core_web_sm, punkt_tab) are kept; only markdown marks
+    are removed.
+    """
     md = re.sub(r"```.*?```", " ", md, flags=re.S)          # code blocks
     md = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", md)       # [text](link) -> text
     md = re.sub(r"https?://\S+", " ", md)                    # bare URLs
-    md = re.sub(r"\(?accessed \d{4}-\d\d-\d\d\)?", " ", md)       # source dates
-    md = re.sub(r"[`*_#>|]+", " ", md)                       # markdown marks
-    return re.sub(r"[ \t]+", " ", md)
+    md = re.sub(r"\(?accessed \d{4}-\d\d-\d\d\)?", " ", md)  # source dates
+    blocks, cur = [], []
+    for line in md.splitlines():
+        starts_block = re.match(r"\s*(#{1,6}\s|[-*+]\s|\d+[.)]\s|[A-Z][.)]\s|\|)", line)
+        if not line.strip() or starts_block:
+            if cur:
+                blocks.append(" ".join(cur))
+            cur = []
+        if line.strip():
+            # Drop the block marker itself: "## ", "- ", "3. ", "A. " (an option letter), "| ".
+            cur.append(re.sub(r"^\s*(#{1,6}\s|[-*+]\s|\d+[.)]\s|[A-Z][.)]\s)", "", line).strip())
+        if re.match(r"\s*#{1,6}\s", line):  # a heading is always one line on its own
+            blocks.append(" ".join(cur))
+            cur = []
+    if cur:
+        blocks.append(" ".join(cur))
+    out = []
+    for b in blocks:
+        b = re.sub(r"[`*#>|]+", " ", b)                      # markdown marks
+        b = re.sub(r"(?<![A-Za-z0-9])_+|_+(?![A-Za-z0-9])", " ", b)  # _emphasis_, not snake_case
+        b = re.sub(r"[ \t]+", " ", b).strip()
+        if re.search(r"[A-Za-z0-9]", b):
+            out.append(b if b[-1] in ".!?:;" else b + ".")
+    return "\n".join(out)
 
 
 def load_corpus() -> tuple[list[dict], list[dict]]:
@@ -57,7 +85,7 @@ def load_corpus() -> tuple[list[dict], list[dict]]:
         notes = [f.read_text(encoding="utf-8") for f in sorted((ROOT / "knowledge" / a["slug"]).glob("*.md"))]
         text = clean("\n\n".join([md, *notes]))
         experts.append({"slug": a["slug"], "name": a["name"], "title": a["title"], "department": a["department"],
-                        "profile": profile, "text": profile + "\n\n" + text})
+                        "mission": a["mission"], "profile": profile, "text": profile + "\n\n" + text})
     lib = json.loads((ROOT / "prompts" / "library.json").read_text(encoding="utf-8"))
     prompts = [{"id": p["id"], "title": p["title"], "agent": p.get("agent", ""), "text": p["prompt"]} for p in lib]
     return experts, prompts
@@ -88,12 +116,26 @@ def nltk_zip(dest: Path) -> int:
     return dest.stat().st_size
 
 
+def corpus_collocations(token_docs: list[list[str]], drop: set[str], n: int = 20, min_freq: int = 4) -> list[list]:
+    """Bigram collocations over the expert profiles, scored with Dunning's log-likelihood ratio
+    (BigramAssocMeasures.likelihood_ratio). The finder is built per document on the real token sequence, then
+    stopwords, house words and non-words are filtered out (NLTK's apply_word_filter), so a pair is only counted
+    when the two words really stand next to each other in one profile."""
+    from nltk.collocations import BigramAssocMeasures, BigramCollocationFinder
+    finder = BigramCollocationFinder.from_documents([[t.lower() for t in d] for d in token_docs])
+    finder.apply_word_filter(lambda w: len(w) < 2 or w in drop or not any(c.isalpha() for c in w))
+    finder.apply_freq_filter(min_freq)
+    scored = sorted(finder.score_ngrams(BigramAssocMeasures.likelihood_ratio), key=lambda x: (-round(x[1], 6), x[0]))[:n]
+    return [[a, b, round(s, 2), finder.ngram_fd[(a, b)]] for (a, b), s in scored]
+
+
 def run_nltk(experts: list[dict], prompts: list[dict]) -> dict:
     import nltk
     import nltk_core as N
-    all_words, per, docs = [], [], []
+    all_words, per, docs, token_docs = [], [], [], []
     for e in experts:
-        docs.append(N.content_words(N.tokenize(e["text"])))
+        token_docs.append(N.tokenize(e["text"]))
+        docs.append(N.content_words(token_docs[-1]))
     # Words in more than half of the expert profiles are the profiles' shared house wording ("notes", "output"),
     # not what an expert knows: leave them out of the corpus frequencies and collocations.
     df = {}
@@ -101,12 +143,13 @@ def run_nltk(experts: list[dict], prompts: list[dict]) -> dict:
         for w in set(words):
             df[w] = df.get(w, 0) + 1
     house = {w for w, n in df.items() if n > len(docs) / 2}
-    for e, words in zip(experts, docs):
+    roster = {w.lower() for e in experts for w in e["name"].split()} | {e["slug"] for e in experts}
+    for e, words, toks in zip(experts, docs, token_docs):
         words = [w for w in words if w not in house]
         all_words += words
         per.append({"slug": e["slug"], "name": e["name"], "title": e["title"], "department": e["department"],
                     "tone": N.sentiment(e["profile"]), "top_words": N.top_words(words, 8),
-                    "tokens": len(N.tokenize(e["text"])), "sentences": len(N.sentences(e["text"]))})
+                    "tokens": len(toks), "sentences": len(N.sentences(e["text"]))})
     lib = []
     for p in prompts:
         a = N.analyze(p["text"], top_n=6, max_sentences=0)
@@ -116,10 +159,14 @@ def run_nltk(experts: list[dict], prompts: list[dict]) -> dict:
               "The landing page looks great! Still, the pricing table is confusing and a bit too long.")
     return {
         "nltk": nltk.__version__, "module_version": N.VERSION,
-        "house_words": sorted(house), "corpus": {"documents": len(experts) + len(prompts), "content_words": len(all_words),
-                   "unique_content_words": len(set(all_words))},
+        "house_words": sorted(house),
+        # The corpus panel (frequencies, collocations, tone) covers the expert profiles only; the library prompts
+        # are analysed one by one in "prompts".
+        "corpus": {"documents": len(experts), "tokens": sum(len(t) for t in token_docs),
+                   "content_words": len(all_words), "unique_content_words": len(set(all_words))},
         "top_words": N.top_words(all_words, 30),
-        "collocations": N.collocations(all_words, 20, 4),
+        # Team names and agent handles ("ui-designer (Bastien)") are hand-off wording, not collocations.
+        "collocations": corpus_collocations(token_docs, N._stop() | house | roster, 20, 4),
         "experts": sorted(per, key=lambda x: (-x["tone"]["compound"], x["name"])),
         "prompts": lib,
         "sample": {"text": sample, **N.analyze(sample)},
@@ -165,6 +212,7 @@ def main() -> None:
         "nltk_data.zip": nltk_zip(OUT / "nltk_data.zip"),
     }
     shutil.copyfile(ROOT / "nlp" / "nltk_core.py", OUT / "nltk_core.py")
+    # "words" = whitespace-separated words of the cleaned texts (expert profiles + library prompts), before tokenizing.
     words = sum(len(e["text"].split()) for e in experts) + sum(len(p["text"].split()) for p in prompts)
     stats = {"experts": len(experts), "prompts": len(prompts), "documents": len(experts) + len(prompts),
              "words": words, "nltk": nltk_out["nltk"], "spacy": spacy_out["spacy"], "model": spacy_out["model"],

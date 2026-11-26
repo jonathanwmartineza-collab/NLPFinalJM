@@ -89,7 +89,7 @@ export default function App() {
           <span className="sr-only">Open the list of experts</span>
         </button>
         <OwnerLogo />
-        <nav className="topbar-links" aria-label="NLP final">
+        <nav className="topbar-links" aria-label="NLP final project">
           <a href="/nlp" onClick={onLinkClick} aria-current={path === '/nlp' ? 'page' : undefined}>NLP Lab</a>
           <a href="/resources" onClick={onLinkClick} aria-current={path === '/resources' ? 'page' : undefined}>Resources</a>
         </nav>

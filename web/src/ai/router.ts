@@ -39,19 +39,33 @@ const MUST: [string, RegExp][] = [
   ['security-engineer', /\b(security|secure|vulnerab\w*)\b/],
   ['accessibility-specialist', /\b(accessib\w*|a11y|wcag)\b/],
 ];
+// Words that point back at an earlier turn ("based on your answer", "make that cheaper").
+const REFERS = /\b(this|that|these|those|it|its|above|previous|earlier|same|instead|based on|what about|more detail|expand|elaborate|your (answer|plan|recommendation|advice|idea)|the (app|idea|plan|product|project))\b/i;
 const DEFAULT_PANEL = ['product-strategist', 'ux-architect', 'software-architect'];
 
 export type Plan = { experts: { slug: string; question: string }[]; stakes: string[]; reason: string; fallback: boolean };
 
-export function routeQuestion(question: string, known: (slug: string) => boolean = () => true, max = 3): Plan {
-  const q = ` ${question.toLowerCase()} `;
-  const scored = Object.entries(KEYWORDS)
+const rank = (text: string, known: (slug: string) => boolean) => {
+  const q = ` ${text.toLowerCase()} `;
+  return Object.entries(KEYWORDS)
     .filter(([slug]) => known(slug))
     .map(([slug, words], order) => ({ slug, order, score: words.reduce((n, w) => n + (q.includes(w) ? (w.includes(' ') ? 2 : 1) : 0), 0) }))
     .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score || a.order - b.order);
+};
+
+/**
+ * previous: earlier questions in the same team chat. A follow-up keeps its topic: free places on the panel go to
+ * the experts of the earlier question, before the default panel. A question that points back ("that", "your answer")
+ * or matches no topic fills the panel up to max this way; a new, specific topic only tops up to two experts. Real-model test: "based on your answer, create a
+ * prompt for Claude Code" after a field-merchandising app question was routed on "prompt" and "claude" alone.
+ */
+export function routeQuestion(question: string, known: (slug: string) => boolean = () => true, max = 3, previous = ''): Plan {
+  const q = ` ${question.toLowerCase()} `;
+  const scored = rank(question, known);
   let picked = scored.slice(0, max).map((x) => x.slug);
-  const fallback = picked.length === 0;
+  const earlier = previous.trim() ? rank(previous, known).map((x) => x.slug).filter((s) => !picked.includes(s)) : [];
+  const fallback = picked.length === 0 && !earlier.length;
   // An angle the visitor names explicitly ("privacy angle", "security view") always gets its expert, even when
   // other experts score higher: a real-model test asked for privacy and got no privacy expert.
   for (const [slug, re] of MUST) {
@@ -59,12 +73,16 @@ export function routeQuestion(question: string, known: (slug: string) => boolean
     if (picked.length < max) picked.push(slug);
     else { const i = picked.map((p) => MUST.some(([m, r]) => m === p && r.test(q))).lastIndexOf(false); if (i >= 0) picked[i] = slug; }
   }
+  const room = REFERS.test(question) || !scored.length ? max : 2;
+  for (const s of earlier) if (picked.length < room && !picked.includes(s)) picked.push(s);
+  const followUp = earlier.some((s) => picked.includes(s));
   for (const s of DEFAULT_PANEL) if (picked.length < 2 && !picked.includes(s) && known(s)) picked.push(s);
   if (fallback) picked = DEFAULT_PANEL.filter(known).slice(0, max);
   const stakes = Object.entries(STAKES).filter(([, ws]) => ws.some((w) => q.includes(w))).map(([k]) => k);
   return {
     experts: picked.map((slug) => ({ slug, question })),
     stakes, fallback,
-    reason: fallback ? 'No specific topic matched, so the core panel answered.' : 'Chosen by topic keywords in your question.',
+    reason: fallback ? 'No specific topic matched, so the core panel answered.'
+      : followUp ? 'Chosen by topic keywords in your question and the earlier one it follows.' : 'Chosen by topic keywords in your question.',
   };
 }

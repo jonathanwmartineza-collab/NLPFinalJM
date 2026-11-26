@@ -9,6 +9,7 @@ import Composer from '../components/Composer';
 import EngineGate, { DeviceBadge } from '../components/EngineGate';
 import { Avatar } from '../components/Sidebar';
 import { useEngine } from '../ai/engine';
+import { teamContext } from '../ai/prompts';
 import { Thinking, errorText, VoiceControls, ChatFooter } from '../components/ChatParts';
 import EmergencyNotice from '../components/EmergencyNotice';
 import { useClearOptions, clearWithUndo } from '../components/ClearOptions';
@@ -61,8 +62,11 @@ export default function TeamPage({ team }: { team: Team }) {
     setErr(''); setDraft(''); setChips([]); setCurQ(q); setBusy(true); setSince(Date.now()); setPhase(`${director.name} is choosing experts`); setLive(`${director.name} is choosing experts`);
     const c = (ctrl.current = new AbortController());
     const setChip = (slug: string, state: Chip['state']) => setChips((cs) => cs.map((x) => (x.slug === slug ? { ...x, state } : x)));
+    // Follow-ups keep their topic: every step sees the last turns, and routing also weighs the earlier questions.
+    const earlier = turns.slice(-2);
+    const context = teamContext(earlier);
     try {
-      const r = await streamModel({ mode: 'route', question: q }, () => {}, c.signal);
+      const r = await streamModel({ mode: 'route', question: q, previous: earlier.map((t) => t.q).join('\n') }, () => {}, c.signal);
       if (!r.plan || !r.runToken) throw new Error('No routing plan came back.');
       const plan = r.plan; const token = r.runToken;
       setChips(plan.experts.map((e) => ({ slug: e.slug, state: 'queued' })));
@@ -73,7 +77,7 @@ export default function TeamPage({ team }: { team: Team }) {
         if (c.signal.aborted) break;
         setChip(e.slug, 'thinking'); setPhase(`${by(e.slug)?.name ?? 'An expert'} is answering`);
         try {
-          const x = await streamModel({ mode: 'expert', slug: e.slug, question: q, subQuestion: e.question, runToken: token }, () => setChip(e.slug, 'writing'), c.signal);
+          const x = await streamModel({ mode: 'expert', slug: e.slug, question: q, subQuestion: e.question, context, runToken: token }, () => setChip(e.slug, 'writing'), c.signal);
           if (!x.text) throw new Error('empty');
           setChip(e.slug, 'done'); results.push({ slug: e.slug, text: x.text });
         } catch { setChip(e.slug, 'failed'); results.push(null); }
@@ -85,13 +89,13 @@ export default function TeamPage({ team }: { team: Team }) {
       if (plan.stakes.length) {
         setChips((cs) => [...cs, { slug: 'red-team-reviewer', state: 'thinking' }]); setPhase('Yusra is stress-testing the answers');
         try {
-          const rv = await streamModel({ mode: 'review', question: q, contributions: contribs.map((x) => ({ slug: x.slug, text: x.text.slice(0, 6000) })), runToken: token }, () => {}, c.signal);
+          const rv = await streamModel({ mode: 'review', question: q, contributions: contribs.map((x) => ({ slug: x.slug, text: x.text.slice(0, 6000) })), context, runToken: token }, () => {}, c.signal);
           if (rv.text) { inputs.push({ slug: 'red-team-reviewer', text: rv.text }); setChip('red-team-reviewer', 'done'); } else setChip('red-team-reviewer', 'failed');
         } catch { setChip('red-team-reviewer', 'failed'); }
       }
       setPhase(`${director.name} is combining the answers`); setLive(`${director.name} is combining the answers`);
       let acc = '';
-      const s = await streamModel({ mode: 'synth', question: q, contributions: inputs.map((x) => ({ slug: x.slug, text: x.text.slice(0, 6000) })), runToken: token }, (t) => { acc += t; setDraft(acc); }, c.signal);
+      const s = await streamModel({ mode: 'synth', question: q, contributions: inputs.map((x) => ({ slug: x.slug, text: x.text.slice(0, 6000) })), context, runToken: token }, (t) => { acc += t; setDraft(acc); }, c.signal);
       const failed = plan.experts.length - contribs.length;
       const turn: Turn = { q, answer: s.stop === 'repeat' ? s.text : acc, contributions: inputs, failed, note: plan.fallback ? 'The routing plan could not be read, so a default panel answered.' : undefined, stop: s.complete ? undefined : s.stop === 'aborted' ? 'stopped' : s.stop === 'repeat' ? 'repeat' : 'cut' };
       const next = [...turns, turn]; setTurns(next); persist(next); setDraft(''); setChips([]);

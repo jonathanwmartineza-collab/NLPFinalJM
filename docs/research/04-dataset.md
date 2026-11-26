@@ -19,8 +19,9 @@ user can see in the app.
 | Words in the 12 `prompt` fields | ~2,000 (1,990; ~2,060 including titles and other string fields) |
 | **Total corpus (31 experts + library)** | **43 documents, ~37,000 words** |
 
-When the 5 NLP experts land, the build script recounts automatically; expect roughly 48 documents and
-~42,000 words. The final numbers are written into `web/public/nlp/corpus-stats.json` at build time, and
+When the 5 NLP experts land, the build script recounts automatically. As built, each expert document also
+includes the agent's own `knowledge/<slug>/` folder, and the build reports 48 documents and about 50,500 words
+(whitespace split after cleaning; NLTK finds about 47,000 word tokens in the 36 profiles). The final numbers are written into `web/public/nlp/corpus-stats.json` at build time, and
 the NLP Lab page reads them from there, so the page never shows stale counts.
 
 ### Fields used, per expert
@@ -37,9 +38,9 @@ the NLP Lab page reads them from there, so the page never shows stale counts.
 ## Pre-processing (done in `nlp/build_nlp.py`)
 1. Parse YAML frontmatter; keep the fields above; strip Markdown syntax (headings, tables, code fences, links).
 2. One document per expert and one per library prompt; keep `id`, `department`/`category` for grouping.
-3. spaCy: full text → entities, EntityRuler TECH/STANDARD, noun chunks, one sample dependency parse.
+3. spaCy: full text → entities, EntityRuler TECH/STANDARD/METHOD, noun chunks; dependency parses of the prompts' GOAL lines.
 4. NLTK: tokenize → lowercase → remove English stopwords and punctuation → `FreqDist`, bigram
-   collocations (PMI, likelihood ratio), VADER per sentence and per document.
+   collocations (likelihood ratio), VADER per sentence and per document.
 
 ## Alternatives considered
 
@@ -57,7 +58,8 @@ the NLP Lab page reads them from there, so the page never shows stale counts.
 
 ## Weaknesses (state them in the report)
 - Small and single-author style: frequency statistics are less stable than on a large corpus.
-- Mostly neutral, instructional tone: VADER scores cluster near neutral, which is itself a finding.
+- Instructional tone: VADER was built for social-media text, so caution words ("risk", "fail", "never") pull
+  careful experts negative. As built, profile scores range from about −0.86 to +0.89.
 - Technical vocabulary: the pretrained NER misses many terms, which is why we add an EntityRuler.
 
 ## Sources

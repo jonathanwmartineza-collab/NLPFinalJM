@@ -1,5 +1,5 @@
 // NLP Lab: NLTK and spaCy on BrainyApp2's own texts. Every panel says which library produced it and where it ran.
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { onLinkClick } from '../lib/router';
 import { loadChats } from '../lib/storage';
 import { runNltk, useNltk, type Analysis, type AgreementMap, type Coach } from '../nlp/client';
@@ -10,7 +10,7 @@ type Ent = [string, string, number];
 type Tok = { i: number; text: string; lemma: string; pos: string; tag: string; dep: string; head: number };
 type Parse = { text: string; root: string; root_pos: string; object: string; describers: string[]; for: string; tokens: Tok[] };
 type SpacyOut = {
-  model: string; spacy: string; pipeline: string[]; patterns: number; label_totals: [string, number][]; explain: Record<string, string>;
+  model: string; spacy: string; pipeline: string[]; patterns: number; roster_patterns: number; label_totals: [string, number][]; explain: Record<string, string>;
   experts: { slug: string; name: string; title: string; department: string; entities: Ent[]; topics: [string, number][]; counts: Record<string, number> }[];
   prompts: (Parse & { id: string; title: string; agent: string; entities: Ent[]; topics: [string, number][] })[];
   demo: Parse & { entities: [string, string][]; noun_chunks: string[] };
@@ -40,10 +40,14 @@ export default function NlpPage() {
         <h1>NLP Lab</h1>
         <p className="lede">Two Python NLP libraries read this studio's own texts and your questions. <b>NLTK</b> runs live in your browser and also at deploy time; <b>spaCy</b> runs at deploy time on Netlify. Each panel is labelled with the library that did the work.</p>
         <p className="nlp-legend"><Lib lib="NLTK" where="live" /> <Lib lib="NLTK" where="build" /> <Lib lib="spaCy" where="build" /></p>
-        {st && <p className="small">Corpus: {st.experts} expert profiles and {st.prompts} library prompts ({st.words.toLocaleString()} words). Built {st.built.replace('T', ' ').replace('Z', ' UTC')} with Python {st.python}, NLTK {st.nltk}, spaCy {st.spacy} and {st.model}.</p>}
+        {st && <p className="small">Corpus: {st.experts} expert profiles (each agent's prompt plus its own knowledge folder, with code blocks and links removed) and {st.prompts} library prompts, {st.words.toLocaleString()} words in all (counted by spaces, before tokenizing). Built {st.built.replace('T', ' ').replace('Z', ' UTC')} with Python {st.python}, NLTK {st.nltk}, spaCy {st.spacy} and {st.model}.</p>}
         {err && <p className="notice err" role="alert">{err}</p>}
+        {(!sp || !nl) && !err && <p role="status" className="small">Loading the spaCy and NLTK results…</p>}
         <nav className="nlp-toc" aria-label="On this page">
-          <a href="#coach">Prompt coach</a><a href="#insights">Chat insights</a><a href="#agree">Team agreement map</a><a href="#experts">What each expert knows</a><a href="#parse">Dependency parse</a><a href="#corpus">Words and tone</a>
+          {/* Links to the build-time panels appear once their data has loaded, so no link points at a missing section. */}
+          <a href="#coach">Prompt coach</a><a href="#insights">Chat insights</a><a href="#agree">Team agreement map</a>
+          {sp && <><a href="#experts">What each expert knows</a><a href="#parse">Dependency parse</a></>}
+          {nl && <a href="#corpus">Words and tone</a>}
         </nav>
         <PromptCoach />
         <ChatInsights />
@@ -54,7 +58,7 @@ export default function NlpPage() {
         <section className="nlp-panel" aria-labelledby="how-h">
           <h2 id="how-h">How it works</h2>
           <ul>
-            <li><b>Deploy time:</b> Netlify installs Python, NLTK 3.9.4, spaCy 3.8 and en_core_web_sm, then <code>nlp/build_nlp.py</code> analyses the corpus and saves static JSON. spaCy uses an EntityRuler (before the statistical NER) so terms like WCAG 2.2, Pyodide and A/B test are recognised.</li>
+            <li><b>Deploy time:</b> Netlify installs Python 3.13, NLTK 3.9.4, spaCy 3.8 and en_core_web_sm 3.8.0, then <code>nlp/build_nlp.py</code> analyses the corpus and saves static JSON. spaCy uses an EntityRuler (before the statistical NER) so terms like WCAG 2.2, Pyodide and A/B test are recognised, and builds the BM25-weighted topic index the Prompt coach uses.</li>
             <li><b>Live:</b> the first time you press a button, your browser loads Pyodide (Python compiled to WebAssembly) and NLTK in a background worker and runs <code>nlp/nltk_core.py</code>, the same file the build uses. Your text never leaves your device.</li>
             <li>Research, the agent team and the knowledge notes are listed on <a href="/resources" onClick={onLinkClick}>Resources</a>.</li>
           </ul>
@@ -64,30 +68,52 @@ export default function NlpPage() {
   );
 }
 
+const COACH_MAX = 20_000; // nlp/nltk_core.py MAX_COACH_CHARS
+const ANALYZE_MAX = 100_000; // nlp/nltk_core.py MAX_ANALYZE_CHARS
+
 function PromptCoach() {
   const [text, setText] = useState('');
   const [out, setOut] = useState<{ c: Coach; ms: number }>();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const s = useNltk();
+  // seq: only the newest run may show its result. lastRun: the text already coached, so the live effect below does not
+  // coach it a second time (after "Try an example", or when NLTK finishes loading after the first click).
+  const seq = useRef(0);
+  const lastRun = useRef('');
   const run = async (t = text) => {
     if (!t.trim()) return;
+    const id = ++seq.current;
+    lastRun.current = t;
     setBusy(true); setErr('');
-    try { const r = await runNltk<Coach>('coach', { text: t }); setOut({ c: r.result, ms: r.ms }); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+    try { const r = await runNltk<Coach>('coach', { text: t }); if (id === seq.current) setOut({ c: r.result, ms: r.ms }); }
+    catch (e) { if (id === seq.current) setErr((e as Error).message); }
+    finally { if (id === seq.current) setBusy(false); }
+  };
+  const edit = (v: string) => {
+    setText(v);
+    // An emptied box clears the old result, so it is never shown for a question that is no longer there.
+    if (!v.trim()) { seq.current++; lastRun.current = ''; setOut(undefined); setErr(''); setBusy(false); }
   };
   // Live as you type once NLTK is loaded.
-  useEffect(() => { if (s.status !== 'ready' || !text.trim()) return; const id = setTimeout(() => run(), 400); return () => clearTimeout(id); }, [text, s.status]);
+  useEffect(() => {
+    if (s.status !== 'ready' || !text.trim() || text === lastRun.current) return;
+    const id = setTimeout(() => run(), 400); return () => clearTimeout(id);
+  }, [text, s.status]);
+  const passed = out ? out.c.checks.filter((k) => k.ok).length : 0;
   return (
     <Panel id="coach" title="Prompt coach" libs={<><Lib lib="NLTK" where="live" /><Lib lib="spaCy" where="build" /></>}
-      intro="Type the question you want to ask an expert. NLTK flags vague words and hedges and scores how specific it is; spaCy's topic index (noun chunks and entities from every expert's profile) finds the key topics and the best experts. You get a sharper version to send.">
+      intro="Type the question you want to ask an expert. NLTK tokenizes it, flags vague words and hedges from a fixed list, and gives a rule-based clarity score (5 checks worth 20 points each, minus 5 per hedge; a heuristic, not a trained model). The topics and experts come from a topic index that spaCy built at deploy time (noun chunks and EntityRuler terms of every profile, weighted with BM25); live, a phrase matches when all of its Porter-stemmed words (NLTK) appear in your question. You get a sharper version to send.">
       <label htmlFor="coach-q" className="nlp-label">Your question</label>
-      <textarea id="coach-q" className="nlp-text" rows={3} value={text} onChange={(e) => setText(e.target.value)} placeholder="e.g. Can you make my landing page better and add some stuff about accessibility?" />
+      <textarea id="coach-q" className="nlp-text" rows={3} value={text} maxLength={COACH_MAX} aria-describedby="coach-q-limit" onChange={(e) => edit(e.target.value)} placeholder="e.g. Can you make my landing page better and add some stuff about accessibility?" />
+      <p id="coach-q-limit" className="small">Up to {COACH_MAX.toLocaleString('en-US')} characters ({text.length.toLocaleString('en-US')} used).</p>
       <p className="nlp-actions">
-        <button type="button" className="btn" disabled={!text.trim() || busy} onClick={() => run()}>{busy && s.status !== 'ready' ? 'Loading NLTK…' : 'Coach my question'}</button>
+        <button type="button" className="btn" disabled={!text.trim()} aria-disabled={busy || undefined} onClick={() => { if (busy) return; run(); }}>{busy && s.status !== 'ready' ? 'Loading NLTK…' : 'Coach my question'}</button>
         <button type="button" className="btn ghost sm" onClick={() => { setText(SAMPLE_QUESTION); run(SAMPLE_QUESTION); }}>Try an example</button>
       </p>
       <NltkGate>The coach uses NLTK on your device. It loads with your first click (about 15 MB once).</NltkGate>
       {err && <p className="notice err" role="alert">{err}</p>}
+      <p className="sr-only" role="status">{busy ? 'Coaching…' : out ? `Clarity score ${out.c.score}. ${passed} of ${out.c.checks.length} checks passed.` : ''}</p>
       {out && <CoachView c={out.c} ms={out.ms} onUse={(t) => setText(t)} />}
     </Panel>
   );
@@ -100,12 +126,13 @@ function ChatInsights() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const run = async () => {
+    if (busy || !text.trim()) return;
     setBusy(true); setErr('');
     try { const r = await runNltk<Analysis>('analyze', { text }); setOut({ a: r.result, ms: r.ms }); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };
   return (
     <Panel id="insights" title="Chat insights" libs={<Lib lib="NLTK" where="live" />}
-      intro="Paste any text, or load one of your saved chats with an expert. NLTK tokenizes it, removes stopwords, counts word frequencies (FreqDist), finds collocations and scores the tone of every sentence with VADER.">
+      intro="Paste any text, or load one of your saved chats with an expert. NLTK tokenizes it (Punkt sentences, word_tokenize), removes English stopwords, counts word frequencies (FreqDist), ranks repeated word pairs by the log-likelihood ratio (on the words left after stopword removal) and scores the tone of each sentence with VADER (up to 40 sentences).">
       {chats.length > 0 && (
         <p><label htmlFor="ins-chat" className="nlp-label">Load a saved chat</label>{' '}
           <select id="ins-chat" className="nlp-select" defaultValue="" onChange={(e) => { const c = chats.find(([k]) => k === e.target.value); if (c) setText(c[1].map((m) => m.content).join('\n\n')); }}>
@@ -114,12 +141,14 @@ function ChatInsights() {
           </select></p>
       )}
       <label htmlFor="ins-text" className="nlp-label">Text to analyse</label>
-      <textarea id="ins-text" className="nlp-text" rows={5} value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste a chat, an answer or any English text." />
+      <textarea id="ins-text" className="nlp-text" rows={5} value={text} maxLength={ANALYZE_MAX} aria-describedby="ins-text-limit" onChange={(e) => setText(e.target.value)} placeholder="Paste a chat, an answer or any English text." />
+      <p id="ins-text-limit" className="small">Up to {ANALYZE_MAX.toLocaleString('en-US')} characters ({text.length.toLocaleString('en-US')} used); a longer saved chat is cut to the first {ANALYZE_MAX.toLocaleString('en-US')}.</p>
       <p className="nlp-actions">
-        <button type="button" className="btn" disabled={!text.trim() || busy} onClick={run}>{busy ? 'Analysing…' : 'Analyse with NLTK'}</button>
+        <button type="button" className="btn" disabled={!text.trim()} aria-disabled={busy || undefined} onClick={run}>{busy ? 'Analysing…' : 'Analyse with NLTK'}</button>
         <button type="button" className="btn ghost sm" onClick={() => setText(SAMPLE_ANSWERS.map((a) => a.text).join('\n\n'))}>Use sample text</button>
       </p>
       {err && <p className="notice err" role="alert">{err}</p>}
+      <p className="sr-only" role="status">{busy ? 'Analysing…' : out ? 'Analysis ready.' : ''}</p>
       {out && <AnalysisView a={out.a} ms={out.ms} />}
     </Panel>
   );
@@ -135,20 +164,22 @@ function AgreementPanel() {
   const answers = src === 'sample' ? SAMPLE_ANSWERS
     : turns[Number(src)].contributions.filter((c) => c.slug !== 'red-team-reviewer').map((c) => ({ name: c.slug.replace(/-/g, ' '), text: c.text }));
   const run = async () => {
+    if (busy) return;
     setBusy(true); setErr('');
     try { const r = await runNltk<AgreementMap>('agreement', { answers }); setOut({ m: r.result, ms: r.ms }); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };
   return (
     <Panel id="agree" title="Team agreement map" libs={<><Lib lib="NLTK" where="live" /><Lib lib="spaCy" where="build" /></>}
-      intro="When the whole team answers, where do the experts agree and where do they differ? Main ideas come from NLTK word frequencies and spaCy topic phrases; tone from NLTK VADER; conflicting recommendations are flagged. It also appears under every answer in Ask the whole team.">
+      intro="When the whole team answers, where do the experts agree and where do they differ? Each expert's main ideas are its most frequent content words (NLTK FreqDist) plus spaCy topic phrases found in the answer; tone is NLTK VADER. Experts' own names and quoted persona lines (“Act as …”) are not counted as ideas. A pair disagrees only when the things they recommend (found by patterns such as “I recommend …”, “go with …”, “use a framework like …”) differ; otherwise it agrees when at least 20% of their main ideas match (Jaccard on Porter stems), or takes different angles. Tone never decides the verdict: when their VADER tones get different labels and are 0.5 or more apart, the pair gets a note (“Different tone.” or “Opposite tone.”). It compares words, not arguments, so read the answers too. It also appears under every answer in Ask the whole team.">
       <p><label htmlFor="agree-src" className="nlp-label">Answers</label>{' '}
         <select id="agree-src" className="nlp-select" value={src} onChange={(e) => { setSrc(e.target.value); setOut(undefined); }}>
           {turns.map((t, i) => <option key={i} value={i}>Your team chat: {t.q.slice(0, 60)}</option>)}
           <option value="sample">Sample: native app or PWA for a habit tracker (3 written answers)</option>
         </select></p>
       <details className="nlp-details"><summary>Read the {answers.length} answers</summary>{answers.map((a) => <p key={a.name}><b>{a.name}:</b> {a.text}</p>)}</details>
-      <p className="nlp-actions"><button type="button" className="btn" disabled={busy} onClick={run}>{busy ? 'Mapping…' : 'Map agreement'}</button></p>
+      <p className="nlp-actions"><button type="button" className="btn" aria-disabled={busy || undefined} onClick={run}>{busy ? 'Mapping…' : 'Map agreement'}</button></p>
       {err && <p className="notice err" role="alert">{err}</p>}
+      <p className="sr-only" role="status">{busy ? 'Mapping…' : out ? 'Agreement map ready.' : ''}</p>
       {out && <AgreementView m={out.m} ms={out.ms} />}
     </Panel>
   );
@@ -160,12 +191,12 @@ export function ExpertsPanel({ sp }: { sp: SpacyOut }) {
   const e = sp.experts.find((x) => x.slug === slug) ?? sp.experts[0];
   return (
     <Panel id="experts" title="What each expert knows" libs={<Lib lib="spaCy" where="build" />}
-      intro={<>spaCy ({sp.model}) read every expert's profile and knowledge notes. Named entities come from its statistical NER plus an EntityRuler with {sp.patterns} patterns for this studio's vocabulary (TECH, STANDARD, METHOD); topics are lemmatised noun chunks.</>}>
+      intro={<>spaCy ({sp.model}) read every expert's agent prompt and its own knowledge folder. Named entities come from an EntityRuler placed before the statistical NER, with {sp.patterns} patterns for this studio's vocabulary (TECH, STANDARD, METHOD and a few names) plus the team roster ({sp.roster_patterns} names and job titles), and from the NER itself. The small model was trained on news text, so a filter drops its entities that are clearly not names (headings, verbs, common words, codes); some technical acronyms are still labelled ORG. Topics are noun chunks with nouns lemmatised, without determiners, stopwords, generic house phrases or team names.</>}>
       <p><label htmlFor="exp-sel" className="nlp-label">Expert</label>{' '}
         <select id="exp-sel" className="nlp-select" value={e.slug} onChange={(ev) => setSlug(ev.target.value)}>
           {sp.experts.map((x) => <option key={x.slug} value={x.slug}>{x.name} · {x.title}</option>)}
         </select>{' '}<a href={`/expert/${e.slug}`} onClick={onLinkClick} className="small">Chat with {e.name.split(' ')[0]}</a></p>
-      <p className="small">{e.counts.tokens.toLocaleString()} tokens, {e.counts.sentences} sentences, {e.counts.entities} entities, {e.counts.noun_chunks} noun chunks.</p>
+      <p className="small">{e.counts.tokens.toLocaleString()} spaCy tokens, {e.counts.sentences} sentences, {e.counts.entities} entity mentions with the labels below (after the filter), {e.counts.noun_chunks} noun chunks.</p>
       <div className="nlp-cols">
         <div><h3>Named entities</h3>
           <ul className="nlp-ents">{e.entities.map(([t, l, n]) => <li key={t + l}><span className={`nlp-ent l-${l}`} title={sp.explain[l]}>{t}<small>{l}</small></span> <span className="small">×{n}</span></li>)}</ul>
@@ -187,7 +218,7 @@ export function ParsePanel({ sp }: { sp: SpacyOut }) {
   const p = cur.p;
   return (
     <Panel id="parse" title="Dependency parse" libs={<Lib lib="spaCy" where="build" />}
-      intro="spaCy's parser links every word to its head word. From those links the Lab reads what each library prompt asks to build: the head noun, its describing words and who it is for.">
+      intro="spaCy's parser links every word to its head word (labels in spaCy's English scheme, e.g. nsubj, dobj, amod, pobj; hover a label for its meaning). From those links the Lab reads what each library prompt's GOAL line asks for: the root's object (or the root itself, since most GOAL lines are noun phrases), its adjective and number modifiers, and the object of “for”.">
       <p><label htmlFor="parse-sel" className="nlp-label">Sentence</label>{' '}
         <select id="parse-sel" className="nlp-select" value={id} onChange={(e) => setId(e.target.value)}>
           {options.map((o) => <option key={o.id} value={o.id}>{o.title}</option>)}
@@ -195,7 +226,7 @@ export function ParsePanel({ sp }: { sp: SpacyOut }) {
       <p className="nlp-sharper">{p.text}</p>
       <dl className="nlp-stats">
         <div><dt>root</dt><dd>{p.root} <small>{p.root_pos}</small></dd></div>
-        <div><dt>builds</dt><dd>{p.object || '–'}</dd></div>
+        <div><dt>asks for</dt><dd>{p.object || '–'}</dd></div>
         <div><dt>described as</dt><dd>{p.describers.join(', ') || '–'}</dd></div>
         <div><dt>for</dt><dd>{p.for || '–'}</dd></div>
       </dl>
@@ -237,17 +268,17 @@ export function CorpusPanel({ nl }: { nl: NltkOut }) {
   const ex = nl.experts;
   return (
     <Panel id="corpus" title="Words and tone across the studio" libs={<Lib lib="NLTK" where="build" />}
-      intro={<>NLTK {nl.nltk} over {nl.corpus.documents} documents ({nl.corpus.content_words.toLocaleString()} content words). Words shared by more than half of the expert profiles ({nl.house_words.length} house words such as “{nl.house_words.slice(0, 3).join('”, “')}”) are left out, so the counts show what makes each expert different.</>}>
+      intro={<>NLTK {nl.nltk} over the {nl.corpus.documents} expert profiles: {nl.corpus.tokens.toLocaleString()} word tokens, of which {nl.corpus.content_words.toLocaleString()} content words remain after removing stopwords, numbers, one-letter tokens and the {nl.house_words.length} house words used by more than half of the profiles (such as “{nl.house_words.slice(0, 3).join('”, “')}”). The five NLP experts have the longest knowledge notes, so NLP terms lead the counts.</>}>
       <div className="nlp-cols">
         <div><h3>Most frequent words</h3><Bars rows={nl.top_words.slice(0, 12)} /></div>
-        <div><h3>Collocations (likelihood ratio)</h3><ul className="nlp-list">{nl.collocations.slice(0, 12).map(([a, b, s, n]) => <li key={a + b}><b>{a} {b}</b> <span className="small">×{n}, score {s}</span></li>)}</ul></div>
+        <div><h3>Collocations (log-likelihood ratio, adjacent pairs seen 4+ times)</h3><ul className="nlp-list">{nl.collocations.slice(0, 12).map(([a, b, s, n]) => <li key={a + b}><b>{a} {b}</b> <span className="small">×{n}, score {s}</span></li>)}</ul></div>
       </div>
       <h3>Tone of each expert's profile (VADER on mission, personality and example questions)</h3>
       <div className="nlp-cols">
-        <div><p className="small">Most upbeat</p><ul className="nlp-list">{ex.slice(0, 5).map((e) => <li key={e.slug}><b>{e.name}</b> <Tone s={e.tone} compact /></li>)}</ul></div>
-        <div><p className="small">Most cautious</p><ul className="nlp-list">{ex.slice(-5).reverse().map((e) => <li key={e.slug}><b>{e.name}</b> <Tone s={e.tone} compact /></li>)}</ul></div>
+        <div><p className="small">Highest VADER score</p><ul className="nlp-list">{ex.slice(0, 5).map((e) => <li key={e.slug}><b>{e.name}</b> <Tone s={e.tone} compact /></li>)}</ul></div>
+        <div><p className="small">Lowest VADER score</p><ul className="nlp-list">{ex.slice(-5).reverse().map((e) => <li key={e.slug}><b>{e.name}</b> <Tone s={e.tone} compact /></li>)}</ul></div>
       </div>
-      <p className="small">VADER is a lexicon of rated words: “fail” or “risk” in a profile pulls it negative even when the expert is helpful. That is what “cautious” means here.</p>
+      <p className="small">VADER is a rule-based lexicon tuned for social-media text: words such as “fail” or “risk” pull a profile negative even when the expert is helpful, so a low score means cautious wording, not a negative expert.</p>
     </Panel>
   );
 }
