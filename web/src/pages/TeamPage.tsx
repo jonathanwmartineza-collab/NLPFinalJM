@@ -34,7 +34,9 @@ export default function TeamPage({ team }: { team: Team }) {
   const speech = useSpeech();
   const nova = team.agents.find((a) => a.slug === 'orchestrator')!;
   const by = (s: string) => team.agents.find((a) => a.slug === s);
-  const ready = useEngine().status === 'ready';
+  const engine = useEngine();
+  const ready = engine.status === 'ready';
+  const noAI = engine.status === 'unsupported';
   useEffect(() => { if (turns.length || busy) end.current?.scrollIntoView({ block: 'end' }); }, [turns, draft, chips, busy]);
   useEffect(() => () => ctrl.current?.abort(), []);
   const persist = (t: Turn[]) => saveChat('__team', t as any);
@@ -108,8 +110,10 @@ export default function TeamPage({ team }: { team: Team }) {
           <div className="examples">
             <ol className="start" aria-label="Get started in 3 steps">
               <li data-done={ready}>
-                <b>Turn on the free AI</b>
-                <span>{ready ? 'Done. The AI is running on your device.' : <>Download the recommended model once. <button type="button" className="link-btn" onClick={toSetup}>Go to the model picker</button></>}</span>
+                <b>{noAI ? 'Use a device that can run the AI' : 'Turn on the free AI'}</b>
+                <span>{ready ? 'Done. The AI is running on your device.'
+                  : noAI ? <>This browser can't run it. Open this site in a recent Chrome or Edge on a laptop, or copy any expert's prompt into another AI chat. <button type="button" className="link-btn" onClick={toSetup}>Why?</button></>
+                  : <>Download the recommended model once. <button type="button" className="link-btn" onClick={toSetup}>Go to the model picker</button></>}</span>
               </li>
               <li><b>Ask the team</b><span>Tap an example below or type your own question.</span></li>
               <li><b>Get one answer</b><span>{nova.name} combines the experts' answers. Open “Who contributed” to see each one.</span></li>

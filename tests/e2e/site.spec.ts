@@ -1,6 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
+const LIVE = !!process.env.PW_BASE_URL;
+const mockOnly = () => test.skip(LIVE, 'needs the mock engine (the live site runs the real model)');
+
 async function open(page: Page, path = '/') {
   await page.goto(path);
   await expect(page.locator('aside .row').first()).toBeAttached(); // the team has loaded; no welcome dialog blocks the page
@@ -22,6 +25,7 @@ test('sidebar lists all 31 experts by department', async ({ page }) => {
 });
 
 test('nothing downloads before consent; the picker shows sizes and licences', async ({ page }) => {
+  mockOnly();
   const external: string[] = [];
   page.on('request', (r) => { if (!r.url().startsWith('http://localhost')) external.push(r.url()); });
   await open(page, '/expert/ui-designer');
@@ -34,6 +38,7 @@ test('nothing downloads before consent; the picker shows sizes and licences', as
 });
 
 test('download shows progress, then one expert streams an answer that survives a reload', async ({ page }) => {
+  mockOnly();
   await open(page, '/expert/ui-designer');
   await page.getByRole('button', { name: /^Download Balanced model/ }).click();
   await expect(page.getByRole('progressbar')).toBeVisible();
@@ -50,6 +55,7 @@ test('download shows progress, then one expert streams an answer that survives a
 });
 
 test('Stop interrupts an answer', async ({ page }) => {
+  mockOnly();
   await turnOnAI(page, '/expert/ux-architect');
   await page.locator('#composer').fill('Explain onboarding flows');
   await page.keyboard.press('Enter');
@@ -58,6 +64,7 @@ test('Stop interrupts an answer', async ({ page }) => {
 });
 
 test('team mode runs experts one after another and combines one answer', async ({ page }) => {
+  mockOnly();
   await turnOnAI(page, '/');
   await page.locator('#composer').fill('We need a landing page for a coffee subscription: positioning, page structure and accessibility.');
   await page.getByRole('button', { name: 'Send' }).click();
@@ -65,6 +72,7 @@ test('team mode runs experts one after another and combines one answer', async (
 });
 
 test('studio fills content, renders it in an isolated sandbox, refines and downloads', async ({ page }) => {
+  mockOnly();
   await turnOnAI(page, '/studio');
   await page.locator('textarea').first().fill('A calm booking page for a yoga studio with prices and a contact form.');
   await page.getByRole('button', { name: 'Generate' }).click();
@@ -82,12 +90,22 @@ test('studio fills content, renders it in an isolated sandbox, refines and downl
 });
 
 test('no WebGPU: a clear message and a copy-the-prompt fallback', async ({ page }) => {
+  mockOnly();
   await open(page, '/expert/ux-architect?nogpu=1');
   await expect(page.getByText("This device can't run the free AI.")).toBeVisible();
   await expect(page.getByRole('button', { name: "Copy this expert's prompt" })).toBeVisible();
 });
 
+test('no WebGPU: the home steps point to a working path instead of a missing model picker', async ({ page }) => {
+  mockOnly();
+  await open(page, '/?nogpu=1');
+  const step1 = page.getByRole('list', { name: 'Get started in 3 steps' }).locator('li').first();
+  await expect(step1).toContainText('Use a device that can run the AI');
+  await expect(step1).not.toContainText('model picker');
+});
+
 test('privacy page explains the download and can delete models', async ({ page }) => {
+  mockOnly();
   await turnOnAI(page, '/');
   await page.goto('/privacy');
   await expect(page.getByText(/Hugging Face/).first()).toBeVisible();
@@ -100,7 +118,7 @@ const ROLE = 'AI Practitioner';
 const COPYRIGHT = '© 2026 Jonathan Martinez. All rights reserved.';
 
 test('privacy: only the logo name and the copyright line are personal; no repo links, emails or credits', async ({ page }) => {
-  for (const path of ['/', '/expert/edge-ai-engineer', '/studio', '/library', '/resources', '/guide', '/privacy', '/no-such-page']) {
+  for (const path of ['/', '/expert/edge-ai-engineer', '/studio', '/library', '/resources', '/guide', '/privacy', ...(LIVE ? [] : ['/no-such-page'])]) {
     await open(page, path);
     const hrefs = await page.locator('a[href]').evaluateAll((as) => as.map((a) => a.getAttribute('href') || ''));
     expect(hrefs.filter((h) => /github\.com|gitlab\.com|bitbucket\.org|sourceforge\.net|codeberg\.org|^mailto:/i.test(h)), path).toEqual([]);
@@ -152,6 +170,7 @@ for (const [w, h] of [[340, 700], [390, 844], [1440, 900]] as const) {
 }
 
 test('first-time visitor reaches an answer in 3 steps: download, pick an example, send', async ({ page }) => {
+  mockOnly();
   await open(page, '/');
   await expect(page.getByRole('list', { name: 'Get started in 3 steps' })).toBeVisible();
   await page.getByRole('button', { name: /^Download Balanced model/ }).click(); // step 1
@@ -189,6 +208,7 @@ for (const width of [390, 1440]) {
 }
 
 test('phone: the Studio brief and the model picker are reachable, and chat examples are not squashed', async ({ page }) => {
+  mockOnly();
   await page.setViewportSize({ width: 390, height: 844 });
   await open(page, '/studio');
   const brief = page.getByLabel('Your brief');
@@ -232,6 +252,7 @@ for (const path of ['/', '/expert/edge-ai-engineer', '/studio', '/library', '/re
 }
 
 test('axe: a generated page passes in light and dark', async ({ page }) => {
+  mockOnly();
   await turnOnAI(page, '/studio');
   await page.locator('textarea').first().fill('A calm booking page for a yoga studio with prices and a contact form.');
   await page.getByRole('button', { name: 'Generate' }).click();
