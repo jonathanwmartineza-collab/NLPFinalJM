@@ -26,7 +26,7 @@ describe('model tiers', () => {
   it('recommends a tier from the device', () => {
     expect(recommendTier(undefined, true)).toBe('lite');
     expect(recommendTier(4, false)).toBe('lite');
-    expect(recommendTier(8, false)).toBe('balanced');
-    expect(recommendTier(undefined, false)).toBe('balanced');
+    expect(recommendTier(8, false)).toBe('quality');
+    expect(recommendTier(undefined, false)).toBe('quality');
   });
 });

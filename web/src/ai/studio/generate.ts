@@ -1,16 +1,16 @@
 // Studio pipeline: brief → model fills JSON → repair/validate → fallback → render. Refine edits the JSON.
-import { chat, EngineError, type ChatMessage } from '../engine';
+import { chat, EngineError, jsonSupported, type ChatMessage } from '../engine';
 import { BUDGET } from '../models';
 import { SPEC_TASK, REFINE_TASK, STUDIO_NAME } from '../prompts';
-import { parseSpec, fallbackSpec, type Spec } from './spec';
+import { parseSpec, fallbackSpec, SPEC_JSON_SCHEMA, type Spec } from './spec';
 import { renderPage } from './render';
 
-// JSON mode (grammar-constrained) is preferred; if the engine rejects it, retry as plain text:
+// JSON mode (grammar-constrained by SPEC_JSON_SCHEMA) is preferred; if the engine rejects it, retry as plain text:
 // parseSpec() repairs JSON from free text.
 let jsonMode = true;
 async function fill(messages: ChatMessage[], maxTokens: number, temperature: number, onText: (t: string) => void, signal?: AbortSignal) {
-  if (jsonMode) {
-    try { return await chat(messages, { maxTokens, temperature, json: true }, onText, signal); }
+  if (jsonMode && jsonSupported()) {
+    try { return await chat(messages, { maxTokens, temperature, json: SPEC_JSON_SCHEMA }, onText, signal); }
     catch (e) {
       if (!(e instanceof EngineError) || e.code !== 'other' || signal?.aborted) throw e;
       console.warn('[BrainyApp2] JSON mode failed; using plain text from now on.');
@@ -20,6 +20,10 @@ async function fill(messages: ChatMessage[], maxTokens: number, temperature: num
   return chat(messages, { maxTokens, temperature }, onText, signal);
 }
 
+const sameSpec = (a: Spec, b: Spec) => JSON.stringify(a) === JSON.stringify(b);
+/** A page with no filled section besides contact (real test: Lite returned only a contact section) is not usable. */
+export const thinSpec = (s: Spec) => s.sections.filter((x) => x.kind !== 'contact' && x.items.length).length === 0;
+
 export type BuildResult = { spec: Spec; html: string; usedFallback: boolean };
 
 export async function buildFromBrief(brief: string, onText: (t: string) => void, signal?: AbortSignal): Promise<BuildResult> {
@@ -27,6 +31,7 @@ export async function buildFromBrief(brief: string, onText: (t: string) => void,
   for (let attempt = 0; attempt < 2 && !spec && !signal?.aborted; attempt++) {
     const r = await fill([{ role: 'system', content: SPEC_TASK }, { role: 'user', content: `Brief: ${brief.slice(0, BUDGET.inputChars)}` }], 1_100, 0.5, onText, signal);
     spec = parseSpec(r.text);
+    if (spec && thinSpec(spec)) spec = null;
   }
   if (signal?.aborted) throw new EngineError('aborted', 'Stopped.');
   const usedFallback = !spec;
@@ -38,7 +43,9 @@ export async function refineSpec(spec: Spec, change: string, onText: (t: string)
   const r = await fill([{ role: 'system', content: REFINE_TASK }, { role: 'user', content: `Change request: ${change.slice(0, 600)}\n\nCurrent JSON:\n${JSON.stringify(spec)}` }], 1_200, 0.4, onText, signal);
   if (signal?.aborted) throw new EngineError('aborted', 'Stopped.');
   const next = parseSpec(r.text);
-  if (!next) throw new EngineError('refine', 'The AI could not apply that change. Try a shorter, more specific request.');
+  if (!next) throw new EngineError('refine', 'The AI could not apply that change, so this version was kept. Try a shorter, more specific request.');
+  // A real-model test said "Version 2 ready" for a byte-identical page: never report an edit that changed nothing.
+  if (sameSpec(next, spec)) throw new EngineError('noop', 'The AI returned the page unchanged, so no new version was made. Try rewording the change, for example “Add a pricing section with 4 repairs and their prices”.');
   return { spec: next, html: renderPage(next, STUDIO_NAME), usedFallback: false };
 }
 

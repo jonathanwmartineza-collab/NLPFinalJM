@@ -19,8 +19,8 @@ https://webllm.mlc.ai/models/ · npm `@mlc-ai/web-llm` 0.2.89 (`prebuiltAppConfi
 | Model ID | VRAM | Licence |
 |---|---|---|
 | Llama-3.2-1B-Instruct-q4f16_1-MLC | 0.9 GB | Llama 3.2 Community Licence ("Built with Llama") |
-| Qwen2.5-1.5B-Instruct-q4f16_1-MLC | 1.6 GB | Apache-2.0 |
-| Phi-4-mini-instruct-q4f16_1-MLC | 3.4 GB | MIT |
+| Qwen2.5-1.5B-Instruct-q4f16_1-MLC | 1.6 GB | Apache-2.0 (dropped from BrainyApp2: weak on safety and facts in tests) |
+| Qwen3-4B-q4f16_1-MLC | 3.4 GB | Apache-2.0 |
 | Qwen2.5-3B-Instruct-q4f16_1-MLC | 2.5 GB | Qwen Research licence (non-commercial): avoid for a public product |
 
 ## Rules of thumb

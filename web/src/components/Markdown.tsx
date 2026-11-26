@@ -4,6 +4,13 @@ import { useState } from 'react';
 
 const SAFE = /^(https?:|mailto:)/i;
 
+/** Show HTML tags written outside code as literal text ("use <button>") instead of silently dropping them.
+ *  Fenced code blocks and inline code are left untouched. Nothing is ever rendered as HTML. */
+export function literalTags(md: string): string {
+  return md.split(/(```[\s\S]*?(?:```|$))/).map((part, i) => i % 2 ? part
+    : part.split(/(`[^`\n]*`)/).map((seg, j) => j % 2 ? seg : seg.replace(/</g, '&lt;')).join('')).join('');
+}
+
 function CodeBlock({ children }: { children?: React.ReactNode }) {
   const [label, setLabel] = useState('Copy');
   const text = String((children as any)?.props?.children ?? '').replace(/\n$/, '');
@@ -31,7 +38,7 @@ export default function Markdown({ text }: { text: string }) {
           img: ({ src, alt }) => (src ? <a href={String(src)} target="_blank" rel="noopener noreferrer nofollow">[image: {alt || 'link'}]</a> : null),
           pre: ({ children }) => <CodeBlock>{children}</CodeBlock>,
         }}
-      >{text}</ReactMarkdown>
+      >{literalTags(text)}</ReactMarkdown>
     </div>
   );
 }

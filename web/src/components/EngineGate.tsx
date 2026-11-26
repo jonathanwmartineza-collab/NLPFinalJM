@@ -6,7 +6,7 @@ import { onLinkClick } from '../lib/router';
 /** Shown in place of the composer until the on-device AI is ready. Nothing downloads without a click. */
 export default function EngineGate({ copyText }: { copyText?: string }) {
   const s = useEngine();
-  const [pick, setPick] = useState<TierId>(() => savedTier() ?? 'balanced');
+  const [pick, setPick] = useState<TierId>(() => savedTier() ?? 'quality');
   const [copied, setCopied] = useState('');
   useEffect(() => { initEngine(); }, []);
   useEffect(() => { if (!savedTier()) setPick(s.recommended); }, [s.recommended]);

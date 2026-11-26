@@ -27,6 +27,14 @@ describe('team build output', () => {
       for (const task of ['', EXPERT_TASK, SYNTH_TASK]) expect(system(slug, task).length, slug).toBeLessThanOrEqual(BUDGET.systemChars);
     }
   });
+  it('gives the on-device model whole principles: no line cut off mid-sentence, no Claude Code tool instructions', () => {
+    for (const [slug, a] of Object.entries<any>(lite.agents)) {
+      for (const l of a.prompt.split('\n').filter((x: string) => x.startsWith('- '))) {
+        expect(l, slug).toMatch(/[.!?)…"”]\s*$/);
+        expect(l, slug).not.toMatch(/Agent calls|never run commands|Use Read on/);
+      }
+    }
+  });
   it('fits the whole request into a 4,096-token context with margin (≈4 chars/token)', () => {
     const worst = BUDGET.systemChars / 4 + BUDGET.historyChars / 4 + BUDGET.inputChars / 4 + BUDGET.maxTokens;
     expect(worst).toBeLessThanOrEqual(4_096 * 0.85);

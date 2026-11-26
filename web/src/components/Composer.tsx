@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { canListen, useDictation } from '../lib/voice';
+import { BUDGET } from '../ai/models';
 
-const MAX = 4000;
+// The longest message the on-device model reads in full. The box never cuts a paste: it shows the count and
+// blocks Send with a clear message instead (a real-model test found a paste silently cut, and the model then
+// invented the missing ending).
+const MAX = BUDGET.inputChars;
 const touch = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
 
 export default function Composer({ placeholder, busy, onSend, onStop, seed }: {
@@ -12,6 +16,8 @@ export default function Composer({ placeholder, busy, onSend, onStop, seed }: {
   const dict = useDictation((t) => setText((v) => (v ? `${v} ${t}` : t)));
   useEffect(() => { if (seed?.text) { setText(seed.text); ref.current?.focus(); } }, [seed?.n]);
   const send = () => { const t = text.trim(); if (!t || busy || t.length > MAX) return; onSend(t); setText(''); };
+  // The second click of a double-click on Send (detail 2) lands on the Stop button that replaced it: ignore it.
+  const stop = (e: React.MouseEvent) => { if (e.detail > 1) return; onStop(); };
   return (
     <div>
       <div className="composer">
@@ -22,16 +28,18 @@ export default function Composer({ placeholder, busy, onSend, onStop, seed }: {
           </button>
         )}
         <label htmlFor="composer" className="sr-only">Your message</label>
-        <textarea id="composer" ref={ref} value={text} rows={2} maxLength={MAX + 200}
+        <textarea id="composer" ref={ref} value={text} rows={2} maxLength={200_000} aria-describedby="composer-count"
           placeholder={placeholder} onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !touch && !e.nativeEvent.isComposing) { e.preventDefault(); send(); } }} />
         {busy
-          ? <button type="button" className="btn ghost" onClick={onStop}>Stop</button>
+          ? <button type="button" className="btn ghost" onClick={stop}>Stop</button>
           : <button type="button" className="btn" onClick={send} disabled={!text.trim() || text.length > MAX}>Send</button>}
       </div>
       <div className="composer-foot">
         <span>{touch ? 'Tap Send to send.' : 'Enter to send, Shift+Enter for a new line.'}</span>
-        <span aria-live="polite" style={{ color: text.length > MAX ? 'var(--err)' : undefined }}>{text.length > MAX - 400 ? `${text.length} / ${MAX}` : ''}</span>
+        <span id="composer-count" aria-live="polite" style={{ color: text.length > MAX ? 'var(--err)' : undefined }}>
+          {text.length > MAX ? `Too long for the on-device AI: ${text.length.toLocaleString()} of ${MAX.toLocaleString()} characters. Remove ${(text.length - MAX).toLocaleString()} characters or send it in parts; nothing was cut.` : text.length > MAX * 0.5 ? `${text.length.toLocaleString()} / ${MAX.toLocaleString()} characters` : ''}
+        </span>
       </div>
     </div>
   );

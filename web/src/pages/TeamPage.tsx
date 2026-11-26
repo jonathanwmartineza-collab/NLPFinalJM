@@ -9,6 +9,7 @@ import EngineGate, { DeviceBadge } from '../components/EngineGate';
 import { Avatar } from '../components/Sidebar';
 import { useEngine } from '../ai/engine';
 import { Thinking, errorText, VoiceControls, ChatFooter } from '../components/ChatParts';
+import EmergencyNotice from '../components/EmergencyNotice';
 import { useClearOptions } from '../components/ClearOptions';
 
 type Chip = { slug: string; state: 'queued' | 'thinking' | 'writing' | 'done' | 'failed' };
@@ -30,6 +31,7 @@ export default function TeamPage({ team }: { team: Team }) {
   const [err, setErr] = useState('');
   const [live, setLive] = useState('');
   const [seed, setSeed] = useState<{ text: string; n: number }>();
+  const [curQ, setCurQ] = useState('');
   const ctrl = useRef<AbortController | null>(null);
   const end = useRef<HTMLDivElement>(null);
   const speech = useSpeech();
@@ -44,6 +46,7 @@ export default function TeamPage({ team }: { team: Team }) {
   const clear = useClearOptions({
     what: 'this team chat',
     canClear: turns.length > 0 && !busy,
+    answering: busy,
     onClear: () => { const snap = turns; setTurns([]); persist([]); setErr(''); return () => { setTurns(snap); persist(snap); }; },
     onFreed: () => { ctrl.current?.abort(); setTurns([]); setErr(''); },
   });
@@ -54,7 +57,7 @@ export default function TeamPage({ team }: { team: Team }) {
   };
 
   async function ask(q: string) {
-    setErr(''); setDraft(''); setChips([]); setBusy(true); setSince(Date.now()); setPhase(`${director.name} is choosing experts`); setLive(`${director.name} is choosing experts`);
+    setErr(''); setDraft(''); setChips([]); setCurQ(q); setBusy(true); setSince(Date.now()); setPhase(`${director.name} is choosing experts`); setLive(`${director.name} is choosing experts`);
     const c = (ctrl.current = new AbortController());
     const setChip = (slug: string, state: Chip['state']) => setChips((cs) => cs.map((x) => (x.slug === slug ? { ...x, state } : x)));
     try {
@@ -89,7 +92,7 @@ export default function TeamPage({ team }: { team: Team }) {
       let acc = '';
       const s = await streamModel({ mode: 'synth', question: q, contributions: inputs.map((x) => ({ slug: x.slug, text: x.text.slice(0, 6000) })), runToken: token }, (t) => { acc += t; setDraft(acc); }, c.signal);
       const failed = plan.experts.length - contribs.length;
-      const turn: Turn = { q, answer: acc, contributions: inputs, failed, note: plan.fallback ? 'The routing plan could not be read, so a default panel answered.' : undefined, stop: s.complete ? undefined : s.stop === 'aborted' ? 'stopped' : 'cut' };
+      const turn: Turn = { q, answer: s.stop === 'repeat' ? s.text : acc, contributions: inputs, failed, note: plan.fallback ? 'The routing plan could not be read, so a default panel answered.' : undefined, stop: s.complete ? undefined : s.stop === 'aborted' ? 'stopped' : s.stop === 'repeat' ? 'repeat' : 'cut' };
       const next = [...turns, turn]; setTurns(next); persist(next); setDraft(''); setChips([]);
       setLive('Reply complete'); if (acc && s.complete) speech.speak(acc);
     } catch (e) {
@@ -133,11 +136,13 @@ export default function TeamPage({ team }: { team: Team }) {
         {turns.map((t, i) => (
           <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div className="msg user">{t.q}</div>
+            <EmergencyNotice text={t.q} />
             <div className="msg ai">
               <div className="msg-meta"><Avatar a={director} /> {director.name} for the team</div>
               <Markdown text={t.answer} />
               {t.note && <p className="notice">{t.note}</p>}
               {!!t.failed && <p className="notice warn">{t.contributions.filter((c) => c.slug !== 'red-team-reviewer').length} of {t.contributions.filter((c) => c.slug !== 'red-team-reviewer').length + t.failed} experts answered.</p>}
+              {t.stop === 'repeat' && <p className="notice warn">The combined answer started repeating itself, so it was stopped early. Open “Who contributed” for each expert's full answer.</p>}
               {t.stop === 'cut' && <p className="notice warn">The combined answer was cut off. Ask a narrower follow-up, or ask one expert directly.</p>}
               <details className="contrib">
                 <summary>Who contributed ({t.contributions.length})</summary>
@@ -150,6 +155,8 @@ export default function TeamPage({ team }: { team: Team }) {
         ))}
         {busy && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {curQ && <div className="msg user">{curQ}</div>}
+            <EmergencyNotice text={curQ} />
             <Thinking since={since} label={phase} />
             {chips.length > 0 && (
               <div className="chips" aria-label="Experts working">

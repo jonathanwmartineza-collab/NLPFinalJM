@@ -20,7 +20,13 @@
   </head>
   <body>
     <noscript>BrainyApp2 needs JavaScript to chat with the team.</noscript>
-    <div id="root"></div>
+    <style>
+      .boot{min-height:100vh;display:grid;place-items:center;margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#14161c;background:#eef1f8;text-align:center;padding:16px}
+      .boot b{display:block;font-size:20px}.boot span{color:#474d5c}
+      @media (prefers-color-scheme:dark){.boot{color:#eef0f6;background:#0c0f1c}.boot span{color:#b8bdcc}}
+    </style>
+    <!-- Shown until the app starts (slow connections see this instead of a blank page); React replaces it. -->
+    <div id="root"><div class="boot" role="status"><div><b>BrainyApp2</b><span>Loading the studio… On a slow connection this can take a few seconds.</span></div></div></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

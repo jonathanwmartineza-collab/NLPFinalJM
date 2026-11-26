@@ -1,6 +1,6 @@
 // Deterministic team router: picks 2–3 experts from keywords (no model call: instant and predictable).
 const KEYWORDS: Record<string, string[]> = {
-  'product-strategist': ['idea', 'mvp', 'v1', 'feature', 'scope', 'roadmap', 'prd', 'requirement', 'launch', 'startup', 'market', 'business', 'customers', 'who is it for', 'prioriti'],
+  'product-strategist': ['idea', 'product', 'mvp', 'v1', 'feature', 'scope', 'roadmap', 'prd', 'requirement', 'launch', 'startup', 'market', 'business', 'customers', 'who is it for', 'prioriti'],
   'ux-researcher': ['user research', 'persona', 'interview', 'survey', 'competitor', 'journey', 'usability test', 'jobs to be done'],
   'growth-analyst': ['metric', 'kpi', 'analytics', 'funnel', 'conversion', 'retention', 'a/b', 'experiment', 'growth', 'acquisition', 'pricing strategy'],
   'ux-architect': ['ux', 'flow', 'wireframe', 'navigation', 'information architecture', 'sitemap', 'screen', 'onboarding', 'structure', 'page structure', 'usability'],
@@ -10,7 +10,7 @@ const KEYWORDS: Record<string, string[]> = {
   'accessibility-specialist': ['accessib', 'a11y', 'wcag', 'screen reader', 'contrast', 'keyboard', 'disab'],
   'motion-designer': ['animation', 'motion', 'transition', 'micro-interaction'],
   'brand-director': ['brand', 'logo', 'name', 'naming', 'positioning', 'tagline', 'identity', 'landing page'],
-  'software-architect': ['architecture', 'stack', 'framework', 'scal', 'hosting', 'database choice', 'tech', 'monolith', 'microservice'],
+  'software-architect': ['architecture', 'engineering', 'stack', 'framework', 'scal', 'hosting', 'database choice', 'tech', 'monolith', 'microservice'],
   'ai-engineer': ['ai feature', 'llm', 'chatbot', 'gpt', 'claude', 'rag', 'embedding', 'prompt injection'],
   'edge-ai-engineer': ['webgpu', 'webllm', 'on-device', 'in the browser', 'offline ai', 'local model', 'small model', 'free ai'],
   'prompt-engineer': ['prompt', 'system prompt', 'instruction', 'spec'],
@@ -34,6 +34,11 @@ const STAKES: Record<string, string[]> = {
   legal: ['legal', 'gdpr', 'law', 'licen', 'contract', 'compliance', 'privacy'],
   release: ['launch', 'release', 'go live', 'ship'],
 };
+const MUST: [string, RegExp][] = [
+  ['privacy-compliance', /\b(privacy|gdpr|personal data|legal)\b/],
+  ['security-engineer', /\b(security|secure|vulnerab\w*)\b/],
+  ['accessibility-specialist', /\b(accessib\w*|a11y|wcag)\b/],
+];
 const DEFAULT_PANEL = ['product-strategist', 'ux-architect', 'software-architect'];
 
 export type Plan = { experts: { slug: string; question: string }[]; stakes: string[]; reason: string; fallback: boolean };
@@ -47,6 +52,13 @@ export function routeQuestion(question: string, known: (slug: string) => boolean
     .sort((a, b) => b.score - a.score || a.order - b.order);
   let picked = scored.slice(0, max).map((x) => x.slug);
   const fallback = picked.length === 0;
+  // An angle the visitor names explicitly ("privacy angle", "security view") always gets its expert, even when
+  // other experts score higher: a real-model test asked for privacy and got no privacy expert.
+  for (const [slug, re] of MUST) {
+    if (!re.test(q) || picked.includes(slug) || !known(slug)) continue;
+    if (picked.length < max) picked.push(slug);
+    else { const i = picked.map((p) => MUST.some(([m, r]) => m === p && r.test(q))).lastIndexOf(false); if (i >= 0) picked[i] = slug; }
+  }
   for (const s of DEFAULT_PANEL) if (picked.length < 2 && !picked.includes(s) && known(s)) picked.push(s);
   if (fallback) picked = DEFAULT_PANEL.filter(known).slice(0, max);
   const stakes = Object.entries(STAKES).filter(([, ws]) => ws.some((w) => q.includes(w))).map(([k]) => k);

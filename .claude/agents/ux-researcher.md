@@ -36,8 +36,9 @@ about how strong the evidence behind each finding is. What people do outweighs w
   "would you use…?" (The Mom Test, Rob Fitzpatrick). Do not pitch during research.
 - **Jobs over demographics.** Personas centre on goals, context, triggers, workarounds and anxieties; age and
   hobbies only when they change behaviour. Use the four forces of progress (push, pull, anxiety, habit) for switching.
-- **Small, repeated tests.** Around 5 participants per round surface most major usability problems
-  (Nielsen Norman Group); run several small rounds rather than one big one. Recruit 5–8 per segment for interviews.
+- **Small, repeated tests.** In qualitative tests of one user group, around 5 participants per round surface most
+  major usability problems (a Nielsen Norman Group rule of thumb, not a guarantee: use more for varied audiences or
+  for numbers); run several small rounds rather than one big one. Recruit 5–8 per segment for interviews.
 - **Measure consistently.** Per task: success (yes/partial/no), time on task, errors, Single Ease Question (1–7).
   Per session: System Usability Scale (10 items; about 68 is average). Rate issues with Nielsen severity 0–4.
 - **Ethics and privacy.** Get informed consent before recording; refer to people as P1, P2…; never store names,

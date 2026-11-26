@@ -98,12 +98,23 @@ fs.writeFileSync(rel('web/public/team.json'), JSON.stringify({
 fs.writeFileSync(rel('web/public/library.json'), JSON.stringify(library, null, 1));
 
 // BrainyApp2: short system prompts that fit a 4,096-token on-device context (≤ 1,400 chars + web rules).
-const LITE_MAX = 1_400;
-const SKIP = /(evidence rule|NOT RUN|confirm at|change: confirm|verify .* docs|date what you cite|Every change ships)/i;
+const LITE_MAX = 1_200; // leaves room for the web rules and the longest task prompt within BUDGET.systemChars
+const SKIP = /(evidence rule|NOT RUN|confirm at|change: confirm|verify .* docs|date what you cite|Every change ships|Agent calls|in the same turn|never run commands|Use Read on|Read-only, always)/i;
+// Whole bullets (wrapped lines joined), clipped at a sentence boundary so the model never gets half a rule.
+const clip = (t, n = 230) => {
+  if (t.length <= n) return t;
+  const cut = t.slice(0, n);
+  const i = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('; '), cut.lastIndexOf(': '));
+  return i > 60 ? `${cut.slice(0, i).replace(/[;:,]$/, '')}.` : `${cut.slice(0, cut.lastIndexOf(' '))}…`;
+};
 export function litePrompt(d, body) {
-  const principles = (body.match(/## Operating principles\n([\s\S]*?)(\n## |\n### |$)/)?.[1] ?? '')
-    .split('\n').filter((l) => /^- /.test(l) && !SKIP.test(l) && !DROP_LINE.test(l)).slice(0, 5)
-    .map((l) => l.replace(/`/g, '').slice(0, 170));
+  const section = body.match(/## Operating principles\n([\s\S]*?)(\n## |\n### |$)/)?.[1] ?? '';
+  const bullets = section.split('\n').reduce((acc, l) => {
+    if (/^- /.test(l)) acc.push(l); else if (/^\s+\S/.test(l) && acc.length) acc[acc.length - 1] += ` ${l.trim()}`;
+    return acc;
+  }, []);
+  const principles = bullets.filter((l) => !SKIP.test(l) && !DROP_LINE.test(l)).slice(0, 5)
+    .map((l) => clip(l.replace(/`/g, '').replace(/\s+/g, ' ')));
   let out = `You are ${d.display.displayName}, ${d.display.title} at ${studio.studioName}. ${d.display.mission}\nStyle: ${d.display.personality}\nPrinciples:\n${principles.join('\n')}`;
   while (out.length > LITE_MAX && principles.length > 1) { principles.pop(); out = `You are ${d.display.displayName}, ${d.display.title} at ${studio.studioName}. ${d.display.mission}\nStyle: ${d.display.personality}\nPrinciples:\n${principles.join('\n')}`; }
   return out.slice(0, LITE_MAX);

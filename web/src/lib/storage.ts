@@ -18,13 +18,19 @@ const idb = (): Promise<IDBDatabase> => new Promise((res, rej) => {
   r.onupgradeneeded = () => r.result.createObjectStore('builds', { keyPath: 'id' });
   r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
 });
-export async function saveBuild(b: Build) {
+// Studio storage operations run one after another, so an Undo (save) can never be overtaken by the Clear before it.
+let queue: Promise<unknown> = Promise.resolve();
+const serial = <T,>(fn: () => Promise<T>): Promise<T> => { const run = queue.then(fn, fn); queue = run.catch(() => {}); return run; };
+export const saveBuild = (b: Build) => serial(() => saveBuildNow(b));
+export const clearBuilds = () => serial(() => clearBuildsNow());
+export const lastBuild = () => serial(() => lastBuildNow());
+async function saveBuildNow(b: Build) {
   try {
     const db = await idb();
     try { await new Promise((res, rej) => { const tx = db.transaction('builds', 'readwrite'); tx.objectStore('builds').put(b); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); } finally { db.close(); }
   } catch { /* storage unavailable */ }
 }
-export async function lastBuild(): Promise<Build | null> {
+async function lastBuildNow(): Promise<Build | null> {
   try {
     const db = await idb();
     try {
@@ -37,7 +43,7 @@ export async function lastBuild(): Promise<Build | null> {
   } catch { return null; }
 }
 /** Empty the Studio's saved pages (connections are closed after every use, so this is never blocked). */
-export async function clearBuilds() {
+async function clearBuildsNow() {
   try {
     const db = await idb();
     try { await new Promise((res, rej) => { const tx = db.transaction('builds', 'readwrite'); tx.objectStore('builds').clear(); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); } finally { db.close(); }

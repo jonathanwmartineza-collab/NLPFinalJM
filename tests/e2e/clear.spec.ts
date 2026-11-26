@@ -1,6 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
+// Phones get "Lite" as the recommended model; the tests choose Quality the way a returning visitor would.
+test.beforeEach(async ({ page }) => { await page.addInitScript(() => { try { if (!localStorage.getItem('ba2.tier')) localStorage.setItem('ba2.tier', 'quality'); } catch { /* storage blocked */ } }); });
+
 // Clear options: "Clear" (one tool, with an 8-second Undo) and "Free up space" (everything, after confirmation).
 test.skip(!!process.env.PW_BASE_URL, 'needs the mock engine (the live site runs the real model)');
 
@@ -9,7 +12,7 @@ async function open(page: Page, path: string) {
   await expect(page.locator('aside .row').first()).toBeAttached();
 }
 async function turnOnAI(page: Page) {
-  await page.getByRole('button', { name: /^(Download|Turn on AI) .*Balanced/ }).click();
+  await page.getByRole('button', { name: /^(Download|Turn on AI) .*Quality/ }).click();
   await expect(page.locator('#composer, textarea').first()).toBeVisible({ timeout: 10_000 });
   await expect(page.getByRole('progressbar')).toHaveCount(0, { timeout: 10_000 });
 }
@@ -101,7 +104,10 @@ test('studio: Clear removes the page and brief, Undo brings them back, and Gener
 
 test('Free up space asks first, deletes everything except settings, and the app works normally afterwards', async ({ page }) => {
   await open(page, '/expert/ux-architect');
+  const menu = page.getByRole('button', { name: 'Open the list of experts' });
+  if (await menu.isVisible()) await menu.click(); // phones: the theme button lives in the menu
   await page.getByRole('button', { name: /Change theme/ }).click(); // theme → light: a setting that must survive
+  if (await menu.isVisible()) await page.keyboard.press('Escape');
   await turnOnAI(page);
   await ask(page, 'Map the onboarding flow');
   await page.getByRole('button', { name: 'Clear options' }).click();
@@ -123,7 +129,7 @@ test('Free up space asks first, deletes everything except settings, and the app 
   await expect(toast(page)).toContainText(/Freed .*|Space freed\./);
   await expect(toast(page)).toContainText('download again');
   await expect(page.locator('.msg')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Download Balanced model' })).toBeVisible(); // the model is gone
+  await expect(page.getByRole('button', { name: 'Download Quality model' })).toBeVisible(); // the model is gone
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light'); // settings kept
   const left = await page.evaluate(() => ({ chats: localStorage.getItem('ba2-chats-v1'), mock: Object.keys(localStorage).filter((k) => k.startsWith('mock.cached')).length }));
   expect(left).toEqual({ chats: null, mock: 0 });

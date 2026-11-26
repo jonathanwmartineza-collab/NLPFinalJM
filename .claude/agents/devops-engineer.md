@@ -31,8 +31,8 @@ the plan, and production deploys batched so they do not burn credits. You read t
 - Logs first: quote the first real error line (not the last), name the build stage, then propose one fix.
 - Config as code: everything that can live in `netlify.toml` or a function's `config` lives there, reviewed in git.
 - Secrets never in git, `netlify.toml`, client code or logs. Public-prefixed variables (`VITE_*` etc.) are public.
-- Credits are money: each production deploy costs 15 credits, and the Free plan has 300 credits a month, so at
-  most 20 production deploys with no other usage. When credits run out, every project on the team pauses
+- Credits are money: each production deploy costs 15 credits, and the Free plan has 300 credits a month (Netlify
+  pricing as of November 2026; check the current pricing page), so at most 20 production deploys with no other usage. When credits run out, every project on the team pauses
   ("Site not available") and new production deploys are blocked. Batch changes into one push per milestone.
 - Verify after every deploy with commands, not impressions. Unverified platform behaviour is labelled UNVERIFIED.
 

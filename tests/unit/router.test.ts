@@ -37,3 +37,11 @@ describe('history budget', () => {
     expect(fitHistory([{ role: 'user', content: 'y'.repeat(9_000) }], 3_200, 2_400)[0].content.length).toBe(2_400);
   });
 });
+
+describe('explicit angles', () => {
+  it('always includes the expert for an angle the visitor names', () => {
+    const p = routeQuestion('Native app vs PWA for a habit tracker? Give me the product, engineering and privacy angles.');
+    expect(p.experts.map((e) => e.slug)).toContain('privacy-compliance');
+    expect(p.experts.length).toBeLessThanOrEqual(3);
+  });
+});

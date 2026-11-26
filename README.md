@@ -5,7 +5,7 @@
 Live site: https://brainyapp2.netlify.app
 
 - **Free and private.** The AI runs on your own device with [WebLLM](https://webllm.mlc.ai) and WebGPU. What you type never leaves your browser. There are no accounts, no API keys and no cost per answer.
-- **Choose a model once.** The first time, you pick a model and your browser downloads it from Hugging Face (about 0.85 GB for Balanced, measured; Quality is larger). It's saved for next time and works offline.
+- **Choose a model once.** The first time, you pick a model and your browser downloads it from Hugging Face (about 2.2 GB for Quality, the recommended model; Lite is about 0.7 GB). It's saved for next time and works offline.
 - **Same team in Claude Code.** The 31 agents in `.claude/agents` work in Claude Code for real, multi-file builds.
 
 ```mermaid
@@ -22,8 +22,7 @@ flowchart LR
 | Tier | Model | Graphics memory needed | Licence |
 |---|---|---|---|
 | Lite | Llama-3.2-1B-Instruct | ≈0.9 GB | Llama 3.2 Community Licence (Built with Llama) |
-| Balanced (default) | Qwen2.5-1.5B-Instruct | ≈1.6 GB | Apache-2.0 |
-| Quality | Phi-4-mini-instruct | ≈3.4 GB | MIT |
+| Quality (default) | Qwen3-4B | ≈3.4 GB | Apache-2.0 |
 
 The IDs are pinned in `web/src/ai/models.ts` and tested against the installed `@mlc-ai/web-llm` version. See `docs/models.md`.
 

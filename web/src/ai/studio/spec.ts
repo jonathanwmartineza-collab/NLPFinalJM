@@ -23,6 +23,23 @@ export const SpecSchema = z.object({
 });
 export type Spec = z.infer<typeof SpecSchema>;
 
+/**
+ * The same shape as a JSON Schema string, for WebLLM's grammar-constrained JSON mode. WebLLM 0.2.89 fails to start
+ * JSON mode without a schema ("GrammarMatcherInitError: Cannot pass non-string to std::string") on every model.
+ */
+const S = { type: 'string' };
+export const SPEC_JSON_SCHEMA = JSON.stringify({
+  type: 'object',
+  properties: {
+    title: S, tagline: S, palette: { type: 'string', enum: PALETTES }, cta: S,
+    sections: { type: 'array', items: { type: 'object', properties: {
+      kind: { type: 'string', enum: KINDS }, heading: S, intro: S,
+      items: { type: 'array', items: { type: 'object', properties: { title: S, text: S, meta: S }, required: ['title', 'text', 'meta'] } },
+    }, required: ['kind', 'heading', 'intro', 'items'] } },
+  },
+  required: ['title', 'tagline', 'palette', 'cta', 'sections'],
+});
+
 /** Find the first balanced {...} in a model reply (tolerates fences and chatter). */
 export function extractObject(text: string): string | null {
   const start = text.indexOf('{');

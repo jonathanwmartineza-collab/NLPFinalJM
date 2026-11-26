@@ -57,6 +57,7 @@ export default function StudioPage({ library }: { library: LibraryItem[] }) {
   const clear = useClearOptions({
     what: 'this Studio page, its versions and its brief',
     canClear: (versions.length > 0 || brief.trim().length > 0 || !!cc) && !busy,
+    answering: busy,
     onClear: () => {
       const snap = { versions, vi, brief, change, cc, stage, templateId };
       reset(); clearBuilds();

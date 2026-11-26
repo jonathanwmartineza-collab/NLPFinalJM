@@ -7,6 +7,8 @@ type Opts = {
   what: string;
   /** False when there is nothing to clear yet. */
   canClear: boolean;
+  /** True while the AI is answering (Clear waits for Stop or the end of the answer). */
+  answering?: boolean;
   /** Erase the tool's work now and return a function that puts it back (used by Undo). */
   onClear: () => () => void;
   /** Reset this tool's on-screen state after "Free up space" (storage is already gone). */
@@ -17,7 +19,7 @@ type Opts = {
  * Two-level clear options for a tool. Returns the trigger button (for the tool's header) and the panel
  * (rendered in the page flow, so it fits at 390px and is never clipped by a scrolling container).
  */
-export function useClearOptions({ what, canClear, onClear, onFreed }: Opts) {
+export function useClearOptions({ what, canClear, answering, onClear, onFreed }: Opts) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const id = useId();
@@ -40,9 +42,9 @@ export function useClearOptions({ what, canClear, onClear, onFreed }: Opts) {
   const askFree = () => { try { dlg.current?.showModal(); cancel.current?.focus(); } catch { /* no dialog support */ } };
   const free = async () => {
     setBusy(true);
-    const freed = await freeUpSpace();
-    onFreed();
-    setBusy(false); dlg.current?.close(); setOpen(false);
+    let freed: number | null = null;
+    try { freed = await freeUpSpace(); } catch { /* best effort: whatever could be deleted is gone */ }
+    finally { onFreed(); setBusy(false); dlg.current?.close(); setOpen(false); }
     trigger.current?.focus();
     showToast(freed === null
       ? 'Space freed. Your browser did not report how much. The AI model will download again next time.'
@@ -60,7 +62,7 @@ export function useClearOptions({ what, canClear, onClear, onFreed }: Opts) {
         <button type="button" className="btn ghost" onClick={clear} disabled={!canClear}>Clear</button>
         <p className="clear-note">
           <b>Erases</b> {what} and its saved history. <b>Keeps</b> the downloaded AI model, your other work and your settings.
-          <b> Next:</b> {canClear ? 'start a new idea right away. You can undo for 8 seconds.' : 'nothing to clear yet.'}
+          <b> Next:</b> {canClear ? 'start a new idea right away. You can undo for 8 seconds.' : answering ? 'press Stop or wait for the answer to finish, then clear.' : 'nothing to clear yet.'}
         </p>
       </div>
       <div className="clear-row">

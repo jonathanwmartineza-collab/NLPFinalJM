@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { parseSpec, fallbackSpec, extractObject } from '../../web/src/ai/studio/spec';
+import { parseSpec, fallbackSpec, extractObject, SPEC_JSON_SCHEMA, PALETTES, KINDS } from '../../web/src/ai/studio/spec';
 import { renderPage, esc } from '../../web/src/ai/studio/render';
-import { claudeCodePrompt } from '../../web/src/ai/studio/generate';
+import { claudeCodePrompt, thinSpec } from '../../web/src/ai/studio/generate';
 
 const good = { title: 'Calm Yoga', tagline: 'Small classes.', palette: 'forest', cta: 'Book', sections: [
   { kind: 'pricing', heading: 'Prices', items: [{ title: 'Drop-in', text: 'One class; Mat included', meta: '€15' }] },
@@ -51,5 +51,22 @@ describe('studio renderer', () => {
     expect(p).toMatch(/^ROLE:/);
     expect(p).toMatch(/A recipe app/);
     expect(p).toMatch(/SELF-CHECK/);
+  });
+});
+
+describe('SPEC_JSON_SCHEMA', () => {
+  it('is a JSON Schema string for WebLLM JSON mode that matches the spec fields', () => {
+    const s = JSON.parse(SPEC_JSON_SCHEMA);
+    expect(s.required).toEqual(['title', 'tagline', 'palette', 'cta', 'sections']);
+    expect(s.properties.palette.enum).toEqual([...PALETTES]);
+    expect(s.properties.sections.items.properties.kind.enum).toEqual([...KINDS]);
+  });
+});
+
+describe('thinSpec', () => {
+  it('rejects a page with only a contact section (real Lite output) and accepts a filled page', () => {
+    const only = parseSpec('{"title":"Repair Café","tagline":"Fix it.","palette":"rose","cta":"Join","sections":[{"kind":"contact","heading":"Contact","intro":"","items":[{"title":"Email","text":"Write to us","meta":""}]}]}')!;
+    expect(thinSpec(only)).toBe(true);
+    expect(thinSpec(parseSpec(JSON.stringify(good))!)).toBe(false);
   });
 });

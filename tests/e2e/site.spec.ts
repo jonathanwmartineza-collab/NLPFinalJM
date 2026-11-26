@@ -1,6 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
+// Phones get "Lite" as the recommended model; the tests choose Quality the way a returning visitor would.
+test.beforeEach(async ({ page }) => { await page.addInitScript(() => { try { if (!localStorage.getItem('ba2.tier')) localStorage.setItem('ba2.tier', 'quality'); } catch { /* storage blocked */ } }); });
+
 const LIVE = !!process.env.PW_BASE_URL;
 const mockOnly = () => test.skip(LIVE, 'needs the mock engine (the live site runs the real model)');
 
@@ -11,7 +14,7 @@ async function open(page: Page, path = '/') {
 async function turnOnAI(page: Page, path = '/') {
   await open(page, path);
   await expect(page.getByRole('group', { name: /Turn on the free AI/ })).toBeVisible();
-  await page.getByRole('button', { name: /^Download Balanced model/ }).click();
+  await page.getByRole('button', { name: /^Download Quality model/ }).click();
   await expect(page.getByRole('group', { name: /Turn on the free AI/ })).toHaveCount(0, { timeout: 10_000 });
   await expect(page.getByRole('progressbar')).toHaveCount(0, { timeout: 10_000 });
 }
@@ -32,7 +35,7 @@ test('nothing downloads before consent; the picker shows sizes and licences', as
   await expect(page.locator('#composer')).toHaveCount(0);
   await expect(page.getByText('Apache-2.0')).toBeVisible();
   await expect(page.getByText(/Built with Llama/)).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Download Balanced model' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Download Quality model' })).toBeVisible();
   await page.waitForTimeout(500);
   expect(external).toEqual([]);
 });
@@ -40,27 +43,29 @@ test('nothing downloads before consent; the picker shows sizes and licences', as
 test('download shows progress, then one expert streams an answer that survives a reload', async ({ page }) => {
   mockOnly();
   await open(page, '/expert/ui-designer');
-  await page.getByRole('button', { name: /^Download Balanced model/ }).click();
+  await page.getByRole('button', { name: /^Download Quality model/ }).click();
   await expect(page.getByRole('progressbar')).toBeVisible();
   await expect(page.locator('#composer')).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByText('On your device · Balanced')).toBeVisible();
+  await expect(page.getByText('On your device · Quality')).toBeVisible();
   await page.locator('#composer').fill('Suggest a palette for a calm yoga studio');
-  await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: 'Send' }).click(); // phones send with the button, not Enter
   await expect(page.locator('.msg.ai .md').last()).toContainText('Bastien here (mock engine)');
   await expect(page.getByRole('status').filter({ hasText: 'Reply complete' })).toHaveCount(1);
   await page.reload();
   await expect(page.locator('.msg.user')).toContainText('calm yoga studio');
   // The model is remembered as downloaded.
-  await expect(page.getByRole('button', { name: 'Turn on AI (Balanced)' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Turn on AI (Quality)' })).toBeVisible();
 });
 
 test('Stop interrupts an answer', async ({ page }) => {
   mockOnly();
   await turnOnAI(page, '/expert/ux-architect');
-  await page.locator('#composer').fill('Explain onboarding flows');
-  await page.keyboard.press('Enter');
+  await page.locator('#composer').fill('[[slow]] Explain onboarding flows');
+  await page.getByRole('button', { name: 'Send' }).click();
+  await expect(page.locator('.msg.ai .md').last()).toContainText('Slow paragraph 1');
   await page.getByRole('button', { name: 'Stop' }).click();
-  await expect(page.locator('#composer')).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Send' })).toBeVisible();
+  await expect(page.locator('.msg.ai').last()).not.toContainText('Slow paragraph 30');
 });
 
 test('team mode runs experts one after another and combines one answer', async ({ page }) => {
@@ -156,7 +161,7 @@ for (const [w, h] of [[340, 700], [390, 844], [1440, 900]] as const) {
       expect(box.height).toBeGreaterThanOrEqual(44);
       await expect(page.locator('.owner-mark')).toBeVisible();
       if (w < 360) {
-        await expect(page.locator('.owner-name')).not.toBeInViewport(); // the mark alone; the name stays as the link's accessible name
+        expect((await page.locator('.owner-text').boundingBox())?.width ?? 0).toBeLessThanOrEqual(2); // the mark alone; the name stays as the link's accessible name
       } else {
         const name = page.locator('.owner-name');
         expect(await name.evaluate((e) => e.scrollWidth <= e.clientWidth + 1 && parseFloat(getComputedStyle(e).fontSize) >= 14)).toBe(true);
@@ -173,7 +178,7 @@ test('first-time visitor reaches an answer in 3 steps: download, pick an example
   mockOnly();
   await open(page, '/');
   await expect(page.getByRole('list', { name: 'Get started in 3 steps' })).toBeVisible();
-  await page.getByRole('button', { name: /^Download Balanced model/ }).click(); // step 1
+  await page.getByRole('button', { name: /^Download Quality model/ }).click(); // step 1
   await expect(page.locator('#composer')).toBeVisible({ timeout: 10_000 });
   await page.getByRole('button', { name: /landing page for a coffee subscription/ }).click(); // step 2
   await page.getByRole('button', { name: 'Send' }).click(); // step 3
@@ -182,12 +187,16 @@ test('first-time visitor reaches an answer in 3 steps: download, pick an example
 
 test('high contrast mode turns on, persists across reloads and turns off', async ({ page }) => {
   await open(page, '/');
+  const menu = page.getByRole('button', { name: 'Open the list of experts' });
+  if (await menu.isVisible()) await menu.click(); // phones: the control lives in the menu
   const btn = page.getByRole('button', { name: 'High contrast' });
   await btn.click();
   await expect(btn).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('html')).toHaveAttribute('data-contrast', 'high');
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-contrast', 'high');
+  await expect(page.locator('aside .row').first()).toBeAttached();
+  if (await menu.isVisible()) await menu.click();
   await page.getByRole('button', { name: 'High contrast' }).click();
   await expect(page.locator('html')).not.toHaveAttribute('data-contrast', 'high');
 });
@@ -214,8 +223,8 @@ test('phone: the Studio brief and the model picker are reachable, and chat examp
   const brief = page.getByLabel('Your brief');
   await brief.scrollIntoViewIfNeeded();
   await expect(brief).toBeInViewport();
-  await page.getByRole('button', { name: /^Download Balanced model/ }).scrollIntoViewIfNeeded();
-  await expect(page.getByRole('button', { name: /^Download Balanced model/ })).toBeInViewport();
+  await page.getByRole('button', { name: /^Download Quality model/ }).scrollIntoViewIfNeeded();
+  await expect(page.getByRole('button', { name: /^Download Quality model/ })).toBeInViewport();
   await open(page, '/expert/ui-designer');
   const first = page.locator('.chip-btn').first();
   expect((await first.boundingBox())!.height).toBeGreaterThan(40);

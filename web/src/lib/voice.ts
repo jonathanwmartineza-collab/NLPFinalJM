@@ -23,6 +23,8 @@ export function useSpeech() {
   const [enabled, setEnabled] = useState(getPref('speak', '0') === '1');
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [voice, setVoice] = useState(getPref('voice', ''));
+  // Stop reading aloud when the visitor leaves this chat (another expert, the Studio, …).
+  useEffect(() => () => { if (canSpeak) speechSynthesis.cancel(); }, []);
   useEffect(() => {
     if (!canSpeak) return;
     const load = () => setVoices(speechSynthesis.getVoices());
