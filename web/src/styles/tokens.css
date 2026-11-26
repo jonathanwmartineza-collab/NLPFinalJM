@@ -1,56 +1,148 @@
-/* BrainyApp2 design tokens. Light first; dark values follow the system or the theme toggle.
-   Contrast: text ≥ 4.5:1, control borders and focus rings ≥ 3:1 (checked in reports/a11y.md). */
+/* BrainyApp2 design tokens: frosted glass over a soft colour field, system fonts only.
+   Light and dark follow the system or the theme button; high contrast follows the contrast button or
+   prefers-contrast: more. Text ≥ 4.5:1 and control borders ≥ 3:1 against the most tinted panel colour.
+   Glass falls back to solid panels without backdrop-filter, with reduced transparency or reduced motion. */
 :root {
   color-scheme: light;
-  --bg: #ffffff;
-  --side: #f4efe9;
-  --side-hover: #ebe4db;
-  --panel: #ffffff;
-  --raised: #faf7f3;
-  --input: #f8f5f1;
-  --ink: #1c1917;
-  --soft: #5f5750;
-  --faint: #685f57;
-  --line: #e4dcd2;          /* decorative dividers */
-  --control: #8c847c;       /* input and button borders, 3.6:1 on white */
-  --accent: #c2410c;        /* 5.2:1 with white text */
+  --field: radial-gradient(60% 55% at 8% 4%, #c9d8ff 0%, transparent 70%),
+           radial-gradient(55% 50% at 96% 8%, #f6d3ea 0%, transparent 70%),
+           radial-gradient(60% 55% at 78% 100%, #c8ecdf 0%, transparent 70%),
+           radial-gradient(50% 50% at 4% 96%, #e2d9ff 0%, transparent 70%),
+           #eef1f8;
+  --solid: #f7f8fc;            /* opaque fallback for glass */
+  --glass: rgba(255, 255, 255, .62);
+  --glass-strong: rgba(255, 255, 255, .7);
+  --glass-soft: rgba(255, 255, 255, .5);
+  --glass-hover: rgba(255, 255, 255, .9);
+  --edge: rgba(255, 255, 255, .85);     /* glossy top highlight */
+  --rim: rgba(255, 255, 255, .6);       /* panel outline */
+  --blur: 22px;
+  --ink: #14161c;
+  --soft: #474d5c;
+  --faint: #545b6b;
+  --line: rgba(20, 22, 28, .1);
+  --control: #757b8b;          /* input and ghost-button borders, ≥ 3:1 on the panels */
+  --logo-teal: #0b8a86; --logo-lav: #a18bf0; --logo-line: #8a90a0;
+  --accent: #2f5bd3;           /* 5.9:1 with white text */
+  --accent-top: #3d67de;
+  --accent-hover: #2449b4;
   --accent-ink: #ffffff;
-  --accent-soft: #fbe9df;
-  --focus: #c2410c;
+  --accent-soft: rgba(47, 91, 211, .12);
+  --accent-glow: rgba(47, 91, 211, .45);
+  --focus: #2f5bd3;
+  --disabled-bg: rgba(20, 22, 28, .08);
+  --disabled-ink: #6b7180;
   --ok: #1f7a4a;
   --warn: #8a5a00;
   --err: #b42318;
   --op: #6b3fb8; --op-bg: #efe8fb;
   --so: #1c5aa3; --so-bg: #e5effb;
   --ha: #1d7044; --ha-bg: #e3f4ea;
-  --radius: 10px;
-  --radius-sm: 8px;
+  --code-bg: #141725; --code-ink: #eef0f6;
+  --bw: 1px;                   /* border width; 2px in high contrast */
+  --radius: 18px;
+  --radius-sm: 12px;
+  --radius-lg: 26px;
+  --pill: 999px;
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --shadow: 0 1px 2px rgba(28, 25, 23, .06), 0 8px 24px rgba(28, 25, 23, .08);
+  --shadow: 0 1px 2px rgba(20, 22, 40, .06), 0 12px 32px -8px rgba(20, 22, 40, .16);
+  --shadow-sm: 0 1px 2px rgba(20, 22, 40, .06), 0 4px 12px -4px rgba(20, 22, 40, .12);
+  --t-fast: 150ms; --t: 220ms; --t-slow: 300ms;
+  --ease: cubic-bezier(.2, .8, .2, 1);
   --sidebar-w: 320px;
 }
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #141210; --side: #1d1a17; --side-hover: #27231f; --panel: #171513; --raised: #1f1c19; --input: #201d1a;
-    --ink: #eee8e1; --soft: #b9b0a6; --faint: #9c938a; --line: #34302b; --control: #857c73;
-    --accent: #fb923c; --accent-ink: #1c1917; --accent-soft: #3a2416; --focus: #fdba74;
+    --field: radial-gradient(60% 55% at 8% 4%, #243a8a 0%, transparent 70%),
+             radial-gradient(55% 50% at 96% 8%, #5a2552 0%, transparent 70%),
+             radial-gradient(60% 55% at 78% 100%, #154a44 0%, transparent 70%),
+             radial-gradient(50% 50% at 4% 96%, #3a2a78 0%, transparent 70%),
+             #0c0f1c;
+    --solid: #151826;
+    --glass: rgba(24, 28, 44, .6); --glass-strong: rgba(18, 21, 34, .72); --glass-soft: rgba(255, 255, 255, .06); --glass-hover: rgba(255, 255, 255, .12);
+    --edge: rgba(255, 255, 255, .14); --rim: rgba(255, 255, 255, .1);
+    --ink: #eef0f6; --soft: #b8bdcc; --faint: #a3a9ba; --line: rgba(255, 255, 255, .1); --control: #858ca0;
+    --logo-teal: #3fd1c6; --logo-lav: #c4b5fd; --logo-line: #7d849a;
+  --accent: #8fb0ff; --accent-top: #a3bfff; --accent-hover: #b3caff; --accent-ink: #0b1020; --accent-soft: rgba(143, 176, 255, .16); --accent-glow: rgba(143, 176, 255, .35); --focus: #a9c2ff;
+    --disabled-bg: rgba(255, 255, 255, .08); --disabled-ink: #9298aa;
     --ok: #6ee7a8; --warn: #fcd34d; --err: #fca5a5;
     --op: #c9adff; --op-bg: #2b2140; --so: #9cc6ff; --so-bg: #18283d; --ha: #8fe0b0; --ha-bg: #15301f;
-    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    --code-bg: #090b14;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 14px 36px -8px rgba(0, 0, 0, .55);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 4px 12px -4px rgba(0, 0, 0, .45);
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #141210; --side: #1d1a17; --side-hover: #27231f; --panel: #171513; --raised: #1f1c19; --input: #201d1a;
-  --ink: #eee8e1; --soft: #b9b0a6; --faint: #9c938a; --line: #34302b; --control: #857c73;
-  --accent: #fb923c; --accent-ink: #1c1917; --accent-soft: #3a2416; --focus: #fdba74;
+  --field: radial-gradient(60% 55% at 8% 4%, #243a8a 0%, transparent 70%),
+           radial-gradient(55% 50% at 96% 8%, #5a2552 0%, transparent 70%),
+           radial-gradient(60% 55% at 78% 100%, #154a44 0%, transparent 70%),
+           radial-gradient(50% 50% at 4% 96%, #3a2a78 0%, transparent 70%),
+           #0c0f1c;
+  --solid: #151826;
+  --glass: rgba(24, 28, 44, .6); --glass-strong: rgba(18, 21, 34, .72); --glass-soft: rgba(255, 255, 255, .06); --glass-hover: rgba(255, 255, 255, .12);
+  --edge: rgba(255, 255, 255, .14); --rim: rgba(255, 255, 255, .1);
+  --ink: #eef0f6; --soft: #b8bdcc; --faint: #a3a9ba; --line: rgba(255, 255, 255, .1); --control: #858ca0;
+  --logo-teal: #3fd1c6; --logo-lav: #c4b5fd; --logo-line: #7d849a;
+  --accent: #8fb0ff; --accent-top: #a3bfff; --accent-hover: #b3caff; --accent-ink: #0b1020; --accent-soft: rgba(143, 176, 255, .16); --accent-glow: rgba(143, 176, 255, .35); --focus: #a9c2ff;
+  --disabled-bg: rgba(255, 255, 255, .08); --disabled-ink: #9298aa;
   --ok: #6ee7a8; --warn: #fcd34d; --err: #fca5a5;
   --op: #c9adff; --op-bg: #2b2140; --so: #9cc6ff; --so-bg: #18283d; --ha: #8fe0b0; --ha-bg: #15301f;
-  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  --code-bg: #090b14;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 14px 36px -8px rgba(0, 0, 0, .55);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 4px 12px -4px rgba(0, 0, 0, .45);
 }
+
+/* Solid fallback: no blur support, reduced transparency or reduced motion. :root:root:root outranks the
+   theme selectors above (specificity 0,3,0) so the fallback wins in every theme. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root:root:root { --glass: var(--solid); --glass-strong: var(--solid); --blur: 0px; }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-reduced-motion: reduce) {
+  :root:root:root { --glass: var(--solid); --glass-strong: var(--solid); --blur: 0px; }
+}
+
+/* High contrast for projectors: flat solid surfaces, black/white text, 2px outlines, no blur or glow.
+   On with the contrast button (data-contrast) or the system setting (prefers-contrast: more). */
+:root[data-contrast="high"] {
+  --field: #ffffff; --solid: #ffffff; --glass: #ffffff; --glass-strong: #ffffff; --glass-soft: #ffffff; --glass-hover: #e8eeff;
+  --edge: transparent; --rim: #000000; --blur: 0px;
+  --ink: #000000; --soft: #1a1a1a; --faint: #1a1a1a; --line: #000000; --control: #000000;
+  --logo-teal: #00605d; --logo-lav: #4b2a9e; --logo-line: #000000;
+  --accent: #0033aa; --accent-top: #0033aa; --accent-hover: #001f70; --accent-ink: #ffffff; --accent-soft: #dfe7ff; --accent-glow: transparent; --focus: #000000;
+  --disabled-bg: #e6e6e6; --disabled-ink: #3d3d3d;
+  --ok: #005a2b; --warn: #5c3c00; --err: #8f0f05;
+  --op: #3d1a80; --op-bg: #ffffff; --so: #0b3a73; --so-bg: #ffffff; --ha: #0b4d2a; --ha-bg: #ffffff;
+  --shadow: none; --shadow-sm: none; --bw: 2px;
+}
+:root[data-contrast="high"][data-theme="dark"] {
+  --field: #000000; --solid: #000000; --glass: #000000; --glass-strong: #000000; --glass-soft: #000000; --glass-hover: #1f1f1f;
+  --rim: #ffffff; --ink: #ffffff; --soft: #f2f2f2; --faint: #f2f2f2; --line: #ffffff; --control: #ffffff;
+  --logo-teal: #5ef2e6; --logo-lav: #d9ccff; --logo-line: #ffffff;
+  --accent: #ffd60a; --accent-top: #ffd60a; --accent-hover: #ffe55c; --accent-ink: #000000; --accent-soft: #332b00; --focus: #ffd60a;
+  --disabled-bg: #2b2b2b; --disabled-ink: #d0d0d0;
+  --ok: #7dffb3; --warn: #ffe066; --err: #ff9b9b;
+  --op: #e0d0ff; --op-bg: #000000; --so: #bcdcff; --so-bg: #000000; --ha: #b0f5cc; --ha-bg: #000000;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-contrast="high"]:not([data-theme="light"]) {
+    --field: #000000; --solid: #000000; --glass: #000000; --glass-strong: #000000; --glass-soft: #000000; --glass-hover: #1f1f1f;
+    --rim: #ffffff; --ink: #ffffff; --soft: #f2f2f2; --faint: #f2f2f2; --line: #ffffff; --control: #ffffff;
+    --logo-teal: #5ef2e6; --logo-lav: #d9ccff; --logo-line: #ffffff;
+  --accent: #ffd60a; --accent-top: #ffd60a; --accent-hover: #ffe55c; --accent-ink: #000000; --accent-soft: #332b00; --focus: #ffd60a;
+    --disabled-bg: #2b2b2b; --disabled-ink: #d0d0d0;
+    --ok: #7dffb3; --warn: #ffe066; --err: #ff9b9b;
+    --op: #e0d0ff; --op-bg: #000000; --so: #bcdcff; --so-bg: #000000; --ha: #b0f5cc; --ha-bg: #000000;
+  }
+}
+@media (prefers-contrast: more) {
+  :root:not([data-contrast]) { --glass: var(--solid); --glass-strong: var(--solid); --blur: 0px; --ink: CanvasText; --soft: CanvasText; --faint: CanvasText; --line: CanvasText; --control: CanvasText; --edge: transparent; --bw: 2px; --shadow: none; --shadow-sm: none; }
+}
+
 /* Department avatar colours: white text on each is ≥ 4.5:1. */
 .dept-Leadership { --c: #6b3fb8; } .dept-Product { --c: #1f64b0; } .dept-Design { --c: #b4532a; }
 .dept-Engineering { --c: #23784f; } .dept-Quality { --c: #8a5a00; } .dept-Launch { --c: #0e6f7d; } .dept-Governance { --c: #a3344f; }

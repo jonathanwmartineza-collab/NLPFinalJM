@@ -33,6 +33,8 @@ Full table: `docs/agent-brains.md` (generated).
 - A push to main that changes site files (`scripts/build-paths.txt`) is a Netlify production deploy (15 credits): batch changes. Docs-only pushes are skipped.
 - The site is static: never add API keys, server AI calls or secrets. Model IDs come from the pinned `@mlc-ai/web-llm` package.
 - Never link to or describe any private or paid edition of this studio.
+- Privacy: the only personal information on the site is the top-bar logo "Jonathan Martinez · AI Practitioner" and the footer line "© 2026 Jonathan Martinez. All rights reserved." No other names, no emails, usernames, code-repository links, credits, "made by"/"built with" lines or audience wording on the site or in the repo (licence attributions required by a licence stay). The e2e privacy test enforces this.
+- Commits: author is the owner's git identity (set with `git config user.name` / `user.email`, never written into repo files); no co-author lines.
 
 ## Repository map
 - `.claude/agents/` agents (single source of truth; `display:` feeds the website) · `.claude/skills/` skills (`docs/skills-lock.md`)

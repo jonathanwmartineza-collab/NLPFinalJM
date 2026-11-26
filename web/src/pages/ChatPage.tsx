@@ -24,7 +24,7 @@ export default function ChatPage({ agent }: { agent: Agent }) {
   const speech = useSpeech();
   const ready = useEngine().status === 'ready';
 
-  useEffect(() => { end.current?.scrollIntoView({ block: 'end' }); }, [msgs, busy]);
+  useEffect(() => { if (msgs.length) end.current?.scrollIntoView({ block: 'end' }); }, [msgs, busy]);
   useEffect(() => () => ctrl.current?.abort(), []);
 
   async function send(text: string) {
@@ -54,7 +54,7 @@ export default function ChatPage({ agent }: { agent: Agent }) {
   }
 
   return (
-    <div className="chat">
+    <div className={`chat${ready ? '' : ' gated'}`}>
       <header className="chat-head">
         <Avatar a={agent} lg />
         <div style={{ flex: 1 }}>
@@ -85,7 +85,7 @@ export default function ChatPage({ agent }: { agent: Agent }) {
         {err && <p className="notice err" role="alert">{err}</p>}
         <div ref={end} />
       </div>
-      <div className="composer-wrap">
+      <div className="composer-wrap" id="ai-setup">
         {ready ? <Composer placeholder={`Ask ${agent.name}…`} busy={busy} onSend={send} onStop={() => ctrl.current?.abort()} seed={seed} />
           : <EngineGate copyText={`${system(agent.slug)}\n\nMy question: `} />}
         <ChatFooter onCleared={() => setMsgs([])} />

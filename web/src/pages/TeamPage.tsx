@@ -35,9 +35,14 @@ export default function TeamPage({ team }: { team: Team }) {
   const nova = team.agents.find((a) => a.slug === 'orchestrator')!;
   const by = (s: string) => team.agents.find((a) => a.slug === s);
   const ready = useEngine().status === 'ready';
-  useEffect(() => { end.current?.scrollIntoView({ block: 'end' }); }, [turns, draft, chips, busy]);
+  useEffect(() => { if (turns.length || busy) end.current?.scrollIntoView({ block: 'end' }); }, [turns, draft, chips, busy]);
   useEffect(() => () => ctrl.current?.abort(), []);
   const persist = (t: Turn[]) => saveChat('__team', t as any);
+  const toSetup = () => {
+    const box = document.getElementById('ai-setup');
+    box?.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    box?.querySelector<HTMLElement>('input:checked, button')?.focus({ preventScroll: true });
+  };
 
   async function ask(q: string) {
     setErr(''); setDraft(''); setChips([]); setBusy(true); setSince(Date.now()); setPhase(`${nova.name} is choosing experts`); setLive(`${nova.name} is choosing experts`);
@@ -86,7 +91,7 @@ export default function TeamPage({ team }: { team: Team }) {
   }
 
   return (
-    <div className="chat">
+    <div className={`chat${ready ? '' : ' gated'}`}>
       <header className="chat-head">
         <Avatar a={nova} lg />
         <div style={{ flex: 1 }}>
@@ -101,6 +106,14 @@ export default function TeamPage({ team }: { team: Team }) {
       <div className="messages" aria-label="Team conversation">
         {turns.length === 0 && !busy && (
           <div className="examples">
+            <ol className="start" aria-label="Get started in 3 steps">
+              <li data-done={ready}>
+                <b>Turn on the free AI</b>
+                <span>{ready ? 'Done. The AI is running on your device.' : <>Download the recommended model once. <button type="button" className="link-btn" onClick={toSetup}>Go to the model picker</button></>}</span>
+              </li>
+              <li><b>Ask the team</b><span>Tap an example below or type your own question.</span></li>
+              <li><b>Get one answer</b><span>{nova.name} combines the experts' answers. Open “Who contributed” to see each one.</span></li>
+            </ol>
             <p>Ask a question that spans several areas. {nova.name} will bring in the right experts and give you one answer. For example:</p>
             {EXAMPLES.map((p) => <button key={p} type="button" className="chip-btn" onClick={() => setSeed({ text: p, n: Date.now() })}>{p}</button>)}
           </div>
@@ -137,7 +150,7 @@ export default function TeamPage({ team }: { team: Team }) {
         {err && <p className="notice err" role="alert">{err}</p>}
         <div ref={end} />
       </div>
-      <div className="composer-wrap">
+      <div className="composer-wrap" id="ai-setup">
         {ready ? <Composer placeholder="Ask the whole team…" busy={busy} onSend={ask} onStop={() => ctrl.current?.abort()} seed={seed} />
           : <EngineGate />}
         <ChatFooter research={team.studio.researchDate} onCleared={() => setTurns([])} />

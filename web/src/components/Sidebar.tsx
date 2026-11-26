@@ -8,8 +8,8 @@ export function Avatar({ a, lg }: { a: Pick<Agent, 'department' | 'monogram' | '
   return <span className={`av dept-${a.department}${lg ? ' lg' : ''}`} aria-hidden="true">{a.monogram || a.name[0]}</span>;
 }
 
-export default function Sidebar({ team, path, costMode, open, onClose, theme, onTheme }: {
-  team: Team; path: string; costMode: string; open: boolean; onClose: () => void; theme: string; onTheme: () => void;
+export default function Sidebar({ team, path, costMode, open, onClose, theme, onTheme, contrast, onContrast }: {
+  team: Team; path: string; costMode: string; open: boolean; onClose: () => void; theme: string; onTheme: () => void; contrast: boolean; onContrast: () => void;
 }) {
   const [q, setQ] = useState('');
   const orchestrator = team.agents.find((a) => a.slug === 'orchestrator');
@@ -25,9 +25,9 @@ export default function Sidebar({ team, path, costMode, open, onClose, theme, on
         <a href="/" className="brand" onClick={go}><span className="brand-mark" aria-hidden="true">B</span><b>{team.studio.name}</b></a>
         <p className="tagline">{team.studio.tagline}</p>
         <nav className="side-links" aria-label="Site">
-          <a href="/resources" onClick={go}>Resources</a><span aria-hidden="true">·</span>
-          <a href="/guide" onClick={go}>How it was built</a><span aria-hidden="true">·</span>
-          {team.studio.repoUrl && <a href={team.studio.repoUrl} target="_blank" rel="noopener noreferrer">Source code</a>}
+          <a href="/guide" onClick={go} aria-current={cur('/guide')}>Guide</a>
+          <a href="/resources" onClick={go} aria-current={cur('/resources')}>Resources</a>
+          <a href="/privacy" onClick={go} aria-current={cur('/privacy')}>Privacy</a>
         </nav>
       </div>
       <div className="side-tools">
@@ -39,6 +39,9 @@ export default function Sidebar({ team, path, costMode, open, onClose, theme, on
             : theme === 'light'
               ? <g fill="currentColor"><circle cx="12" cy="12" r="4.5" /><path d="M11 1h2v3h-2zm0 19h2v3h-2zM1 11h3v2H1zm19 0h3v2h-3zM4.2 5.6l1.4-1.4 2.1 2.1-1.4 1.4zm12.1 12.1 1.4-1.4 2.1 2.1-1.4 1.4zM4.2 18.4l2.1-2.1 1.4 1.4-2.1 2.1zM16.3 6.3l2.1-2.1 1.4 1.4-2.1 2.1z" /></g>
               : <path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2v16a8 8 0 0 1 0-16z" />}</svg>
+        </button>
+        <button type="button" className="icon-btn" onClick={onContrast} aria-pressed={contrast} aria-label="High contrast" title={contrast ? 'High contrast: on' : 'High contrast: off'}>
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm0 2a8 8 0 0 0 0 16V4zM3 21 21 3l1.4 1.4L4.4 22.4z" /></svg>
         </button>
       </div>
       <div className="side-scroll">

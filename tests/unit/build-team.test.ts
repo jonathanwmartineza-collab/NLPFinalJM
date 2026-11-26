@@ -16,8 +16,8 @@ describe('team build output', () => {
       for (const k of ['slug', 'name', 'title', 'department', 'personality', 'mission', 'examplePrompts']) expect(a).toHaveProperty(k);
     }
     expect(team.studio.name).toBe('BrainyApp2');
-    const cfg = JSON.parse(fs.readFileSync('studio.config.json', 'utf8'));
-    expect(team.studio.repoUrl).toBe(cfg.repoPublic === false ? '' : cfg.repoUrl); // no dead links while the repo is private
+    expect(team.studio).not.toHaveProperty('repoUrl'); // the site links to no code repository
+    expect(JSON.stringify(team)).not.toMatch(/github\.com|gitlab\.com|bitbucket\.org/i);
   });
   it('generates a lite on-device prompt for every agent within the context budget', () => {
     expect(Object.keys(lite.agents).length).toBe(31);

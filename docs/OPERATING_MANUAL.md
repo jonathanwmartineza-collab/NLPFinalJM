@@ -12,7 +12,7 @@ This manual is for any Claude Code session opened on this repository. Its job: t
 
 | Thing | Value |
 |---|---|
-| Repository | https://github.com/jonathanwmartineza-collab/BrainyApp2 (public), default branch `main` |
+| Repository | This repository (the `origin` remote of your checkout), default branch `main` |
 | Live site | https://brainyapp2.netlify.app |
 | Netlify project | `brainyapp2` (Project ID `a6a02317-dcbb-4207-9494-b610da373266`, public, not a secret) |
 | Netlify pages | Deploys: https://app.netlify.com/projects/brainyapp2/deploys · Settings: https://app.netlify.com/projects/brainyapp2/configuration/general |
@@ -22,7 +22,6 @@ This manual is for any Claude Code session opened on this repository. Its job: t
 | Build | `npm ci && npm run build` (Node 22) → `web/dist` |
 | Checks | `./scripts/gates.sh` (all gates, evidence in `reports/gates.md`) · `./scripts/verify-live.sh` (live check) |
 | Session setup | Automatic: `.claude/settings.json` runs `scripts/setup-cloud.sh` at session start (npm ci, a Chrome for tests, git identity, live-site reachability). Run it again by hand if a session reports missing packages. |
-| Repo visibility | **Private** while the project is being finished. `studio.config.json` → `"repoPublic": false` hides every GitHub link on the site. When the owner makes the repo public, set it to `true` in the same update (a test checks this). |
 
 **Session requirements (the owner sets these once):**
 1. Claude Code session opened on **BrainyApp2** with the Claude GitHub App allowed to push (already done).
@@ -103,7 +102,7 @@ Prefer `netlify.toml` (in the repo, reviewed, versioned) over dashboard settings
 | Symptom | Fix |
 |---|---|
 | `git push` rejected (non-fast-forward) | `git fetch origin main && git rebase origin/main`, re-run gates, push again |
-| Push refused by the proxy / 403 | The Claude GitHub App lost access: ask the owner to re-add BrainyApp2 at GitHub → Settings → Applications → Claude → Repository access |
+| Push refused by the proxy / 403 | The Claude GitHub App lost access: ask the owner to re-add this repository at GitHub → Settings → Applications → Claude → Repository access |
 | `verify-live.sh` says UNREACHABLE | Network access isn't Full: use Chrome (section 4) or report NOT RUN |
 | Live `version.json` still shows an older commit after 10 min | Check Deploys for a failed or skipped build. A skip is correct when only docs changed |
 | Playwright can't find Chrome | Set `CHROME_PATH` to the preinstalled Chrome, or `npx playwright install chromium` |
@@ -119,6 +118,6 @@ Prefer `netlify.toml` (in the repo, reviewed, versioned) over dashboard settings
 - "Add an expert for email marketing in the Product department."
 - "The team answer feels too long: shorten the synthesis to 150 words."
 - "Netlify says the last deploy failed. Fix it."
-- "Change the welcome dialog text to Spanish and English." (asks one question first: replace or add a language switch?)
+- "Translate the 3-step start on the home page into Spanish and English." (asks one question first: replace or add a language switch?)
 
 Each one follows section 3 end to end and finishes with a verified live update.

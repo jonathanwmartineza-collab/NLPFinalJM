@@ -8,20 +8,13 @@ const Ext = ({ href, children }: { href: string; children: React.ReactNode }) =>
 const Page = ({ children }: { children: React.ReactNode }) => <div className="page" tabIndex={0} role="region" aria-label="Page content"><div className="page-inner prose">{children}</div></div>;
 
 export function ResourcesPage({ team }: { team: Team }) {
-  const repo = team.studio.repoUrl;
   return (
     <Page>
       <h1>Resources</h1>
       <p className="lede">Everything this free studio relies on. Research dated {team.studio.researchDate}; models, browsers and limits change, so check the sources.</p>
-      <h2>This project</h2>
-      {repo ? <ul>
-        <li><Ext href={repo}>Source code on GitHub</Ext>: agents in <code>.claude/agents</code>, skills in <code>.claude/skills</code>, knowledge in <code>knowledge/</code>.</li>
-        <li><Ext href={`${repo}/blob/main/docs/MASTER_PROMPT.md`}>The audited master prompt</Ext> used to build it, and the <a href="/guide" onClick={onLinkClick}>step-by-step guide</a>.</li>
-        <li><Ext href={`${repo}/blob/main/docs/models.md`}>Models and licences</Ext> · <Ext href={`${repo}/blob/main/docs/skills-lock.md`}>Skills lock</Ext></li>
-      </ul> : <p>The source code isn't public yet. How the site was built is on the <a href="/guide" onClick={onLinkClick}>guide page</a>; the models and their licences are listed below.</p>}
       <h2>On-device AI</h2>
       <ul>
-        <li><Ext href="https://github.com/mlc-ai/web-llm">WebLLM</Ext> (Apache-2.0) by the <Ext href="https://mlc.ai">MLC</Ext> team runs the models in your browser with <Ext href="https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API">WebGPU</Ext>. <Ext href="https://webllm.mlc.ai/models/">Model list</Ext>.</li>
+        <li><Ext href="https://webllm.mlc.ai">WebLLM</Ext> (Apache-2.0) by the <Ext href="https://mlc.ai">MLC</Ext> team runs the models in your browser with <Ext href="https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API">WebGPU</Ext>. <Ext href="https://webllm.mlc.ai/models/">Model list</Ext>.</li>
         {TIERS.map((t) => <li key={t.id}><b>{t.label}</b>: <Ext href={t.source}>{t.f16.replace(/-q4f16_1-MLC$/, '')}</Ext>, needs ≈{t.sizeGb} GB graphics memory, licence <Ext href={t.licenceUrl}>{t.licence}</Ext>{t.attribution ? `. ${t.attribution}.` : '.'}</li>)}
       </ul>
       <h2>Platform documentation</h2>
@@ -33,38 +26,40 @@ export function ResourcesPage({ team }: { team: Team }) {
       <ul>
         <li><Ext href="https://www.w3.org/TR/WCAG22/">WCAG 2.2</Ext> · <Ext href="https://www.nngroup.com/articles/ten-usability-heuristics/">Nielsen's 10 heuristics</Ext> · <Ext href="https://web.dev/articles/vitals">Core Web Vitals</Ext> · <Ext href="https://owasp.org/www-project-top-10-for-large-language-model-applications/">OWASP LLM Top 10</Ext></li>
       </ul>
-      <h2>Skills from the community</h2>
-      <ul>
-        <li><Ext href="https://www.firecrawl.dev/blog/best-claude-code-skills">Firecrawl: best Claude Code skills</Ext> · <Ext href="https://github.com/anthropics/skills">anthropics/skills</Ext> · <Ext href="https://github.com/vercel-labs/agent-skills">vercel-labs/agent-skills</Ext> · <Ext href="https://github.com/mattpocock/skills">mattpocock/skills</Ext></li>
-      </ul>
-      <h2>Credits</h2>
-      <p>Layout inspired by <Ext href="https://experts21.netlify.app">Experts21</Ext>. {team.studio.name}'s name, words, agents and colours are its own.</p>
+      <h2>Community skills</h2>
+      <p>Some of the team's skills come from open-source skill collections published by Anthropic, Vercel and Matt Pocock, each under its own open-source licence. <Ext href="https://www.firecrawl.dev/blog/best-claude-code-skills">An overview of popular Claude Code skills</Ext>.</p>
     </Page>
   );
 }
 
-const STEPS: [string, string][] = [
-  ['Audit the plan', 'A master prompt was written, audited for flaws (licences, context limits, security, privacy) and corrected before any code was written.'],
-  ['Copy the team', 'The 29 experts, their skills and knowledge were copied, and two new experts were added: Ada (on-device AI) and Theo (page templates).'],
-  ['Remove the server', 'No API keys, no password, no budgets: the site became fully static on Netlify.'],
-  ['Run AI in the browser', 'WebLLM runs a small open model in a Web Worker on your graphics chip, after you choose a model and agree to download it.'],
-  ['Fit small models', 'Each expert gets a short prompt that fits a 4,096-token context; history is trimmed in code; answers stay short.'],
-  ['Team mode on one device', 'A keyword router picks the experts instantly; they answer one after another; Nova combines the answers.'],
-  ['A Studio that never breaks', 'The AI writes content as JSON; tested, accessible blocks turn it into the page. Every string is escaped.'],
-  ['Test and ship', 'Unit and end-to-end tests with a mock engine, accessibility checks in light and dark, then a static deploy.'],
-];
-
 export function GuidePage({ team }: { team: Team }) {
   return (
     <Page>
-      <h1>How {team.studio.name} was built</h1>
-      <p className="lede">Built with Claude Code from an audited master prompt, one step at a time, with proof for each step.</p>
-      <ol>{STEPS.map(([t, d]) => <li key={t}><b>{t}.</b> {d}</li>)}</ol>
-      <h2>Build your own</h2>
-      <p>{team.studio.repoUrl ? <>The full prompt is in <Ext href={`${team.studio.repoUrl}/blob/main/docs/MASTER_PROMPT.md`}>docs/MASTER_PROMPT.md</Ext>. </> : 'The source code and the full build prompt will be published when the project is complete. '}To build a real app with this team, copy <code>.claude/</code>, <code>knowledge/</code> and <code>prompts/</code> into a new repository, start Claude Code, and ask the orchestrator to take your idea from discovery to deploy.</p>
+      <h1>Guide</h1>
+      <p className="lede">How to get answers from {team.studio.name}'s {team.agents.length} AI experts, in the browser or in Claude Code.</p>
+      <h2>Start in 3 steps</h2>
+      <ol>
+        <li><b>Turn on the free AI.</b> Pick a model (the recommended one is already selected) and download it once. It runs on your device.</li>
+        <li><b>Ask.</b> Type a question for the whole team on the <a href="/" onClick={onLinkClick}>home page</a>, or pick one expert from the list.</li>
+        <li><b>Read the answer.</b> In team mode, {team.agents.find((a) => a.slug === 'orchestrator')?.name ?? 'the studio director'} combines the experts' answers into one, and you can open each expert's contribution.</li>
+      </ol>
+      <h2>Four ways to work</h2>
+      <ul>
+        <li><b>Ask the whole team</b> for questions that span several areas. The router picks 2 to 4 experts; they answer one after another on your device; the red team checks big decisions.</li>
+        <li><b>Ask one expert</b> when you know who you need. Each expert page shows example questions to start from.</li>
+        <li><b>One-shot Studio</b> turns a short brief into a complete, accessible web page you can preview, refine and download.</li>
+        <li><b>Prompt Library</b> has tested one-shot build prompts. Copy one, or open it in the Studio.</li>
+      </ul>
+      <h2>Use the team in Claude Code</h2>
+      <ol>
+        <li>Put the studio's <code>.claude/</code>, <code>knowledge/</code> and <code>prompts/</code> folders in your project and start Claude Code there.</li>
+        <li>Ask one expert with <code>@agent-&lt;slug&gt;</code>, for example <code>@agent-ux-architect Design the onboarding flow</code>.</li>
+        <li>Ask the whole team with <code>@agent-orchestrator</code> and describe your goal; it plans the work and delegates to the right experts.</li>
+      </ol>
+      <p>No GPU? Every expert page offers <b>Copy this expert's prompt</b>, which you can paste into any AI chat.</p>
       <h2>How the website works</h2>
       <ul>
-        <li>Agents live as files in <code>.claude/agents</code>. At build time a script validates them and turns them into this sidebar and short on-device prompts.</li>
+        <li>Each expert is defined in one file. At build time a script validates them and turns them into the expert list and short on-device prompts.</li>
         <li>Answers are generated on your device. The only network traffic for AI is the one-time model download from Hugging Face.</li>
         <li>Generated pages run only in a sandbox with no access to this site, your data or the network.</li>
       </ul>
@@ -74,12 +69,13 @@ export function GuidePage({ team }: { team: Team }) {
         <li><b>Out of memory</b>: choose the Lite model, close other tabs and apps.</li>
         <li><b>Download stuck</b>: check your connection and free disk space, then try again; finished parts are kept.</li>
         <li><b>“Running in another tab”</b>: only one tab can use the AI at a time. Close the other one and reload.</li>
+        <li><b>Projector or bright room</b>: turn on high contrast with the contrast button next to the expert search.</li>
       </ul>
     </Page>
   );
 }
 
-export function PrivacyPage({ team }: { team: Team }) {
+export function PrivacyPage() {
   const s = useEngine();
   const [msg, setMsg] = useState('');
   return (
@@ -103,8 +99,6 @@ export function PrivacyPage({ team }: { team: Team }) {
       <p>Dictation uses your browser's speech recognition, which may send audio to the browser maker's speech service. Reading answers aloud uses voices on your device.</p>
       <h2>AI-generated content</h2>
       <p>All answers and pages are produced by small AI models. They can be wrong. Review them before you rely on them, and don't treat them as legal, financial or medical advice.</p>
-      <h2>Contact</h2>
-      <p>Questions about this site: {team.studio.repoUrl ? <>open an issue on the <Ext href={`${team.studio.repoUrl}/issues`}>project's GitHub repository</Ext>.</> : 'contact details will be added when the project is published.'}</p>
     </Page>
   );
 }

@@ -45,9 +45,9 @@ export function ChatFooter({ research, onCleared }: { research?: string; onClear
     <div className="composer-foot" style={{ marginTop: 8 }}>
       <span>AI-generated answers. Review before you rely on them.{research ? ` Research dated ${research}.` : ''}</span>
       <span className="footer-links">
-        <a href="/resources" onClick={onLinkClick}>Resources</a> · <a href="/guide" onClick={onLinkClick}>How it was built</a> · <a href="/privacy" onClick={onLinkClick}>Privacy</a>
-        {onCleared && <> · <button type="button" style={{ border: 0, background: 'none', padding: 0, color: 'var(--faint)', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}
-          onClick={() => { clearChats(); clearBuilds(); onCleared(); }}>Clear all chats</button></>}
+        <a href="/resources" onClick={onLinkClick}>Resources</a> · <a href="/guide" onClick={onLinkClick}>Guide</a> · <a href="/privacy" onClick={onLinkClick}>Privacy</a>
+        {onCleared && <> · <button type="button" className="link-btn"
+          onClick={() => { if (window.confirm('Delete all chats and Studio pages saved in this browser? This cannot be undone.')) { clearChats(); clearBuilds(); onCleared(); } }}>Clear all chats</button></>}
       </span>
     </div>
   );

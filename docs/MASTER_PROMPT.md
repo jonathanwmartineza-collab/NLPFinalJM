@@ -112,8 +112,9 @@ HARD CONSTRAINTS
     expert's prompt" for use in any AI chat. Team, Library, Guide and Privacy work everywhere.
 12. Model output is data: Markdown without raw HTML; JSON validated; strings escaped in pages.
 13. Privacy page: processing is local; the model download request goes to Hugging Face (they see the IP
-    address); chats live in this browser; how to delete chats and models. Resources page credits WebLLM,
-    MLC and each model with its licence; "Layout inspired by Experts21".
+    address); chats live in this browser; how to delete chats and models. Resources page lists WebLLM,
+    MLC and each model with its licence (licence attributions only: no credits, "made by" or "built with" lines and no links to any code
+    repository). The only personal information is the owner logo and the footer copyright line.
 14. Evidence rule: every check has its command and the last 15 lines of output in reports/gates.md.
     Anything not run is NOT RUN, never "passed". A real-model test needs WebGPU: if the session has none,
     mark it NOT RUN and list the owner's manual smoke test.

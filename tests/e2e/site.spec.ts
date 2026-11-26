@@ -1,10 +1,9 @@
-import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 async function open(page: Page, path = '/') {
   await page.goto(path);
-  await page.getByRole('button', { name: 'Get started' }).click(); // the intro opens once the team has loaded
+  await expect(page.locator('aside .row').first()).toBeAttached(); // the team has loaded; no welcome dialog blocks the page
 }
 async function turnOnAI(page: Page, path = '/') {
   await open(page, path);
@@ -96,15 +95,111 @@ test('privacy page explains the download and can delete models', async ({ page }
   await expect(page.getByText('Downloaded models were deleted from this browser.')).toBeVisible();
 });
 
-test('no links to the GitHub repository while it is private', async ({ page }) => {
-  const cfg = JSON.parse(readFileSync('studio.config.json', 'utf8'));
-  test.skip(cfg.repoPublic !== false, 'repository is public');
-  for (const path of ['/', '/resources', '/guide', '/privacy']) {
-    await page.goto(path);
-    await expect(page.locator('a[href*="github.com/jonathanwmartineza-collab"]')).toHaveCount(0);
+const OWNER = 'Jonathan Martinez';
+const ROLE = 'AI Practitioner';
+const COPYRIGHT = '© 2026 Jonathan Martinez. All rights reserved.';
+
+test('privacy: only the logo name and the copyright line are personal; no repo links, emails or credits', async ({ page }) => {
+  for (const path of ['/', '/expert/edge-ai-engineer', '/studio', '/library', '/resources', '/guide', '/privacy', '/no-such-page']) {
+    await open(page, path);
+    const hrefs = await page.locator('a[href]').evaluateAll((as) => as.map((a) => a.getAttribute('href') || ''));
+    expect(hrefs.filter((h) => /github\.com|gitlab\.com|bitbucket\.org|sourceforge\.net|codeberg\.org|^mailto:/i.test(h)), path).toEqual([]);
+    await expect(page.locator('.owner')).toHaveCount(1);
+    await expect(page.locator('.owner-name')).toHaveText(OWNER);
+    await expect(page.locator('.owner-role')).toHaveText(ROLE);
+    await expect(page.locator('.site-foot')).toHaveText(COPYRIGHT);
+    const rest = await page.evaluate(() => { const c = document.body.cloneNode(true) as HTMLElement; c.querySelectorAll('.owner, .site-foot').forEach((e) => e.remove()); return c.innerText; });
+    expect(rest, path).not.toMatch(/jonathan|martinez|practitioner|@[a-z0-9-]+\.[a-z]{2,}|outlook|gmail|source code|view source|made by|built with claude|layout inspired|©|copyright|rights reserved|for (my )?(students|instructors|teachers)/i);
   }
-  await page.goto('/resources');
-  await expect(page.getByText("The source code isn't public yet.")).toBeVisible();
+  const head = await page.locator('head').innerHTML();
+  expect(head).not.toMatch(/github\.com|name="author"|jonathan|martinez|outlook|gmail/i); // raw.githubusercontent.com in the CSP is the model download host
+});
+
+test('static 404 page carries the same logo and copyright line', async ({ request }) => {
+  const html = await (await request.get('/404.html')).text();
+  expect(html).toContain(`<b>${OWNER}</b>`);
+  expect(html).toContain(ROLE);
+  expect(html).toContain(COPYRIGHT);
+  expect(html).not.toMatch(/github\.com|mailto:|outlook|gmail/i);
+});
+
+for (const [w, h] of [[340, 700], [390, 844], [1440, 900]] as const) {
+  test(`logo and footer: readable, top-left and unclipped at ${w}px in light, dark and high contrast`, async ({ page }) => {
+    await page.setViewportSize({ width: w, height: h });
+    for (const scheme of ['light', 'dark'] as const) for (const hc of [false, true]) {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.addInitScript((on) => { try { if (on) localStorage.setItem('ba2-contrast', 'high'); else localStorage.removeItem('ba2-contrast'); } catch { /* storage blocked */ } }, hc);
+      await open(page, '/studio');
+      const logo = page.getByRole('link', { name: `${OWNER} ${ROLE}` });
+      await expect(logo).toBeVisible();
+      const box = (await logo.boundingBox())!;
+      expect(box.x).toBeLessThan(w <= 860 ? 80 : 40); // after the menu button on phones
+      expect(box.y).toBeLessThan(30);
+      expect(box.height).toBeGreaterThanOrEqual(44);
+      await expect(page.locator('.owner-mark')).toBeVisible();
+      if (w < 360) {
+        await expect(page.locator('.owner-name')).not.toBeInViewport(); // the mark alone; the name stays as the link's accessible name
+      } else {
+        const name = page.locator('.owner-name');
+        expect(await name.evaluate((e) => e.scrollWidth <= e.clientWidth + 1 && parseFloat(getComputedStyle(e).fontSize) >= 14)).toBe(true);
+        const nb = (await name.boundingBox())!; expect(nb.x + nb.width).toBeLessThanOrEqual(w);
+      }
+      const foot = page.locator('.site-foot');
+      await expect(foot).toBeInViewport();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    }
+  });
+}
+
+test('first-time visitor reaches an answer in 3 steps: download, pick an example, send', async ({ page }) => {
+  await open(page, '/');
+  await expect(page.getByRole('list', { name: 'Get started in 3 steps' })).toBeVisible();
+  await page.getByRole('button', { name: /^Download Balanced model/ }).click(); // step 1
+  await expect(page.locator('#composer')).toBeVisible({ timeout: 10_000 });
+  await page.getByRole('button', { name: /landing page for a coffee subscription/ }).click(); // step 2
+  await page.getByRole('button', { name: 'Send' }).click(); // step 3
+  await expect(page.locator('details.contrib summary')).toContainText(/Who contributed/, { timeout: 30_000 });
+});
+
+test('high contrast mode turns on, persists across reloads and turns off', async ({ page }) => {
+  await open(page, '/');
+  const btn = page.getByRole('button', { name: 'High contrast' });
+  await btn.click();
+  await expect(btn).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('html')).toHaveAttribute('data-contrast', 'high');
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-contrast', 'high');
+  await page.getByRole('button', { name: 'High contrast' }).click();
+  await expect(page.locator('html')).not.toHaveAttribute('data-contrast', 'high');
+});
+
+for (const width of [390, 1440]) {
+  test(`every button is at least 44px tall and nothing scrolls sideways at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of ['/', '/expert/ui-designer', '/studio', '/library', '/privacy']) {
+      await open(page, path);
+      const small = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('button, .btn, select, input[type=search]')]
+        .filter((e) => !e.classList.contains('link-btn') && !(innerWidth <= 860 && e.closest('#sidebar'))) // the phone drawer is checked when open
+        .map((e) => ({ t: (e.textContent || e.getAttribute('aria-label') || '').trim().slice(0, 30), h: e.getBoundingClientRect().height }))
+        .filter((x) => x.h > 0 && x.h < 44));
+      expect(small, path).toEqual([]);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), path).toBe(true);
+    }
+  });
+}
+
+test('phone: the Studio brief and the model picker are reachable, and chat examples are not squashed', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open(page, '/studio');
+  const brief = page.getByLabel('Your brief');
+  await brief.scrollIntoViewIfNeeded();
+  await expect(brief).toBeInViewport();
+  await page.getByRole('button', { name: /^Download Balanced model/ }).scrollIntoViewIfNeeded();
+  await expect(page.getByRole('button', { name: /^Download Balanced model/ })).toBeInViewport();
+  await open(page, '/expert/ui-designer');
+  const first = page.locator('.chip-btn').first();
+  expect((await first.boundingBox())!.height).toBeGreaterThan(40);
+  await expect(first).toBeInViewport();
 });
 
 test('library lists prompts', async ({ page }) => {

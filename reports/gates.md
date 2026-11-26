@@ -1,6 +1,6 @@
 # Quality gates
 
-Run: 2026-11-22T15:24Z on commit 8040ae6
+Run: 2026-11-26T04:19Z on commit 179f1e7
 
 ## Team validation: PASS
 
@@ -15,7 +15,7 @@ validate-team: 31 agents OK, 44 skills present, descriptions 10159 chars
 $ bash -c node scripts/build-team.mjs && node scripts/stamp-version.mjs
 validate-team: 31 agents OK, 44 skills present, descriptions 10159 chars
 build-team: 31 agents, 12 library prompts; largest lite prompt 883 chars
-version.json → 8040ae6 (local)
+version.json → 179f1e7 (local)
 ```
 
 ## Skills check: PASS
@@ -37,26 +37,26 @@ $ npx tsc -p tsconfig.json --noEmit
 ```
 $ npx vitest run
 
- RUN  v5.1.1 /home/claude/brainyapp2
+ RUN  v5.1.1 /home/user/BrainyApp2
 
 
  Test Files  4 passed (4)
       Tests  19 passed (19)
-   Start at  10:24:31
-   Duration  616ms (import 75%, tests 10%, transform 10%, worker 4%)
+   Start at  04:19:59
+   Duration  434ms (import 69%, transform 16%, tests 11%, worker 4%)
 ```
 
 ## Production build: PASS
 
 ```
 $ npm run build
-✓ 386 modules transformed.
+✓ 387 modules transformed.
 rendering chunks...
 computing gzip size...
 web/dist/index.html                     1.91 kB │ gzip:     0.83 kB
 web/dist/assets/worker-HJiqo6PJ.js  6,124.96 kB
-web/dist/assets/index-TYC1jDJH.css     17.67 kB │ gzip:     4.65 kB
-web/dist/assets/index-DoXEbvNy.js     579.72 kB │ gzip:   181.72 kB
+web/dist/assets/index-CdWZiQNV.css     31.53 kB │ gzip:     7.00 kB
+web/dist/assets/index-B6x-PWiH.js     579.92 kB │ gzip:   181.53 kB
 web/dist/assets/lib-DbM4P1Ls.js     6,139.64 kB │ gzip: 2,194.24 kB
 
 [plugin builtin:vite-reporter] 
@@ -64,35 +64,35 @@ web/dist/assets/lib-DbM4P1Ls.js     6,139.64 kB │ gzip: 2,194.24 kB
 - Using dynamic import() to code-split the application
 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 1.50s
+✓ built in 1.60s
 ```
 
 ## Initial JS budget (<= 250 KB gzip, WebLLM lazy): PASS
 
 ```
 $ bash -c f=$(grep -o "assets/index-[^\"]*\.js" web/dist/index.html | head -1); s=$(gzip -c "web/dist/$f" | wc -c); echo "$f gzip $s bytes"; grep -q "web-llm\|CreateWebWorkerMLCEngine" web/dist/index.html && { echo "WebLLM in entry HTML"; exit 1; }; [ "$s" -le 256000 ]
-assets/index-DoXEbvNy.js gzip 179711 bytes
+assets/index-B6x-PWiH.js gzip 179430 bytes
 ```
 
 ## End-to-end + axe (Playwright, mock engine): PASS
 
 ```
 $ npx playwright test --reporter=line
-[14/27] tests/e2e/site.spec.ts:128:5 › axe: no serious or critical issues on /expert/edge-ai-engineer (light)
-[15/27] tests/e2e/site.spec.ts:128:5 › axe: no serious or critical issues on /expert/edge-ai-engineer (dark)
-[16/27] tests/e2e/site.spec.ts:128:5 › axe: no serious or critical issues on /studio (light)
-[17/27] tests/e2e/site.spec.ts:128:5 › axe: no serious or critical issues on /studio (dark)
-[18/27] tests/e2e/site.spec.ts:128:5 › axe: no serious or critical issues on /library (light)
-[19/27] tests/e2e/site.spec.ts:128:5 › axe: no serious or critical issues on /library (dark)
-[20/27] tests/e2e/site.spec.ts:128:5 › axe: no serious or critical issues on /resources (light)
-[21/27] tests/e2e/site.spec.ts:128:5 › axe: no serious or critical issues on /resources (dark)
-[22/27] tests/e2e/site.spec.ts:128:5 › axe: no serious or critical issues on /guide (light)
-[23/27] tests/e2e/site.spec.ts:128:5 › axe: no serious or critical issues on /guide (dark)
-[24/27] tests/e2e/site.spec.ts:128:5 › axe: no serious or critical issues on /privacy (light)
-[25/27] tests/e2e/site.spec.ts:128:5 › axe: no serious or critical issues on /privacy (dark)
-[26/27] tests/e2e/site.spec.ts:139:1 › axe: a generated page passes in light and dark
-[27/27] tests/e2e/site.spec.ts:152:1 › axe: every Studio block and palette passes in light and dark (rendered directly)
-  27 passed (45.2s)
+[23/36] tests/e2e/site.spec.ts:223:5 › axe: no serious or critical issues on /expert/edge-ai-engineer (light)
+[24/36] tests/e2e/site.spec.ts:223:5 › axe: no serious or critical issues on /expert/edge-ai-engineer (dark)
+[25/36] tests/e2e/site.spec.ts:223:5 › axe: no serious or critical issues on /studio (light)
+[26/36] tests/e2e/site.spec.ts:223:5 › axe: no serious or critical issues on /studio (dark)
+[27/36] tests/e2e/site.spec.ts:223:5 › axe: no serious or critical issues on /library (light)
+[28/36] tests/e2e/site.spec.ts:223:5 › axe: no serious or critical issues on /library (dark)
+[29/36] tests/e2e/site.spec.ts:223:5 › axe: no serious or critical issues on /resources (light)
+[30/36] tests/e2e/site.spec.ts:223:5 › axe: no serious or critical issues on /resources (dark)
+[31/36] tests/e2e/site.spec.ts:223:5 › axe: no serious or critical issues on /guide (light)
+[32/36] tests/e2e/site.spec.ts:223:5 › axe: no serious or critical issues on /guide (dark)
+[33/36] tests/e2e/site.spec.ts:223:5 › axe: no serious or critical issues on /privacy (light)
+[34/36] tests/e2e/site.spec.ts:223:5 › axe: no serious or critical issues on /privacy (dark)
+[35/36] tests/e2e/site.spec.ts:234:1 › axe: a generated page passes in light and dark
+[36/36] tests/e2e/site.spec.ts:247:1 › axe: every Studio block and palette passes in light and dark (rendered directly)
+  36 passed (54.3s)
 ```
 
 ## No server AI, secrets or private-edition links in the bundle: PASS

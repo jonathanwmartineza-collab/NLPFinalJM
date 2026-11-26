@@ -4,7 +4,7 @@
 
 Live site: https://brainyapp2.netlify.app
 
-- **Free and private.** The AI runs on your own device with [WebLLM](https://github.com/mlc-ai/web-llm) and WebGPU. What you type never leaves your browser. There are no accounts, no API keys and no cost per answer.
+- **Free and private.** The AI runs on your own device with [WebLLM](https://webllm.mlc.ai) and WebGPU. What you type never leaves your browser. There are no accounts, no API keys and no cost per answer.
 - **Choose a model once.** The first time, you pick a model and your browser downloads it from Hugging Face (about 0.85 GB for Balanced, measured; Quality is larger). It's saved for next time and works offline.
 - **Same team in Claude Code.** The 31 agents in `.claude/agents` work in Claude Code for real, multi-file builds.
 
@@ -53,5 +53,5 @@ Import the repository into Netlify. The build settings come from `netlify.toml`,
 - **Out of memory**: choose Lite and close other tabs.
 - **"Running in another tab"**: only one tab can use the AI at a time.
 
-## Credits
-WebLLM and MLC (Apache-2.0); the models above under their licences; layout inspired by [Experts21](https://experts21.netlify.app). Code is MIT-licensed (see `LICENSE`).
+## Licence
+The code is MIT-licensed (see `LICENSE`). WebLLM and MLC are Apache-2.0; each model keeps its own licence (table above).
