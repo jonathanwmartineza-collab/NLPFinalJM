@@ -8,6 +8,7 @@ color: "yellow"
 skills:
   - "test-plan"
   - "webapp-testing"
+  - "nlp-eval"
 display:
   displayName: "Ulla Brennan"
   title: "QA & Test Automation Engineer"

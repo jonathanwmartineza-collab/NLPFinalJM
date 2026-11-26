@@ -9,6 +9,7 @@ skills:
   - "one-shot-build"
   - "vercel-react-best-practices"
   - "vercel-composition-patterns"
+  - "pyodide-nltk"
 display:
   displayName: "Pavel Okonjo"
   title: "Senior Front-end Engineer"

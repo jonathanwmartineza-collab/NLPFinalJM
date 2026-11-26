@@ -8,6 +8,7 @@ color: "cyan"
 skills:
   - "netlify-deploy-check"
   - "netlify-functions"
+  - "netlify-python-build"
 display:
   displayName: "Xavi Montenegro"
   title: "Netlify Platform & DevOps Engineer"

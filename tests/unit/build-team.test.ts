@@ -7,9 +7,9 @@ const team = JSON.parse(fs.readFileSync('web/public/team.json', 'utf8'));
 const lite = JSON.parse(fs.readFileSync('web/src/ai/_generated/agents.json', 'utf8'));
 
 describe('team build output', () => {
-  it('publishes every agent (31) with public fields only', () => {
+  it('publishes every agent (36) with public fields only', () => {
     const n = fs.readdirSync('.claude/agents').filter((f) => f.endsWith('.md') && f !== 'README.md').length;
-    expect(n).toBe(31);
+    expect(n).toBe(36);
     expect(team.agents.length).toBe(n);
     for (const a of team.agents) {
       expect(a).not.toHaveProperty('system');
@@ -20,7 +20,7 @@ describe('team build output', () => {
     expect(JSON.stringify(team)).not.toMatch(/github\.com|gitlab\.com|bitbucket\.org/i);
   });
   it('generates a lite on-device prompt for every agent within the context budget', () => {
-    expect(Object.keys(lite.agents).length).toBe(31);
+    expect(Object.keys(lite.agents).length).toBe(36);
     for (const [slug, a] of Object.entries<any>(lite.agents)) {
       expect(a.prompt, slug).toMatch(/^You are \w+/);
       expect(a.prompt, slug).not.toMatch(/Agent tool|Skill tool|\.claude\/|@agent-/);

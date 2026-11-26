@@ -72,6 +72,11 @@ to itself. The formal JSON Schema, the roster cheat sheet and worked examples ar
 | 29 | New agent or skill, change the team | meta-agent | knowledge-curator, prompt-engineer | - |
 | 30 | Facts, sources, refresh a knowledge folder | knowledge-curator | the expert who owns the topic | - |
 | 31 | Critique this plan or deliverable | red-team-reviewer | the expert who owns the work | release |
+| 32 | NLTK: tokens, stopwords, word counts, collocations, VADER sentiment | nltk-expert | nlp-evaluator, pyodide-engineer (live box) | - |
+| 33 | spaCy: named entities, EntityRuler patterns, noun chunks, dependency parses | spacy-expert | nlp-evaluator, python-build-engineer | - |
+| 34 | Python in the browser, Pyodide, live NLTK box, load time | pyodide-engineer | frontend-engineer, devops-engineer (CSP), nltk-expert | security |
+| 35 | Python build on Netlify, requirements.txt, PYTHON_VERSION, NLP JSON missing | python-build-engineer | devops-engineer, spacy-expert | release |
+| 36 | NLP evaluation, gold examples, "is the NLP final ready?" | nlp-evaluator | qa-engineer, nltk-expert, spacy-expert | release |
 
 **Stake triggers.** money: prices, payments, refunds, subscriptions, credits, paid APIs, budgets.
 security: logins, passwords, API keys, user data, uploads, functions open to the internet, prompt

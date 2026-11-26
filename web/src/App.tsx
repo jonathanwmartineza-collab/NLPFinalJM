@@ -9,6 +9,8 @@ import ChatPage from './pages/ChatPage';
 import TeamPage from './pages/TeamPage';
 import StudioPage from './pages/StudioPage';
 import LibraryPage from './pages/LibraryPage';
+import NlpPage from './pages/NlpPage';
+import { onLinkClick } from './lib/router';
 import { ResourcesPage, GuidePage, PrivacyPage, NotFound } from './pages/ContentPages';
 
 const THEMES = ['system', 'light', 'dark'] as const;
@@ -71,6 +73,7 @@ export default function App() {
   else if (expert) page = <ChatPage key={expert.slug} agent={expert} />;
   else if (path === '/studio') page = <StudioPage library={library} />;
   else if (path === '/library') page = <LibraryPage library={library} team={team} />;
+  else if (path === '/nlp') page = <NlpPage />;
   else if (path === '/resources') page = <ResourcesPage team={team} />;
   else if (path === '/guide') page = <GuidePage team={team} />;
   else if (path === '/privacy') page = <PrivacyPage />;
@@ -86,6 +89,10 @@ export default function App() {
           <span className="sr-only">Open the list of experts</span>
         </button>
         <OwnerLogo />
+        <nav className="topbar-links" aria-label="NLP final">
+          <a href="/nlp" onClick={onLinkClick} aria-current={path === '/nlp' ? 'page' : undefined}>NLP Lab</a>
+          <a href="/resources" onClick={onLinkClick} aria-current={path === '/resources' ? 'page' : undefined}>Resources</a>
+        </nav>
         <span className="topbar-name">{team.studio.name}</span>
       </header>
       <div className="shell">

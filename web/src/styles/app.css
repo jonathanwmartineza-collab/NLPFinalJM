@@ -335,3 +335,8 @@ dialog.confirm p { margin: 0 0 18px; color: var(--soft); }
   .toast { border-radius: 20px; }
 }
 :root[data-contrast="high"] .btn.danger:not(.ghost) { background: var(--err); }
+.topbar-links { display: flex; gap: 4px; margin-left: 8px; }
+.topbar-links a { padding: 6px 12px; border-radius: var(--pill); font-weight: 600; font-size: 14px; color: var(--ink); text-decoration: none; }
+.topbar-links a:hover, .topbar-links a[aria-current="page"] { background: var(--accent-soft); }
+.site-foot a { color: inherit; }
+@media (max-width: 860px) { .topbar-links a { padding: 6px 8px; font-size: 13px; } }

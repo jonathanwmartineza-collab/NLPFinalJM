@@ -7,11 +7,24 @@ import { deleteModels, useEngine, initEngine } from '../ai/engine';
 const Ext = ({ href, children }: { href: string; children: React.ReactNode }) => <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>;
 const Page = ({ children }: { children: React.ReactNode }) => <div className="page" tabIndex={0} role="region" aria-label="Page content"><div className="page-inner prose">{children}</div></div>;
 
+const REPO = 'https://github.com/jonathanwmartineza-collab/NLPFinalJM';
+const RESEARCH: [string, string][] = [['README.md', 'Research index'], ['01-use-case.md', 'Use case'], ['02-nltk.md', 'NLTK'], ['03-spacy.md', 'spaCy'], ['04-dataset.md', 'Dataset'], ['05-netlify.md', 'Netlify'], ['06-pyodide.md', 'Pyodide'], ['07-architecture.md', 'Architecture']];
+
 export function ResourcesPage({ team }: { team: Team }) {
   return (
     <Page>
       <h1>Resources</h1>
       <p className="lede">Everything this free studio relies on. Research dated {team.studio.researchDate}; models, browsers and limits change, so check the sources.</p>
+      <h2 id="nlp-final">NLP final project (NLTK + spaCy)</h2>
+      <p>This copy of BrainyApp2 is an NLP final project. The <a href="/nlp" onClick={onLinkClick}>NLP Lab</a> shows NLTK running live in your browser and spaCy results built at deploy time, each panel labelled with its library.</p>
+      <ul>
+        <li><Ext href={REPO}>GitHub repository (NLPFinalJM)</Ext> · <Ext href={`${REPO}#readme`}>README with deploy steps</Ext></li>
+        <li><Ext href="https://claude.ai/artifact/K55JqCeSxXULMmzki6yv73">Final project guide</Ext></li>
+        <li>Research: {RESEARCH.map(([f, t], i) => <span key={f}>{i > 0 && ' · '}<Ext href={`${REPO}/blob/main/docs/research/${f}`}>{t}</Ext></span>)}</li>
+        <li>Team: <Ext href={`${REPO}/blob/main/docs/expert-roster.md`}>Expert roster</Ext> · <Ext href={`${REPO}/blob/main/docs/agent-brains.md`}>Agent brains (models and personalities)</Ext> · <Ext href={`${REPO}/blob/main/CLAUDE.md`}>CLAUDE.md</Ext> · <Ext href={`${REPO}/tree/main/.claude/agents`}>Agents</Ext> · <Ext href={`${REPO}/tree/main/.claude/skills`}>Skills</Ext> · <Ext href={`${REPO}/tree/main/knowledge`}>Knowledge notes</Ext> · <Ext href={`${REPO}/blob/main/docs/README.md`}>All docs</Ext></li>
+        <li>Code: <Ext href={`${REPO}/tree/main/nlp`}>Python NLP pipeline (nlp/)</Ext> · <Ext href={`${REPO}/blob/main/netlify.toml`}>netlify.toml</Ext> · <Ext href={`${REPO}/blob/main/requirements.txt`}>requirements.txt</Ext></li>
+        <li>Libraries: <Ext href="https://www.nltk.org/">NLTK</Ext> · <Ext href="https://www.nltk.org/howto/sentiment.html">NLTK VADER</Ext> · <Ext href="https://spacy.io/">spaCy</Ext> · <Ext href="https://spacy.io/api/entityruler">spaCy EntityRuler</Ext> · <Ext href="https://pyodide.org/">Pyodide</Ext> · <Ext href="https://docs.netlify.com/configure-builds/available-software-at-build-time/">Netlify build software (Python)</Ext></li>
+      </ul>
       <h2>On-device AI</h2>
       <ul>
         <li><Ext href="https://webllm.mlc.ai">WebLLM</Ext> (Apache-2.0) by the <Ext href="https://mlc.ai">MLC</Ext> team runs the models in your browser with <Ext href="https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API">WebGPU</Ext>. <Ext href="https://webllm.mlc.ai/models/">Model list</Ext>.</li>

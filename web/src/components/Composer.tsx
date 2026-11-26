@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { canListen, useDictation } from '../lib/voice';
 import { BUDGET } from '../ai/models';
+import { CoachInline } from '../nlp/ui';
 
 // The longest message the on-device model reads in full. The box never cuts a paste: it shows the count and
 // blocks Send with a clear message instead (a real-model test found a paste silently cut, and the model then
@@ -44,6 +45,7 @@ export default function Composer({ placeholder, busy, onSend, onStop, seed, clea
           {text.length > MAX ? `Too long for the on-device AI: ${text.length.toLocaleString()} of ${MAX.toLocaleString()} characters. Remove ${(text.length - MAX).toLocaleString()} characters or send it in parts; nothing was cut.` : text.length > MAX * 0.5 ? `${text.length.toLocaleString()} / ${MAX.toLocaleString()} characters` : ''}
         </span>
       </div>
+      <CoachInline text={text} onUse={(t) => { setText(t); ref.current?.focus(); }} />
     </div>
   );
 }

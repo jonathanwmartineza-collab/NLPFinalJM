@@ -1,13 +1,16 @@
-# BrainyApp2 on Netlify: a fully static site. The AI runs in the visitor's browser (WebLLM), so there are
-# no functions, no environment variables and no secrets.
+# NLPFinalJM (BrainyApp2 + NLP final) on Netlify: a fully static site. The AI runs in the visitor's browser
+# (WebLLM), NLTK runs live in the browser (Pyodide), and Python runs only at build time: it installs NLTK + spaCy
+# from requirements.txt and writes static JSON to web/public/nlp/ (nlp/build_nlp.py). No functions, no secrets.
 [build]
-  command = "npm run build"
+  command = "node scripts/build-team.mjs && python3 nlp/build_nlp.py && npm run build"
   publish = "web/dist"
   # Skip the (15-credit) production deploy when a push only changes docs/reports. See scripts/build-paths.txt.
   ignore = "bash scripts/should-build.sh"
 
 [build.environment]
   NODE_VERSION = "22"
+  # Netlify installs this Python and then pip-installs requirements.txt (NLTK 3.9.4, spaCy 3.8, en_core_web_sm).
+  PYTHON_VERSION = "3.13"
 
 # SPA routes only (no catch-all), so unknown paths get a real 404.
 [[redirects]]
@@ -24,6 +27,10 @@
   status = 200
 [[redirects]]
   from = "/library"
+  to = "/index.html"
+  status = 200
+[[redirects]]
+  from = "/nlp"
   to = "/index.html"
   status = 200
 [[redirects]]
@@ -65,6 +72,11 @@
   for = "/version.json"
   [headers.values]
     Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/nlp/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
 
 [[headers]]
   for = "/team.json"

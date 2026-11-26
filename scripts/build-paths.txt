@@ -12,3 +12,5 @@ package.json
 package-lock.json
 netlify.toml
 tsconfig.json
+nlp
+requirements.txt

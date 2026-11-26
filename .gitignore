@@ -11,3 +11,8 @@ playwright-report/
 web/src/ai/_generated/
 web/dist-test/
 web/public/version.json
+web/public/nlp/
+.nltk_data/
+.venv/
+__pycache__/
+.pytest_cache/

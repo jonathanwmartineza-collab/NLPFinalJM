@@ -1,3 +1,4 @@
+import { AgreementInline } from '../nlp/ui';
 import { useEffect, useRef, useState } from 'react';
 import type { Team } from '../lib/types';
 import { streamModel } from '../lib/api';
@@ -150,6 +151,7 @@ export default function TeamPage({ team }: { team: Team }) {
                   <div key={c.slug} className="one"><div className="msg-meta">{a && <Avatar a={a} />} <b style={{ color: 'var(--ink)' }}>{a?.name}</b> · {a?.title}</div><Markdown text={c.text} /></div>
                 ); })}
               </details>
+              <AgreementInline answers={t.contributions.filter((c) => c.slug !== 'red-team-reviewer').map((c) => ({ name: by(c.slug)?.name ?? c.slug, text: c.text }))} />
             </div>
           </div>
         ))}

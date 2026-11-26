@@ -19,10 +19,10 @@ async function turnOnAI(page: Page, path = '/') {
   await expect(page.getByRole('progressbar')).toHaveCount(0, { timeout: 10_000 });
 }
 
-test('sidebar lists all 31 experts by department', async ({ page }) => {
+test('sidebar lists all 36 experts by department', async ({ page }) => {
   await open(page);
-  expect(await page.locator('aside .row').count()).toBe(31); // 30 experts + "Ask the whole team" (Soraya)
-  for (const d of ['Leadership', 'Product', 'Design', 'Engineering', 'Quality', 'Launch', 'Governance']) await expect(page.getByRole('heading', { name: d })).toBeVisible();
+  expect(await page.locator('aside .row').count()).toBe(36); // 35 experts + "Ask the whole team" (Soraya)
+  for (const d of ['Leadership', 'Product', 'Design', 'Engineering', 'NLP', 'Quality', 'Launch', 'Governance']) await expect(page.getByRole('heading', { name: d })).toBeVisible();
   await page.getByLabel('Search experts').fill('Greta');
   await expect(page.locator('aside .row:not(.team)')).toHaveCount(1);
 });
@@ -122,16 +122,20 @@ const OWNER = 'Jonathan Martinez';
 const ROLE = 'AI Practitioner';
 const COPYRIGHT = '© 2026 Jonathan Martinez. All rights reserved.';
 
-test('privacy: only the logo name and the copyright line are personal; no repo links, emails or credits', async ({ page }) => {
-  for (const path of ['/', '/expert/edge-ai-engineer', '/studio', '/library', '/resources', '/guide', '/privacy', ...(LIVE ? [] : ['/no-such-page'])]) {
+// The NLP final exam requires the project repository and the guide to be linked (Resources page only).
+const REPO = 'https://github.com/jonathanwmartineza-collab/NLPFinalJM';
+const allowed = (h: string) => h === REPO || h.startsWith(`${REPO}/`) || h.startsWith(`${REPO}#`);
+test('privacy: only the logo name and the copyright line are personal; no repo links (except the NLP final repo on Resources), emails or credits', async ({ page }) => {
+  for (const path of ['/', '/expert/edge-ai-engineer', '/studio', '/library', '/nlp', '/resources', '/guide', '/privacy', ...(LIVE ? [] : ['/no-such-page'])]) {
     await open(page, path);
     const hrefs = await page.locator('a[href]').evaluateAll((as) => as.map((a) => a.getAttribute('href') || ''));
-    expect(hrefs.filter((h) => /github\.com|gitlab\.com|bitbucket\.org|sourceforge\.net|codeberg\.org|^mailto:/i.test(h)), path).toEqual([]);
+    expect(hrefs.filter((h) => /github\.com|gitlab\.com|bitbucket\.org|sourceforge\.net|codeberg\.org|^mailto:/i.test(h) && !(path === '/resources' && allowed(h))), path).toEqual([]);
+    if (path === '/resources') expect(hrefs.filter(allowed).length, 'repo linked on Resources').toBeGreaterThan(5);
     await expect(page.locator('.owner')).toHaveCount(1);
     await expect(page.locator('.owner-name')).toHaveText(OWNER);
     await expect(page.locator('.owner-role')).toHaveText(ROLE);
     await expect(page.locator('.site-foot')).toHaveText(COPYRIGHT);
-    const rest = await page.evaluate(() => { const c = document.body.cloneNode(true) as HTMLElement; c.querySelectorAll('.owner, .site-foot').forEach((e) => e.remove()); return c.innerText; });
+    const rest = await page.evaluate(() => { const c = document.body.cloneNode(true) as HTMLElement; c.querySelectorAll('.owner, .site-foot, a[href*="NLPFinalJM"]').forEach((e) => e.remove()); return c.innerText; });
     expect(rest, path).not.toMatch(/jonathan|martinez|practitioner|@[a-z0-9-]+\.[a-z]{2,}|outlook|gmail|source code|view source|made by|built with claude|layout inspired|©|copyright|rights reserved|for (my )?(students|instructors|teachers)/i);
   }
   const head = await page.locator('head').innerHTML();
@@ -247,7 +251,7 @@ test('mobile drawer opens and closes with Escape', async ({ page }) => {
   await expect(btn).toBeFocused();
 });
 
-for (const path of ['/', '/expert/edge-ai-engineer', '/studio', '/library', '/resources', '/guide', '/privacy']) {
+for (const path of ['/', '/expert/edge-ai-engineer', '/studio', '/library', '/nlp', '/resources', '/guide', '/privacy']) {
   for (const scheme of ['light', 'dark'] as const) {
     test(`axe: no serious or critical issues on ${path} (${scheme})`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: scheme });
@@ -291,4 +295,29 @@ test('axe: every Studio block and palette passes in light and dark (rendered dir
       }
     }
   }
+});
+
+// NLP final: every panel loads, each is labelled NLTK or spaCy, and the live NLTK box returns a result.
+test('NLP Lab: panels load with NLTK and spaCy labels', async ({ page }) => {
+  await open(page, '/nlp');
+  await expect(page.getByRole('heading', { name: 'NLP Lab', level: 1 })).toBeVisible();
+  for (const id of ['coach', 'insights', 'agree', 'experts', 'parse', 'corpus']) {
+    const panel = page.locator(`section#${id}`);
+    await expect(panel, id).toBeVisible();
+    await expect(panel.locator('.nlp-lib').first(), id).toBeVisible();
+  }
+  await expect(page.locator('section#experts .nlp-lib.nlp-spacy')).toBeVisible();
+  await expect(page.locator('section#corpus .nlp-lib.nlp-nltk')).toBeVisible();
+  await expect(page.locator('section#experts .nlp-ent').first()).toBeVisible();
+  await expect(page.locator('section#parse svg.nlp-arcs')).toBeVisible();
+  await expect(page.locator('section#corpus .nlp-bars li').first()).toBeVisible();
+});
+
+test('NLP Lab: the live NLTK prompt coach returns a result', async ({ page }) => {
+  test.skip(!process.env.PW_PYODIDE, 'downloads Pyodide from the CDN; run with PW_PYODIDE=1 or against the live site');
+  test.setTimeout(180_000);
+  await open(page, '/nlp');
+  await page.locator('section#coach').getByRole('button', { name: 'Try an example' }).click();
+  await expect(page.locator('section#coach .nlp-score-n')).toBeVisible({ timeout: 150_000 });
+  await expect(page.locator('section#coach mark').first()).toBeVisible();
 });

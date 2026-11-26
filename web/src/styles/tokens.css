@@ -145,4 +145,4 @@
 
 /* Department avatar colours: white text on each is ≥ 4.5:1. */
 .dept-Leadership { --c: #6b3fb8; } .dept-Product { --c: #1f64b0; } .dept-Design { --c: #b4532a; }
-.dept-Engineering { --c: #23784f; } .dept-Quality { --c: #8a5a00; } .dept-Launch { --c: #0e6f7d; } .dept-Governance { --c: #a3344f; }
+.dept-Engineering { --c: #23784f; } .dept-NLP { --c: #1d6b8a; } .dept-Quality { --c: #8a5a00; } .dept-Launch { --c: #0e6f7d; } .dept-Governance { --c: #a3344f; }

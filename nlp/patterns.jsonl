@@ -1,0 +1,107 @@
+{"label": "TECH", "pattern": "React", "id": "react"}
+{"label": "TECH", "pattern": "Vite", "id": "vite"}
+{"label": "TECH", "pattern": "TypeScript", "id": "typescript"}
+{"label": "TECH", "pattern": "JavaScript", "id": "javascript"}
+{"label": "TECH", "pattern": "Python", "id": "python"}
+{"label": "TECH", "pattern": "Pyodide", "id": "pyodide"}
+{"label": "TECH", "pattern": "NLTK", "id": "nltk"}
+{"label": "TECH", "pattern": "spaCy", "id": "spacy"}
+{"label": "TECH", "pattern": "Netlify", "id": "netlify"}
+{"label": "TECH", "pattern": "Netlify Functions", "id": "netlify-functions"}
+{"label": "TECH", "pattern": "WebGPU", "id": "webgpu"}
+{"label": "TECH", "pattern": "WebLLM", "id": "webllm"}
+{"label": "TECH", "pattern": "WebAssembly", "id": "webassembly"}
+{"label": "TECH", "pattern": "Node.js", "id": "node.js"}
+{"label": "TECH", "pattern": "Next.js", "id": "next.js"}
+{"label": "TECH", "pattern": "Tailwind", "id": "tailwind"}
+{"label": "TECH", "pattern": "CSS", "id": "css"}
+{"label": "TECH", "pattern": "HTML", "id": "html"}
+{"label": "TECH", "pattern": "Playwright", "id": "playwright"}
+{"label": "TECH", "pattern": "Vitest", "id": "vitest"}
+{"label": "TECH", "pattern": "pytest", "id": "pytest"}
+{"label": "TECH", "pattern": "Figma", "id": "figma"}
+{"label": "TECH", "pattern": "Claude Code", "id": "claude-code"}
+{"label": "TECH", "pattern": "Claude", "id": "claude"}
+{"label": "TECH", "pattern": "PostgreSQL", "id": "postgresql"}
+{"label": "TECH", "pattern": "Postgres", "id": "postgres"}
+{"label": "TECH", "pattern": "SQLite", "id": "sqlite"}
+{"label": "TECH", "pattern": "Supabase", "id": "supabase"}
+{"label": "TECH", "pattern": "Stripe", "id": "stripe"}
+{"label": "TECH", "pattern": "GitHub", "id": "github"}
+{"label": "TECH", "pattern": "Docker", "id": "docker"}
+{"label": "TECH", "pattern": "Kubernetes", "id": "kubernetes"}
+{"label": "TECH", "pattern": "Swift", "id": "swift"}
+{"label": "TECH", "pattern": "Kotlin", "id": "kotlin"}
+{"label": "TECH", "pattern": "Flutter", "id": "flutter"}
+{"label": "TECH", "pattern": "React Native", "id": "react-native"}
+{"label": "TECH", "pattern": "Lighthouse", "id": "lighthouse"}
+{"label": "TECH", "pattern": "Hugging Face", "id": "hugging-face"}
+{"label": "TECH", "pattern": "Qwen3-4B", "id": "qwen3-4b"}
+{"label": "TECH", "pattern": "Llama", "id": "llama"}
+{"label": "TECH", "pattern": "PWA", "id": "pwa"}
+{"label": "TECH", "pattern": "REST", "id": "rest"}
+{"label": "TECH", "pattern": "GraphQL", "id": "graphql"}
+{"label": "TECH", "pattern": "JSON", "id": "json"}
+{"label": "TECH", "pattern": "Markdown", "id": "markdown"}
+{"label": "TECH", "pattern": "Git", "id": "git"}
+{"label": "TECH", "pattern": "IndexedDB", "id": "indexeddb"}
+{"label": "TECH", "pattern": "localStorage", "id": "localstorage"}
+{"label": "TECH", "pattern": "Service Worker", "id": "service-worker"}
+{"label": "TECH", "pattern": "axe-core", "id": "axe-core"}
+{"label": "TECH", "pattern": "Three.js", "id": "three.js"}
+{"label": "TECH", "pattern": "Canvas", "id": "canvas"}
+{"label": "TECH", "pattern": "SVG", "id": "svg"}
+{"label": "TECH", "pattern": "Zod", "id": "zod"}
+{"label": "STANDARD", "pattern": "WCAG", "id": "wcag"}
+{"label": "STANDARD", "pattern": "WCAG 2.2", "id": "wcag-2.2"}
+{"label": "STANDARD", "pattern": "GDPR", "id": "gdpr"}
+{"label": "STANDARD", "pattern": "CCPA", "id": "ccpa"}
+{"label": "STANDARD", "pattern": "OWASP", "id": "owasp"}
+{"label": "STANDARD", "pattern": "OWASP Top 10", "id": "owasp-top-10"}
+{"label": "STANDARD", "pattern": "HTTPS", "id": "https"}
+{"label": "STANDARD", "pattern": "CSP", "id": "csp"}
+{"label": "STANDARD", "pattern": "Content Security Policy", "id": "content-security-policy"}
+{"label": "STANDARD", "pattern": "ARIA", "id": "aria"}
+{"label": "STANDARD", "pattern": "SEO", "id": "seo"}
+{"label": "STANDARD", "pattern": "Core Web Vitals", "id": "core-web-vitals"}
+{"label": "STANDARD", "pattern": "LCP", "id": "lcp"}
+{"label": "STANDARD", "pattern": "INP", "id": "inp"}
+{"label": "STANDARD", "pattern": "CLS", "id": "cls"}
+{"label": "STANDARD", "pattern": "HIPAA", "id": "hipaa"}
+{"label": "STANDARD", "pattern": "PCI DSS", "id": "pci-dss"}
+{"label": "STANDARD", "pattern": "SOC 2", "id": "soc-2"}
+{"label": "STANDARD", "pattern": "ISO 27001", "id": "iso-27001"}
+{"label": "STANDARD", "pattern": "MIT licence", "id": "mit-licence"}
+{"label": "STANDARD", "pattern": "Apache-2.0", "id": "apache-2.0"}
+{"label": "STANDARD", "pattern": "OAuth", "id": "oauth"}
+{"label": "STANDARD", "pattern": "JWT", "id": "jwt"}
+{"label": "STANDARD", "pattern": "AA", "id": "aa"}
+{"label": "METHOD", "pattern": "A/B test", "id": "a/b-test"}
+{"label": "METHOD", "pattern": "A/B testing", "id": "a/b-testing"}
+{"label": "METHOD", "pattern": "jobs to be done", "id": "jobs-to-be-done"}
+{"label": "METHOD", "pattern": "JTBD", "id": "jtbd"}
+{"label": "METHOD", "pattern": "usability test", "id": "usability-test"}
+{"label": "METHOD", "pattern": "user interview", "id": "user-interview"}
+{"label": "METHOD", "pattern": "user interviews", "id": "user-interviews"}
+{"label": "METHOD", "pattern": "design system", "id": "design-system"}
+{"label": "METHOD", "pattern": "design tokens", "id": "design-tokens"}
+{"label": "METHOD", "pattern": "user journey", "id": "user-journey"}
+{"label": "METHOD", "pattern": "persona", "id": "persona"}
+{"label": "METHOD", "pattern": "personas", "id": "personas"}
+{"label": "METHOD", "pattern": "threat model", "id": "threat-model"}
+{"label": "METHOD", "pattern": "red team", "id": "red-team"}
+{"label": "METHOD", "pattern": "prompt injection", "id": "prompt-injection"}
+{"label": "METHOD", "pattern": "north star metric", "id": "north-star-metric"}
+{"label": "METHOD", "pattern": "MVP", "id": "mvp"}
+{"label": "METHOD", "pattern": "OKR", "id": "okr"}
+{"label": "METHOD", "pattern": "retention", "id": "retention"}
+{"label": "METHOD", "pattern": "conversion rate", "id": "conversion-rate"}
+{"label": "METHOD", "pattern": "acceptance criteria", "id": "acceptance-criteria"}
+{"label": "METHOD", "pattern": "user story", "id": "user-story"}
+{"label": "METHOD", "pattern": "user stories", "id": "user-stories"}
+{"label": "METHOD", "pattern": "sentiment analysis", "id": "sentiment-analysis"}
+{"label": "METHOD", "pattern": "named entity recognition", "id": "named-entity-recognition"}
+{"label": "METHOD", "pattern": "dependency parse", "id": "dependency-parse"}
+{"label": "METHOD", "pattern": "tokenization", "id": "tokenization"}
+{"label": "METHOD", "pattern": "collocations", "id": "collocations"}
+{"label": "METHOD", "pattern": "stopwords", "id": "stopwords"}

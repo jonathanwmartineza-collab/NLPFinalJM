@@ -24,7 +24,7 @@ export const listAgents = () =>
 export const listSkills = () =>
   fs.readdirSync(rel('.claude/skills'), { withFileTypes: true }).filter((d) => d.isDirectory() || d.isSymbolicLink()).map((d) => d.name).sort();
 
-export const DEPARTMENTS = ['Leadership', 'Product', 'Design', 'Engineering', 'Quality', 'Launch', 'Governance'];
+export const DEPARTMENTS = ['Leadership', 'Product', 'Design', 'Engineering', 'NLP', 'Quality', 'Launch', 'Governance'];
 export const TOOLS = ['Read', 'Grep', 'Glob', 'Bash', 'Edit', 'Write', 'WebFetch', 'WebSearch', 'Skill', 'Agent', 'NotebookEdit', 'TodoWrite'];
 export const COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan'];
 export const MODELS = ['opus', 'sonnet', 'haiku'];

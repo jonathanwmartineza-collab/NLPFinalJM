@@ -48,6 +48,7 @@ export default function Sidebar({ team, path, costMode, open, onClose, theme, on
         <nav className="nav-studio" aria-label="Tools">
           <a href="/studio" onClick={go} aria-current={cur('/studio')}>One-shot Studio</a>
           <a href="/library" onClick={go} aria-current={cur('/library')}>Prompt Library</a>
+          <a href="/nlp" onClick={go} aria-current={cur('/nlp')}>NLP Lab (NLTK + spaCy)</a>
         </nav>
         {orchestrator && (
           <a href="/" className="row team" onClick={go} aria-current={path === '/' ? 'page' : undefined}>
