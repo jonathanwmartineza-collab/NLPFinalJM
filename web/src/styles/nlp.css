@@ -60,6 +60,12 @@
 .nlp-tone.negative { color: var(--err); } .nlp-tone.negative i { background: var(--err); }
 .nlp-tone.neutral { color: var(--soft); } .nlp-tone.neutral i { background: var(--soft); }
 .nlp-tone.compact .nlp-tone-bar { width: 50px; }
+/* High contrast makes --line solid black (white in dark), the same weight as the fill, so the bars vanished:
+   give the track the panel colour and draw its edge as a thin outline instead. */
+:root[data-contrast="high"] .nlp-bars .bar, :root[data-contrast="high"] .nlp-tone-bar { background: var(--glass); box-shadow: inset 0 0 0 1px var(--line); }
+@media (prefers-contrast: more) {
+  :root:not([data-contrast]) .nlp-bars .bar, :root:not([data-contrast]) .nlp-tone-bar { background: var(--solid); box-shadow: inset 0 0 0 1px var(--line); }
+}
 .nlp-tone.compact { font-size: 12.5px; }
 
 .nlp-score { display: flex; align-items: center; gap: 14px; margin: 6px 0 10px; }

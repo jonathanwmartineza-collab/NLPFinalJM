@@ -45,3 +45,27 @@ describe('explicit angles', () => {
     expect(p.experts.length).toBeLessThanOrEqual(3);
   });
 });
+
+describe('keyword matching', () => {
+  const slugs = (q: string) => routeQuestion(q).experts.map((e) => e.slug);
+  it('matches whole short words, not letters inside other words', () => {
+    expect(slugs('Build a quick guide for new staff')).not.toContain('ui-designer');
+    expect(slugs('Help me decide between two offers')).not.toContain('devops-engineer');
+    expect(slugs('Where should we keep file storage?')).not.toContain('ai-engineer');
+    expect(slugs('Make the context window more specific')).not.toContain('prompt-engineer');
+  });
+  it('still matches plurals, word starts and the intended short words', () => {
+    expect(slugs('Which UI should we use for the dashboard?')).toContain('ui-designer');
+    expect(slugs('Set up CI for the repo and deploy it')).toContain('devops-engineer');
+    expect(slugs('How do we scale this to many users?')).toContain('software-architect');
+    expect(slugs('How should we add RAG with embeddings?')).toContain('ai-engineer');
+    expect(slugs('Which APIs do we need for authentication?')).toContain('backend-engineer');
+  });
+  it('flags stakes only for the real words', () => {
+    expect(routeQuestion('How should the display look on a phone?').stakes).not.toContain('money');
+    expect(routeQuestion('Map the relationship between pages').stakes).not.toContain('release');
+    expect(routeQuestion('Who is the author of this guide?').stakes).not.toContain('security');
+    expect(routeQuestion('Should we ship it and how will users pay?').stakes).toEqual(expect.arrayContaining(['money', 'release']));
+    expect(routeQuestion('Is our payment and authentication flow ok?').stakes).toEqual(expect.arrayContaining(['money', 'security']));
+  });
+});

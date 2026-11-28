@@ -79,7 +79,7 @@ Run `npm run build:nlp` (or `build:all`) before `test:py` and the Pyodide test, 
 
 
 - **Free and private.** The AI runs on your own device with [WebLLM](https://webllm.mlc.ai) and WebGPU. What you type never leaves your browser. There are no accounts, no API keys and no cost per answer.
-- **Choose a model once.** The first time, you pick a model and your browser downloads it from Hugging Face (about 2.2 GB for Quality, the recommended model; Lite is about 0.7 GB). It's saved for next time and works offline.
+- **Choose a model once.** The first time, you pick a model and your browser downloads it from Hugging Face (about 3.4 GB for Quality, the recommended model; Lite is about 0.9 GB). It's saved for next time, and once it's on it keeps working offline while the page stays open.
 - **Same team in Claude Code.** The 36 agents in `.claude/agents` work in Claude Code for real, multi-file builds.
 
 ```mermaid

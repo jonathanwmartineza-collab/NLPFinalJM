@@ -21,7 +21,8 @@ export function createDictation(Recognizer: any, onText: (t: string) => void, on
   const toggle = () => {
     if (current) { current.stop(); return; }
     const r = new Recognizer();
-    r.lang = (typeof navigator !== 'undefined' && navigator.language) || 'en-US';
+    const lang = typeof navigator !== 'undefined' ? navigator.language : '';
+    r.lang = /^en\b/i.test(lang) ? lang : 'en-US';  // the experts answer in English, so dictate in English
     r.interimResults = false; r.continuous = false;
     let heard = '';
     r.onresult = (e: any) => { if (current === r) heard = sessionText(e.results); };

@@ -104,6 +104,16 @@ def test_every_pair_has_a_note_string():
     assert m["pairs"][0]["note"] == ""
 
 
+def test_pair_says_when_it_agrees_because_of_the_same_recommendation():
+    # Low word overlap but the same pick: the verdict is agree, and the pair says why, so the map never shows
+    # "Agree, overlap 10%" with no reason next to an intro that asks for 20%.
+    p = pair("I recommend Postgres. The reporting queries need joins and the team already knows the query language.",
+             "I recommend Postgres. Hosting is cheap, backups are automatic and upgrades are painless.")
+    assert p["same_pick"] is True and p["verdict"] == "agree"
+    q = pair("Use Postgres.", "Pick SQLite for this.")
+    assert q["same_pick"] is False and q["conflict"] is True
+
+
 # ---------------------------------------------------------------- 3. imperatives
 @pytest.mark.parametrize("text,want", [
     ("Use Postgres.", ["postgres"]),

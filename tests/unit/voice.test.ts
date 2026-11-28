@@ -68,3 +68,17 @@ describe('voice input', () => {
     expect(texts).toEqual([]);
   });
 });
+
+describe('dictation language', () => {
+  const withLang = (lang: string) => {
+    const orig = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+    Object.defineProperty(globalThis, 'navigator', { value: { language: lang }, configurable: true });
+    try { const { d, rec } = setup(); d.toggle(); return rec().lang; }
+    finally { if (orig) Object.defineProperty(globalThis, 'navigator', orig); else delete (globalThis as any).navigator; }
+  };
+  it('keeps an English browser language and falls back to US English otherwise', () => {
+    expect(withLang('en-GB')).toBe('en-GB');
+    expect(withLang('es-US')).toBe('en-US');
+    expect(withLang('')).toBe('en-US');
+  });
+});

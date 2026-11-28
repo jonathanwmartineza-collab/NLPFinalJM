@@ -105,5 +105,5 @@ export type Coach = { score: number; vague: { word: string; count: number; tip: 
   checks: { id: string; ok: boolean; label: string; tip: string }[]; sentiment: Sent; keywords: [string, number][];
   topics: string[]; experts: { slug: string; name: string; title: string; score: number }[]; sharper: string; note?: string };
 export type AgreementMap = { experts: { name: string; terms: string[]; unique: string[]; sentiment: Sent; recommends: string[] }[];
-  shared: [string, string[]][]; pairs: { a: string; b: string; overlap: number; tone_gap: number; conflict: boolean; verdict: string; note?: string }[];
+  shared: [string, string[]][]; pairs: { a: string; b: string; overlap: number; tone_gap: number; conflict: boolean; same_pick?: boolean; verdict: string; note?: string }[];
   note?: string };

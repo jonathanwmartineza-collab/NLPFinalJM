@@ -127,7 +127,7 @@ export function AgreementView({ m, ms, level }: { m: AgreementMap; ms?: number; 
       <Note text={m.note} />
       <div className="nlp-cols">
         <div><H>Where they agree</H>{m.shared.length ? <ul className="nlp-list">{m.shared.map(([t, who]) => <li key={t}><b>{t}</b> <span className="small">{who.join(', ')}</span></li>)}</ul> : <p className="small">No shared idea found: each expert took a different angle.</p>}</div>
-        <div><H>Pair by pair</H><ul className="nlp-list">{m.pairs.map((p, i) => <li key={i}><span className={`nlp-verdict ${p.verdict.replace(/ /g, '-')}`}>{VERDICT[p.verdict] ?? p.verdict}</span> {p.a} and {p.b} <span className="small">overlap {pct(p.overlap)}, tone gap {p.tone_gap.toFixed(2)}{p.conflict ? ', different recommendations' : ''}{p.note ? `. ${p.note}` : ''}</span></li>)}</ul></div>
+        <div><H>Pair by pair</H><ul className="nlp-list">{m.pairs.map((p, i) => <li key={i}><span className={`nlp-verdict ${p.verdict.replace(/ /g, '-')}`}>{VERDICT[p.verdict] ?? p.verdict}</span> {p.a} and {p.b} <span className="small">overlap {pct(p.overlap)}, tone gap {p.tone_gap.toFixed(2)}{p.conflict ? ', different recommendations' : p.same_pick && !p.note?.startsWith('Same recommendation') ? ', same recommendation' : ''}{p.note ? `. ${p.note}` : ''}</span></li>)}</ul></div>
       </div>
       <H>Each expert</H>
       <ul className="nlp-experts">

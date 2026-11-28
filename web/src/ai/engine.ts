@@ -45,7 +45,7 @@ let inited = false;
 export async function initEngine(): Promise<void> {
   if (inited) return; inited = true;
   const ua = navigator.userAgent;
-  const mobile = (navigator as any).userAgentData?.mobile ?? /Mobi|Android|iPhone|iPad/i.test(ua);
+  const mobile = (navigator as any).userAgentData?.mobile ?? (/Mobi|Android|iPhone|iPad/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1));
   const memGb: number | undefined = (navigator as any).deviceMemory;
   const nogpu = MOCK && new URLSearchParams(location.search).has('nogpu');
   let f16 = MOCK;
@@ -118,7 +118,7 @@ function classify(e: unknown): Pick<EngineState, 'errorKind' | 'reason'> {
 export async function loadTier(id: TierId): Promise<void> {
   const tier = tierById(id); if (!tier) return;
   if (state.status === 'loading') return;
-  if (!(await takeLock())) return set({ status: 'elsewhere', reason: 'The AI is already running in another tab or window of this browser. Close it there, then reload this page.' });
+  if (!(await takeLock())) return set({ status: 'elsewhere', reason: 'The AI is already running in another tab or window of this browser. Close it there, then press Try again.' });
   const seq = ++loadSeq;
   const modelId = modelIdFor(tier, state.f16);
   set({ status: 'loading', tier: id, modelId, progress: 0, progressText: 'Starting…', reason: undefined, errorKind: undefined });

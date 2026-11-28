@@ -172,7 +172,7 @@ export default function StudioPage({ library }: { library: LibraryItem[] }) {
           <span style={{ flex: 1 }} />
           <button type="button" className="btn ghost sm" disabled={!html} onClick={() => copy(html)}>Copy</button>
           <button type="button" className="btn ghost sm" disabled={!html} onClick={download}>Download .html</button>
-          <button type="button" className="btn ghost sm" disabled={!html} onClick={() => wrap.current?.requestFullscreen?.().catch(() => setNote('Full screen is not available here.'))}>Full screen</button>
+          <button type="button" className="btn ghost sm" disabled={!html} onClick={() => { const el = wrap.current; if (!el?.requestFullscreen) { setNote('Full screen is not available here.'); return; } el.requestFullscreen().catch(() => setNote('Full screen is not available here.')); }}>Full screen</button>
         </div>
         {view === 'code' || (busy && stream)
           ? <pre className="codeview" aria-label={busy ? 'Content the AI is writing' : 'HTML source'}>{busy && stream ? stream : html || 'No page yet.'}</pre>

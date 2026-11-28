@@ -26,7 +26,12 @@ export default function EngineGate({ copyText }: { copyText?: string }) {
       {copyText && <p><button type="button" className="btn ghost sm" onClick={copy}>Copy this expert's prompt</button> <span role="status">{copied}</span></p>}
     </div>
   );
-  if (s.status === 'elsewhere') return <p className="notice warn" role="alert"><b>The AI is already running in another tab.</b> {s.reason}</p>;
+  if (s.status === 'elsewhere') return (
+    <div className="notice warn" role="alert">
+      <p><b>The AI is already running in another tab.</b> {s.reason}</p>
+      <p><button type="button" className="btn ghost sm" onClick={() => loadTier(pick)}>Try again</button></p>
+    </div>
+  );
 
   if (s.status === 'loading') {
     const pct = Math.round(s.progress * 100);
@@ -36,7 +41,7 @@ export default function EngineGate({ copyText }: { copyText?: string }) {
         <p><b>{s.cached[s.tier!] ? 'Starting' : 'Downloading'} the {t?.label} model…</b> {pct}%</p>
         <progress max={100} value={pct} aria-label={`Model download ${pct}%`} />
         <p className="small">{s.progressText}</p>
-        <p className="small">The first time takes a few minutes. It's saved in this browser, so next time it starts in seconds and even works offline.</p>
+        <p className="small">The first time takes a few minutes. It's saved in this browser, so next time it starts in seconds, and once it's on it keeps working offline while this page stays open.</p>
         <button type="button" className="btn ghost sm" onClick={() => cancelLoad()}>Cancel</button>
       </div>
     );

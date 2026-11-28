@@ -409,6 +409,7 @@ def sharpen(text: str, vague: list[dict], hedges: list[str]) -> str:
     for i, hint in enumerate(hints):
         s = s.replace(f"\x00{i}\x00", hint)
     s = re.sub(r"(\[[^\[\]]+\])(?:\s+\1)+", r"\1", s)  # "with stuff like that and so on" -> one [finish the list]
+    s = re.sub(r"\[[^\[\]]+\]\s+(?=\[)", "", s)  # "some stuff" -> [list the items you mean], not two hints in a row
     return s if any(c.isalnum() for c in s) else "[Say what you want]"
 
 
@@ -766,7 +767,7 @@ def agreement(answers: list[dict], phrases: list[str] | None = None) -> dict:
                 note = ("Same recommendation, different tone." if same_pick and not rec_conflict else
                         "Opposite tone." if opposite else "Different tone.")
             pairs.append({"a": a["name"], "b": b["name"], "overlap": round(jac, 2), "tone_gap": round(tone_gap, 2),
-                          "conflict": rec_conflict, "verdict": verdict, "note": note})
+                          "conflict": rec_conflict, "same_pick": same_pick, "verdict": verdict, "note": note})
     for i, e in enumerate(experts):
         e["unique"] = [t for t, key in zip(e["terms"], keys[i]) if len(owners.get(key, [])) == 1][:5]
     return {"experts": experts, "shared": shared[:10], "pairs": pairs, "note": " ".join(notes)}

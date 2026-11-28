@@ -1,7 +1,12 @@
 import { AgreementInline } from '../nlp/ui';
 import { useEffect, useRef, useState } from 'react';
 import type { Team } from '../lib/types';
-import { streamModel } from '../lib/api';
+import { streamModel, ApiError } from '../lib/api';
+
+// A stalled, unloaded or switched-off AI fails every later step too, so the turn stops at once with its message
+// instead of trying each remaining expert in turn (each would wait for its own stall timeout).
+const ENGINE_DOWN = new Set(['stalled', 'unloaded', 'not_ready']);
+const engineDown = (e: unknown) => e instanceof ApiError && ENGINE_DOWN.has(e.code);
 import { loadChats, saveChat } from '../lib/storage';
 import { useSpeech } from '../lib/voice';
 import Markdown from '../components/Markdown';
@@ -80,7 +85,7 @@ export default function TeamPage({ team }: { team: Team }) {
           const x = await streamModel({ mode: 'expert', slug: e.slug, question: q, subQuestion: e.question, context, runToken: token }, () => setChip(e.slug, 'writing'), c.signal);
           if (!x.text) throw new Error('empty');
           setChip(e.slug, 'done'); results.push({ slug: e.slug, text: x.text });
-        } catch { setChip(e.slug, 'failed'); results.push(null); }
+        } catch (err) { setChip(e.slug, 'failed'); if (engineDown(err)) throw err; results.push(null); }
       }
       const contribs = results.filter(Boolean) as { slug: string; text: string }[];
       if (c.signal.aborted) throw new DOMException('aborted', 'AbortError');
@@ -91,7 +96,7 @@ export default function TeamPage({ team }: { team: Team }) {
         try {
           const rv = await streamModel({ mode: 'review', question: q, contributions: contribs.map((x) => ({ slug: x.slug, text: x.text.slice(0, 6000) })), context, runToken: token }, () => {}, c.signal);
           if (rv.text) { inputs.push({ slug: 'red-team-reviewer', text: rv.text }); setChip('red-team-reviewer', 'done'); } else setChip('red-team-reviewer', 'failed');
-        } catch { setChip('red-team-reviewer', 'failed'); }
+        } catch (err) { setChip('red-team-reviewer', 'failed'); if (engineDown(err)) throw err; }
       }
       setPhase(`${director.name} is combining the answers`); setLive(`${director.name} is combining the answers`);
       let acc = '';
