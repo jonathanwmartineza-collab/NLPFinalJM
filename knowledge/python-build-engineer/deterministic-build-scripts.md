@@ -1,5 +1,9 @@
 # Deterministic, loud-failing NLP build scripts
 
+- Source: zipfile — Work with ZIP archives — https://docs.python.org/3/library/zipfile.html (accessed 2026-11-28)
+- Publisher: Python Software Foundation
+- Licence: PSF-2.0 · Copy in repo: link only
+
 Why this matters for python-build-engineer: the build script's JSON is what examiners see. If the same
 commit can produce different numbers, or a broken step silently writes empty JSON and the deploy still
 goes live, the final test fails in a way nobody notices until grading.
@@ -27,6 +31,22 @@ goes live, the final test fails in a way nobody notices until grading.
 - [x] Build the nltk_data zip with sorted entries and fixed timestamps so the zip is stable across builds
       (zip entries carry dates; the project's `nltk_zip()` sets `date_time=(2026, 1, 1, 0, 0, 0)` in
       `zipfile.ZipInfo`).
+
+## Python docs facts behind the two checklists (Python 3 docs, re-read 2026-11-28)
+- `ZipInfo(filename='NoName', date_time=(1980, 1, 1, 0, 0, 0))`; the year must be >= 1980, and the time
+  is read as local time, not UTC. A fixed tuple is therefore the same on every machine.
+- `ZipFile.writestr(name, data)` with a plain name stamps the current time; with a `ZipInfo` it uses
+  that object's date. Always pass a `ZipInfo`.
+- `ZipInfo.compress_type` defaults to `ZIP_STORED`; set `ZIP_DEFLATED` on each entry if you want it.
+- Python 3.14+ `writestr()` honours `SOURCE_DATE_EPOCH`; Netlify runs 3.13 here, so keep the fixed tuple.
+- The docs give no order guarantee for entries written to a new archive beyond the order you add them,
+  so add them from a sorted list.
+- `json.dumps` defaults: `separators` is `(', ', ': ')` when `indent` is None; `(',', ':')` is the
+  documented most compact form; `sort_keys=False`; dict order is preserved.
+- `allow_nan=True` by default writes `NaN` / `Infinity`, which are not valid JSON and break `JSON.parse`
+  in the browser; pass `allow_nan=False` so a bad float fails the build instead (the project's `write()`
+  in nlp/build_nlp.py does not set it as of 2026-11-28; propose it, then run the tests).
+- `ensure_ascii=False` writes characters as-is; pair it with `encoding="utf-8"` when writing the file.
 
 ## Fail-loudly checklist
 - [x] `nltk.download(..., raise_on_error=True)`; its default only prints an error (`nltk_setup()`).
@@ -78,5 +98,5 @@ goes live, the final test fails in a way nobody notices until grading.
 - https://docs.netlify.com/build/configure-builds/file-based-configuration/ (accessed 2026-11-26)
 - https://spacy.io/usage/models (accessed 2026-11-26)
 - https://www.nltk.org/api/nltk.downloader.html (accessed 2026-11-26)
-- Python standard library `zipfile` and `json` docs: https://docs.python.org/3/library/zipfile.html and
-  https://docs.python.org/3/library/json.html (UNVERIFIED this session: not fetched; standard behavior)
+- https://docs.python.org/3/library/zipfile.html (accessed 2026-11-28)
+- https://docs.python.org/3/library/json.html (accessed 2026-11-28)

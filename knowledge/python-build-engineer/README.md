@@ -13,8 +13,8 @@ Read this index first, then the notes that fit the task. Name the notes you used
 
 ## Notes
 - [Running a Python step in the Netlify build](netlify-python-build.md): image, Python version, pip install, netlify.toml, ignore-build gap, limits, troubleshooting. Read before editing netlify.toml or requirements.
-- [Deterministic, loud-failing build scripts](deterministic-build-scripts.md): determinism and fail-loud checklists, model install options, sharing code with the browser. Read before editing the build script.
+- [Deterministic, loud-failing NLP build scripts](deterministic-build-scripts.md): determinism and fail-loud checklists, zipfile and json facts, model install options, sharing code with the browser. Read before editing the build script.
 - [NLP final architecture](../_shared/nlp-final-architecture.md): where each part runs, file map, owners.
 - [Netlify platform for our apps](../_shared/netlify-platform.md)
 
-Maintained by the knowledge-curator (source-notes skill). Last reviewed 2026-11-26.
+Maintained by the knowledge-curator (source-notes skill). Last reviewed 2026-11-28.

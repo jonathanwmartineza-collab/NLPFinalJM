@@ -12,9 +12,9 @@ Read this index first, then the notes that fit the task. Name the notes you used
 - Every panel labeled exactly "NLTK" or "spaCy" (the page's `Lib` badge; the JSON has no `engine` field); live box: cold 30 s, warm 2 s, parity with the build JSON.
 
 ## Notes
-- [Evaluating NER](ner-evaluation.md): gold sets, P/R/F1, spaCy Scorer and Language.evaluate, minimal gold set, pitfalls. Read for check C.
-- [NLTK sanity checks and acceptance tests](nltk-sanity-and-acceptance.md): VADER reference sentences, frequency and collocation invariants, labeling rule, live box test. Read for checks B, D, E and F.
+- [Evaluating NER: gold labels, precision, recall, F1 and spaCy's Scorer](ner-evaluation.md): gold sets, P/R/F1, spaCy Scorer and Language.evaluate, minimal gold set, pitfalls. Read for check C.
+- [NLTK sanity checks and NLP Lab acceptance tests](nltk-sanity-and-acceptance.md): VADER reference sentences, frequency and collocation invariants, labeling rule, live box test. Read for checks B, D, E and F.
 - [NLP final architecture](../_shared/nlp-final-architecture.md): where each part runs, file map, owners.
 - [Testing and evidence](../_shared/testing-and-evidence.md)
 
-Maintained by the knowledge-curator (source-notes skill). Last reviewed 2026-11-26.
+Maintained by the knowledge-curator (source-notes skill). Last reviewed 2026-11-28.

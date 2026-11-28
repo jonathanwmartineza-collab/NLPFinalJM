@@ -1,5 +1,9 @@
 # Pyodide on this site: CSP, download size and pitfalls
 
+- Source: Content-Security-Policy: script-src directive — https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/script-src (accessed 2026-11-26)
+- Publisher: Mozilla (MDN Web Docs)
+- Licence: CC-BY-SA-2.5 · Copy in repo: link only
+
 Why this matters for pyodide-engineer: the site already ships a strict Content-Security-Policy as a meta
 tag in the HTML entry file. Pyodide needs WebAssembly and a cross-origin CDN, so the policy must be
 widened exactly as far as needed and no further. First-load weight must be disclosed to visitors.

@@ -1,5 +1,9 @@
 # spaCy pipelines, en_core_web_sm and installing models
 
+- Source: Models & Languages · spaCy usage documentation — https://spacy.io/usage/models (accessed 2026-11-26)
+- Publisher: Explosion
+- Licence: MIT · Copy in repo: link only
+
 Why this matters for spacy-expert: spaCy runs only at build time on Netlify (it is not in Pyodide), so the
 model must install reliably from a pinned wheel and the pipeline must be configured once, in the build
 script, before any text is processed.
@@ -42,8 +46,7 @@ script, before any text is processed.
 | DATE / TIME | absolute or relative dates / times under a day |
 | PERCENT / MONEY / QUANTITY | percentages / money / measurements |
 | ORDINAL / CARDINAL | "first", "second" / other numerals |
-- The label list is from the release page; the short meanings are the usual OntoNotes glosses
-  (`spacy.explain("NORP")` prints them at runtime; use that rather than hard-coding).
+- Labels from the release page; meanings are the usual OntoNotes glosses (print with `spacy.explain`).
 
 ## Reported accuracy of en_core_web_sm 3.8.0 (release page)
 | Metric | Score |
@@ -70,7 +73,7 @@ script, before any text is processed.
   with `spacy.load(MODEL)` and records `f"{MODEL} {spacy.util.get_package_version(MODEL)}"` as spacy.json's
   `model` ("en_core_web_sm 3.8.0"); tests/python/test_build_output.py asserts it starts with
   "en_core_web_sm 3.8".
-- Shortcut names like `en` were removed in v3; always use the full package name.
+- Shortcut links like `en` are deprecated as of v3.0 (docs: brittle symlinks); use the full package name.
 
 ## Pipeline mechanics
 - The tokenizer runs first and is not listed in `nlp.pipe_names`.
@@ -83,8 +86,7 @@ script, before any text is processed.
   on purpose; see the NER note).
 
 ## Batch processing with nlp.pipe
-- `nlp.pipe(texts, batch_size=..., n_process=1, as_tuples=False, disable=[...])` yields Docs lazily, in
-  input order. Wrap in `list()` only if you need all at once.
+- `nlp.pipe(texts, batch_size=..., n_process=1, as_tuples=False, disable=[...])` yields Docs lazily, in order.
 - `as_tuples=True`: pass `(text, context)` and get `(doc, context)`; handy to carry a document id.
 - Keep `n_process=1` on Netlify: multiprocess start-up cost outweighs gains for a few documents.
 - Process the whole corpus in one `nlp.pipe` call rather than calling `nlp(text)` in a loop. The project

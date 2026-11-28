@@ -1,5 +1,9 @@
 # NLTK sanity checks and NLP Lab acceptance tests
 
+- Source: Sample usage for sentiment — https://www.nltk.org/howto/sentiment.html (accessed 2026-11-26)
+- Publisher: NLTK Project
+- Licence: Apache-2.0 · Copy in repo: link only
+
 Why this matters for nlp-evaluator: VADER, word frequencies and collocations have no gold standard on the
 project's texts, so they are checked with known-answer sentences, invariants and the exam's hard
 requirements (every panel labeled; the live box works). This note gives the reasoning; the nlp-eval
@@ -23,6 +27,9 @@ skill holds the exact procedure and verdict rules.
 | (empty string) | 0.0 | no crash, neutral |
 
 - The skill's V1-V6 sentences are the required set; the table above adds published reference values.
+- Source check (2026-11-28): "VADER is not smart..." and "Not bad at all" appear only in the reference
+  README, not the NLTK howto. "Today SUX!" prints -0.5461 in both the NLTK howto and the README; the howto's
+  lowercase "Today sux!" prints -0.4199, so keep the exact casing in any gold row.
 - Invariants worth asserting: `pos + neu + neg` is about 1 (non-empty text); compound is in [-1, 1];
   adding "!!!" never lowers the compound of a positive sentence.
 

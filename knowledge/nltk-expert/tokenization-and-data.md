@@ -1,5 +1,9 @@
 # NLTK tokenization, stopwords and data packages
 
+- Source: nltk.tokenize package — https://www.nltk.org/api/nltk.tokenize.html (accessed 2026-11-26)
+- Publisher: NLTK Project
+- Licence: Apache-2.0 · Copy in repo: link only
+
 Why this matters for nltk-expert: every NLTK feature in the NLP final (tokens, stopwords, VADER) depends on
 data packages being found at runtime, both on the Netlify build machine and inside Pyodide in the browser.
 A missing package is a `LookupError` at runtime, so the data layout must be planned, not guessed.
@@ -7,6 +11,8 @@ A missing package is a `LookupError` at runtime, so the data layout must be plan
 ## Versions in play (checked 2026-11-26)
 - The project pins `nltk==3.9.4` (PyPI release date 2026-03-24). PyPI's newest is 3.10.4 (2026-10-21),
   but Pyodide 314.0.8 ships nltk 3.9.4, so keep the pin at 3.9.4: build and browser then run identical code.
+- The nltk.org API pages are built from 3.9.2 (shown in their header on 2026-11-28). UNVERIFIED: that no
+  signature used here changed in 3.9.3 or 3.9.4; the project's pytest run on 3.9.4 is the real check.
 - PyPI metadata: nltk 3.9.4 requires Python >=3.10 and lists 3.10 to 3.14 (3.9.2 required >=3.9);
   the Python 3.13 classifier first appears in 3.9.2.
 - NLTK 3.9 (Aug 2024) removed the need for pickled models to fix CVE-2024-39705. This is why sentence

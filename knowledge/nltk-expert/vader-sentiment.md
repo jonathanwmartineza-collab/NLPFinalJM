@@ -1,5 +1,9 @@
 # VADER sentiment in NLTK
 
+- Source: nltk.sentiment.vader module — https://www.nltk.org/api/nltk.sentiment.vader.html (accessed 2026-11-26)
+- Publisher: NLTK Project
+- Licence: Apache-2.0 · Copy in repo: link only
+
 Why this matters for nltk-expert: VADER powers the sentiment panel and the live text box. It is a rule-based
 lexicon model, so its output is deterministic and testable, and its quirks (negation, "but", caps, "!")
 need to be explained honestly on the page.
@@ -7,9 +11,9 @@ need to be explained honestly on the page.
 ## What VADER is
 - Valence Aware Dictionary and sEntiment Reasoner: a lexicon of word valences plus hand-written rules,
   tuned for social-media style text. No training step, no model download beyond the lexicon.
-- Cite it as: Hutto, C.J. & Gilbert, E.E. (2014). VADER: A Parsimonious Rule-based Model for Sentiment
-  Analysis of Social Media Text. Eighth International Conference on Weblogs and Social Media (ICWSM-14),
-  Ann Arbor, MI. Both the NLTK API page and the VADER README ask for this citation.
+- Cite the VADER paper: "VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media
+  Text", Eighth International Conference on Weblogs and Social Media (ICWSM-14), Ann Arbor, MI, 2014
+  (name the authors as the paper lists them). The VADER README asks for this citation.
 - Lexicon licence: MIT (nltk_data index). Lexicon package id: `vader_lexicon`.
 
 ## NLTK API
@@ -59,16 +63,18 @@ need to be explained honestly on the page.
 | VADER is VERY SMART, handsome, and FUNNY. | 0.9227 |
 | VADER is not smart, handsome, nor funny. | -0.7424 |
 | The book was good. | 0.4404 |
-| The book was only kind of good. | 0.3832 |
+| The book was only kind of good. (howto: "kind of good", no "only") | 0.3832 |
 | A really bad, horrible book. | -0.8211 |
 | At least it isn't a horrible book. | 0.431 |
 | Not bad at all | 0.431 |
 | The plot was good, but the characters are uncompelling and the dialog is not great. | -0.7042 |
-| Today SUX! | -0.5461 |
+| Today SUX! | -0.5461 (howto and README); the howto's lowercase "Today sux!" is -0.4199 |
 | (empty string) | 0.0 |
 
-- These come from the reference vaderSentiment package and the NLTK howto. NLTK's port matched them on
-  the howto page; still treat exact decimals as a regression check with a small tolerance (0.001), and
+- These come from the reference vaderSentiment README and the NLTK howto. NLTK's port matches the README
+  on every row the howto prints, "Today SUX!" included (-0.5461, re-checked 2026-11-28); casing matters, as
+  the howto's "Today sux!" gives -0.4199. "not smart" and "Not bad at all" appear only in the README. Treat exact decimals as a
+  regression check with a small tolerance (0.001), and
   treat the sign as the hard requirement.
 
 ## Known limits to state on the page

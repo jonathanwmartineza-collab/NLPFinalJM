@@ -1,5 +1,9 @@
 # FreqDist and bigram collocations in NLTK
 
+- Source: Sample usage for collocations — https://www.nltk.org/howto/collocations.html (accessed 2026-11-26)
+- Publisher: NLTK Project
+- Licence: Apache-2.0 · Copy in repo: link only
+
 Why this matters for nltk-expert: the "top words" and "word pairs" panels come from FreqDist and
 BigramCollocationFinder. Both are easy to get subtly wrong (punctuation, stopwords, tiny corpora), and
 PMI in particular rewards rare pairs unless you filter.
@@ -66,7 +70,7 @@ PMI in particular rewards rare pairs unless you filter.
 
 - The howto shows PMI on Genesis: without a filter the top pairs are one-off names; after
   `apply_freq_filter(3)` it shifts to recurring expressions such as "Most High".
-- The app shows likelihood ratio only (Dunning's LLR, `BigramAssocMeasures.likelihood_ratio`); if PMI is
+- The app shows likelihood ratio only (log-likelihood ratio, `BigramAssocMeasures.likelihood_ratio`); if PMI is
   added later, show it beside LLR and say what each favors.
 
 ## Checked values (from the howto, useful as unit tests of the measure functions)

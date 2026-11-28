@@ -12,10 +12,10 @@ Read this index first, then the notes that fit the task. Name the notes you used
 - Load only after the visitor's click; measure and show the first-load size.
 
 ## Notes
-- [Loading Pyodide in a module Web Worker](loading-and-worker.md): version facts, CDN files, loadPyodide options, worker shape, startup sequence. Read before writing the worker.
-- [Packages, file system and JS/Python conversion](packages-fs-ffi.md): package list, loadPackage, MEMFS, unpackArchive, toJs/to_js. Read when wiring data and results.
-- [CSP, download size and pitfalls](csp-size-and-pitfalls.md): current site CSP, required changes, size, test tips, checklist. Read before shipping.
+- [Loading Pyodide 314.0.8 in a module Web Worker](loading-and-worker.md): version facts, CDN files, loadPyodide options, worker shape, startup sequence. Read before writing the worker.
+- [Pyodide packages, file system and JS/Python conversion](packages-fs-ffi.md): package list, loadPackage, MEMFS, unpackArchive, toJs/to_js. Read when wiring data and results.
+- [Pyodide on this site: CSP, download size and pitfalls](csp-size-and-pitfalls.md): current site CSP, required changes, size, test tips, checklist. Read before shipping.
 - [NLP final architecture](../_shared/nlp-final-architecture.md): where each part runs, file map, owners.
 - [Web and LLM application security](../_shared/llm-and-web-security.md)
 
-Maintained by the knowledge-curator (source-notes skill). Last reviewed 2026-11-26.
+Maintained by the knowledge-curator (source-notes skill). Last reviewed 2026-11-28.

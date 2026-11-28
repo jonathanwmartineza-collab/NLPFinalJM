@@ -1,5 +1,9 @@
 # Pyodide packages, file system and JS/Python conversion
 
+- Source: Packages built in Pyodide — https://pyodide.org/en/stable/usage/packages-in-pyodide.html (accessed 2026-11-26)
+- Publisher: Pyodide project
+- Licence: MPL-2.0 · Copy in repo: link only
+
 Why this matters for pyodide-engineer: NLTK is available in Pyodide but its data is not; the data has to
 arrive as a zip and land where NLTK looks. Results then have to cross back to JavaScript without leaking
 proxies or breaking `postMessage`.

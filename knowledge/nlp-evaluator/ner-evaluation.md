@@ -1,5 +1,9 @@
 # Evaluating NER: gold labels, precision, recall, F1 and spaCy's Scorer
 
+- Source: Scorer · spaCy API documentation — https://spacy.io/api/scorer (accessed 2026-11-26)
+- Publisher: Explosion
+- Licence: MIT · Copy in repo: link only
+
 Why this matters for nlp-evaluator: the final exam needs evidence that the spaCy panel is right, not that
 it looks plausible. A small gold set scored with precision, recall and F1 (by hand or with spaCy's own
 `nlp.evaluate`) turns "seems fine" into a number with a pass threshold.
@@ -18,7 +22,8 @@ it looks plausible. A small gold set scored with precision, recall and F1 (by ha
 - Unlabeled check (span boundaries only) helps tell "wrong label" from "wrong span".
 
 ## Reference point for expectations
-- en_core_web_sm 3.8.0 reports entity P/R/F of 84.30 / 84.36 / 84.33 on its OntoNotes evaluation data.
+- en_core_web_sm 3.8.0 reports entity P/R/F of 84.30 / 84.36 / 84.33 (its release page lists OntoNotes 5 among
+  its training sources but does not name the evaluation set).
 - On the project's own short texts (tech names, course terms) expect lower recall for the statistical
   model; EntityRuler patterns should score 100% on the exact phrases they list.
 - So gate on: all ruler entities found with the right label, and most (for example 2 of 3) statistical

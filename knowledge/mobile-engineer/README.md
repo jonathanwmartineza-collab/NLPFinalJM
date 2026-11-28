@@ -8,8 +8,11 @@ Read this index first, then the notes that fit the task. Name the notes you used
 - Go native (Expo) for background tasks, deep OS features or store presence.
 
 ## Notes
+- [Web Application Manifest: members and defaults](web-app-manifest-spec.md): when writing or debugging a manifest for installability
+- [How PWA installation works on each platform](pwa-installation-by-platform.md): when promising install behaviour on iOS, Android or desktop
+- [The viewport meta tag on phones](viewport-meta-tag.md): for zoom, notches, on-screen keyboard and phone layout issues
 - [Core Web Vitals and performance budgets](../_shared/core-web-vitals.md)
 - [WCAG 2.2 AA essentials](../_shared/wcag-22-essentials.md)
 - [Netlify platform for our apps](../_shared/netlify-platform.md)
 
-Maintained by the knowledge-curator (source-notes skill). Last reviewed 2026-11-21.
+Maintained by the knowledge-curator (source-notes skill). Last reviewed 2026-11-28.

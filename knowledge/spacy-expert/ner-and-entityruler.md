@@ -1,5 +1,9 @@
 # Named entities and the EntityRuler in spaCy
 
+- Source: EntityRuler · spaCy API documentation — https://spacy.io/api/entityruler (accessed 2026-11-26)
+- Publisher: Explosion
+- Licence: MIT · Copy in repo: link only
+
 Why this matters for spacy-expert: the NER panel shows spaCy's statistical entities plus project-specific
 names added by rules. Getting the ruler's placement and overlap behavior right decides which label wins.
 
@@ -45,7 +49,7 @@ names added by rules. Getting the ruler's placement and overlap behavior right d
 ## Placement decides who wins
 | Placement | Behavior |
 |---|---|
-| `before="ner"` | ruler sets entities first; the statistical NER respects them and predicts around them. Docs say this can noticeably improve accuracy. |
+| `before="ner"` | ruler sets entities first; the statistical NER respects them and predicts around them. Rule-based matching docs: this can significantly improve accuracy in some cases. |
 | `after="ner"` | ruler only adds spans that do not overlap model entities, unless `overwrite_ents=True` |
 | alone (no ner) | pure rule-based NER |
 - Project decision (nlp/spacy_core.py `load()`): `before="ner"` with `phrase_matcher_attr="LOWER"` and

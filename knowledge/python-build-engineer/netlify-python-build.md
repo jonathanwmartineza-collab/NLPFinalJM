@@ -1,5 +1,9 @@
 # Running a Python step in the Netlify build
 
+- Source: Manage build dependencies — https://docs.netlify.com/build/configure-builds/manage-dependencies (accessed 2026-11-26)
+- Publisher: Netlify
+- Licence: proprietary (publisher's terms) · Copy in repo: link only
+
 Why this matters for python-build-engineer: the NLP final produces its spaCy and NLTK results while
 Netlify builds the site. Netlify must pick Python 3.13, install the pinned requirements, and run the NLP
 script before Vite copies its output into the published folder. Netlify Functions are not used.

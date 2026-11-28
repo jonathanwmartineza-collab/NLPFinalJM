@@ -1,5 +1,9 @@
 # Dependency parse, noun chunks and displaCy
 
+- Source: Visualizers · spaCy usage documentation — https://spacy.io/usage/visualizers (accessed 2026-11-26)
+- Publisher: Explosion
+- Licence: MIT · Copy in repo: link only
+
 Why this matters for spacy-expert: the parse and noun-chunk panels turn spaCy's syntax into something a
 reader can see. Output must be plain JSON the React page renders itself, which also keeps it XSS-safe.
 
@@ -50,7 +54,7 @@ reader can see. Output must be plain JSON the React page renders itself, which a
 |---|---|
 | `displacy.render(doc, style="dep")` | SVG string of arcs |
 | `displacy.render(doc, style="ent")` | HTML string with highlighted entities |
-| `displacy.render(doc, style="span", options={"spans_key": "sc"})` | HTML for span groups |
+| `displacy.render(doc, style="span", options={"spans_key": "sc"})` | HTML for span groups (`spans_key` default "sc" confirmed; the style name was not shown on the 2026-11-28 fetch) |
 | `displacy.serve(doc, style=...)` | local web server, for exploration only |
 
 - Options for dep: `compact` (square arrows, smaller), `color`, `bg`, `font`, `offset_x`, `distance`.

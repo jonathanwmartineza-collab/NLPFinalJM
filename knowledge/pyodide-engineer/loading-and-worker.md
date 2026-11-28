@@ -1,5 +1,9 @@
 # Loading Pyodide 314.0.8 in a module Web Worker
 
+- Source: Using Pyodide in a web worker — https://pyodide.org/en/stable/usage/webworker.html (accessed 2026-11-26)
+- Publisher: Pyodide project
+- Licence: MPL-2.0 · Copy in repo: link only
+
 Why this matters for pyodide-engineer: the live NLTK box runs real Python in the visitor's browser. Pyodide
 must load off the main thread, from a pinned CDN version, and the 314 line changed how workers must be
 created. Getting this wrong means a blank box or a frozen page.
@@ -28,7 +32,7 @@ created. Getting this wrong means a blank box or a frozen page.
 |---|---|---|
 | `indexURL` | folder of `pyodide.mjs` | the project passes `PYODIDE_CDN` explicitly, because boot.ts is shared with the Node test (which may pass a local `PYODIDE_INDEX`) |
 | `packages` | none | docs: loading here during bootstrap is more efficient; the project instead calls `loadPackage('nltk')` right after, in parallel with its own data fetches |
-| `stdout` / `stderr` | console | route to a debug log; never to the visible page unescaped |
+| `stdout` / `stderr` | not stated (docs prefer `setStdout()` / `setStderr()`) | route to a debug log; never to the visible page unescaped |
 | `lockFileURL` | `${indexURL}/pyodide-lock.json` | leave default |
 | `checkAPIVersion` | true | keep: catches loader/runtime mismatch |
 
