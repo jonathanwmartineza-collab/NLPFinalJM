@@ -62,6 +62,18 @@ export function keywordTheme(text: string): Theme | undefined {
 }
 
 /** Brief words first, then the model's pick, then words in the page itself, then a neutral default. */
+/** Some subjects inside a theme want a different lead photo: a yoga studio should open on mats, not dumbbells. */
+const LEAD: { theme: Theme; re: RegExp; file: string }[] = [
+  { theme: 'fitness', re: /\b(yoga|pilates|meditat\w*|stretch\w*|barre|mindful\w*|breath\w*)\b/i, file: 'fitness-3' },
+];
+/** The theme's photos in the order a page uses them, the lead photo first. */
+export function orderedPhotos(theme: Theme, text = ''): Photo[] {
+  const all = PHOTOS[theme];
+  const lead = LEAD.find((l) => l.theme === theme && l.re.test(text));
+  const i = lead ? all.findIndex((p) => p.file === lead.file) : -1;
+  return i > 0 ? [all[i], ...all.slice(0, i), ...all.slice(i + 1)] : all;
+}
+
 export function pickTheme(brief: string, modelTheme: Theme | undefined, pageText = ''): Theme {
   return keywordTheme(brief) ?? modelTheme ?? keywordTheme(pageText) ?? 'business';
 }

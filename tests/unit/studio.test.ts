@@ -104,12 +104,20 @@ describe('studio photos', () => {
       { kind: 'gallery', heading: 'Studio', items: [{ title: 'A' }, { title: 'B' }, { title: 'C' }] },
       { kind: 'contact', heading: 'Contact', items: [] }] }))!;
     const html = renderPage(spec);
-    expect(html).toMatch(/<figure class="hero-pic"><img src="\/studio\/photos\/fitness-1-l\.webp" alt="[^"]+"/);
+    expect(html).toMatch(/<figure class="hero-pic"><img src="\/studio\/photos\/fitness-3-l\.webp" alt="[^"]+"/);
     expect(html).toMatch(/class="card media"><div class="pic"><img src="\/studio\/photos\/fitness-\d-s\.webp"/);
     expect(html).toMatch(/<span class="chip"><svg class="ico"[^>]*aria-hidden="true"/);
     expect(html).toMatch(/class="gallery bento"/);
     expect(iconFor('Small groups', 0)).toBe('users');
     expect(iconFor('Zzz', 1)).toBe('star');
+    // Neighbouring cards in one section never share an icon, even when their words match the same one.
+    const used = new Set<string>();
+    const picks = ['Specialty coffee freshly roasted', 'Fresh pastries baked daily', 'Organic tea'].map((t, n) => iconFor(t, n, used));
+    expect(new Set(picks).size).toBe(3);
+    expect(picks[0]).toBe('leaf');
+    // "Calm Yoga" opens on the yoga-mat photo above; a gym keeps the dumbbells.
+    const gym = renderPage(parseSpec(JSON.stringify({ ...good, title: 'Iron Gym', tagline: 'Lift heavy.', theme: 'fitness' }))!);
+    expect(gym).toMatch(/<figure class="hero-pic"><img src="\/studio\/photos\/fitness-1-l\.webp"/);
     // A spec without a theme (older saved pages) still gets photos from its own words.
     expect(renderPage(parseSpec(JSON.stringify({ ...good, title: 'Harbour Hotel' }))!)).toMatch(/travel-1-l\.webp/);
   });

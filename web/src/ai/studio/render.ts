@@ -1,7 +1,7 @@
 // Pure renderer: Spec → one self-contained, accessible, responsive, light/dark HTML page.
 // Every string from the model is escaped here; colours come only from the fixed palette table.
 import type { Spec, Theme } from './spec';
-import { PHOTOS, RELATED, photoSrc, keywordTheme, type Photo } from './photos';
+import { PHOTOS, RELATED, photoSrc, keywordTheme, orderedPhotos, type Photo } from './photos';
 
 export const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
@@ -55,12 +55,25 @@ const ICON_WORDS: [RegExp, string][] = [
 ];
 const ROTATE = ['check', 'star', 'heart', 'bolt'];
 const svg = (name: string, cls = 'ico') => `<svg class="${cls}" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${ICONS[name]}</svg>`;
-export const iconFor = (text: string, n: number) => ICON_WORDS.find(([re]) => re.test(text.toLowerCase()))?.[1] ?? ROTATE[n % ROTATE.length];
+/** Picks an icon from the item's words, skipping any already used in the same section so neighbouring cards differ. */
+export function iconFor(text: string, n: number, used?: Set<string>): string {
+  const t = text.toLowerCase();
+  const free = (name: string) => !used?.has(name);
+  const pick = ICON_WORDS.find(([re, name]) => re.test(t) && free(name))?.[1]
+    ?? [...ROTATE.slice(n % ROTATE.length), ...ROTATE.slice(0, n % ROTATE.length)].find(free)
+    ?? ROTATE[n % ROTATE.length];
+  used?.add(pick);
+  return pick;
+}
+const iconsFor = (items: { title: string; text: string }[]) => {
+  const used = new Set<string>();
+  return items.map((it, n) => iconFor(`${it.title} ${it.text}`, n, used));
+};
 
 /** Hands out the theme's photos, then a related theme's, in turn (the hero takes the first), so photos rarely repeat. */
 type Photos = { hero: Photo; next: () => Photo };
-function photoDeck(theme: Theme): Photos {
-  const all = [...PHOTOS[theme], ...PHOTOS[RELATED[theme]]];
+function photoDeck(theme: Theme, text = ''): Photos {
+  const all = [...orderedPhotos(theme, text), ...PHOTOS[RELATED[theme]]];
   let i = 0;
   return { hero: all[0], next: () => all[(1 + i++) % all.length] };
 }
@@ -75,11 +88,12 @@ function section(s: Spec['sections'][number], i: number, ph: Photos): string {
   const items = s.items;
   let body = '';
   switch (s.kind) {
-    case 'features': body = `<ul class="grid">${items.map((it, n) => `<li class="card"><span class="chip">${svg(iconFor(`${it.title} ${it.text}`, n))}</span><h3>${esc(it.title)}</h3><p>${esc(it.text)}</p></li>`).join('')}</ul>`; break;
+    case 'features': { const ic = iconsFor(items); body = `<ul class="grid">${items.map((it, n) => `<li class="card"><span class="chip">${svg(ic[n])}</span><h3>${esc(it.title)}</h3><p>${esc(it.text)}</p></li>`).join('')}</ul>`; break; }
     case 'cards': {
       // Up to three cards get a photo each; more would repeat the theme's photos, so they get an icon instead.
       const pics = items.length > 0 && items.length <= 3;
-      body = `<ul class="grid">${items.map((it, n) => `<li class="card${pics ? ' media' : ''}">${pics ? `<div class="pic">${img(ph.next(), 's')}</div>` : `<span class="chip">${svg(iconFor(`${it.title} ${it.text}`, n))}</span>`}<div class="body">${it.meta ? `<p class="tag">${esc(it.meta)}</p>` : ''}<h3>${esc(it.title)}</h3><p>${esc(it.text)}</p></div></li>`).join('')}</ul>`; break;
+      const ic = iconsFor(items);
+      body = `<ul class="grid">${items.map((it, n) => `<li class="card${pics ? ' media' : ''}">${pics ? `<div class="pic">${img(ph.next(), 's')}</div>` : `<span class="chip">${svg(ic[n])}</span>`}<div class="body">${it.meta ? `<p class="tag">${esc(it.meta)}</p>` : ''}<h3>${esc(it.title)}</h3><p>${esc(it.text)}</p></div></li>`).join('')}</ul>`; break;
     }
     case 'pricing': body = `<ul class="grid">${items.map((it, n) => `<li class="card price${n === 1 ? ' pick' : ''}"><h3>${esc(it.title)}</h3><p class="big">${esc(it.meta || '—')}</p><ul class="ticks">${it.text.split(/[;•\n]/).map((x) => x.trim()).filter(Boolean).map((x) => `<li>${svg('check', 'tick')}<span>${esc(x)}</span></li>`).join('')}</ul><a class="btn${n === 1 ? '' : ' ghost'}" href="#contact">Choose ${esc(it.title)}</a></li>`).join('')}</ul>`; break;
     case 'steps': body = `<ol class="steps">${items.map((it) => `<li><h3>${esc(it.title)}</h3><p>${esc(it.text)}</p></li>`).join('')}</ol>`; break;
@@ -109,8 +123,9 @@ const defaultHeading = (k: string) => ({ features: 'Why choose us', cards: 'High
 
 export function renderPage(spec: Spec, studioName = 'BrainyApp2'): string {
   const p = PALETTE_TOKENS[spec.palette] ?? PALETTE_TOKENS.ember;
-  const theme: Theme = spec.theme ?? keywordTheme([spec.title, spec.tagline, ...spec.sections.map((s) => s.heading)].join(' ')) ?? 'business';
-  const ph = photoDeck(theme);
+  const words = [spec.title, spec.tagline, ...spec.sections.map((s) => `${s.heading} ${s.intro ?? ''}`)].join(' ');
+  const theme: Theme = spec.theme ?? keywordTheme(words) ?? 'business';
+  const ph = photoDeck(theme, words);
   const hasContact = spec.sections.some((s) => s.kind === 'contact');
   const nav = spec.sections.map((s, i) => s.heading && s.kind !== 'cta' ? `<li><a href="#${s.kind === 'contact' ? 'contact' : slug(s.heading, i)}">${esc(s.heading)}</a></li>` : '').join('');
   // Every other section sits on the surface colour, so the page reads as distinct bands.
@@ -194,6 +209,7 @@ h3{font-size:19px;line-height:1.3;margin:0 0 6px}
 form.card{display:grid;gap:8px;margin-top:28px;padding:28px}label{font-weight:700}input,textarea{font:inherit;padding:12px 14px;border-radius:12px;border:1px solid var(--soft);background:var(--surface);color:var(--ink);min-height:50px}
 form .btn{justify-self:start;margin-top:10px}.err{color:var(--accent);margin:0;font-weight:700}#cf-status{margin:4px 0 0;color:var(--soft)}
 footer{border-top:1px solid var(--line);padding:32px 0;color:var(--soft);font-size:15px}footer p{margin:4px 0}
+@media (max-width:640px){header.top .wrap{gap:0;padding-top:10px}nav{width:100%;overflow-x:auto;scrollbar-width:none}nav::-webkit-scrollbar{display:none}nav ul{flex-wrap:nowrap;white-space:nowrap;padding:0 0 4px}}
 @media (max-width:520px){.wrap{padding:0 18px}.card{padding:22px}.band{padding:40px 22px}.quote{padding:24px 22px 20px}}
 </style>
 </head>

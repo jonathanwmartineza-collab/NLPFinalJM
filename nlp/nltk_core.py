@@ -540,6 +540,12 @@ IMPERATIVE_RE = re.compile(
     r"(?:use|ship|deploy (?:on|to)|host (?:it )?on|launch (?:with|as|on)|"
     r"build" + _BUILD_OBJ + r") " + _EXAMPLE_HEAD +
     r"(?:a |an |the )?" + _REC_TAKE, re.I)
+# A labelled verdict names the pick before its verb: "Recommendation: PWAs are better for your use case.",
+# "**Recommendation** Native app is preferred", "My pick: Postgres is the right choice".
+VERDICT_RE = re.compile(
+    r"^(?:[\-–•*\d.)\s]+)?\**\s*(?:my |our |the )?(?:recommendation|verdict|pick|choice|bottom line)s?\**\s*[:\-–]?\**\s+"
+    r"(?:go with |use |choose |pick )?(?:a |an |the )?" + _REC_TAKE +
+    r" (?:is|are) (?:the )?(?:clear |better|best|preferred|right|recommended|stronger|safer|way to go|winner)", re.I)
 _REC_LEAD = {"this", "that", "these", "those", "it", "them", "your", "our", "my", "their", "its", "one",
              "something", "whatever", "what", "which", "whichever", "either", "both"}
 # A pick that starts with one of these is a clause ("I recommend you check the logs"), not a choice.
@@ -597,7 +603,8 @@ def _clean_rec(r: str) -> str:
         ws.pop()
     if not ws or (len(ws) == 1 and len(ws[0]) >= 6 and ws[0].endswith("ly")) or all(w in GENERIC_REC for w in ws):
         return ""
-    return " ".join(ws)
+    out = " ".join(ws)
+    return out[:-1] if out.endswith("s") and out[:-1] in REC_ALIASES else out   # "pwas" reads as "pwa"
 
 
 def _name_like(r: str) -> bool:
@@ -631,6 +638,9 @@ def recommendations(text: str) -> list[str]:
             m = IMPERATIVE_RE.match(s.strip())
             if m and _name_like(m.group(1)) and not _NOT_NEEDED_RE.search(s.strip()[m.end():]):
                 found.append((start + max(line.find(s), 0), m.group(1)))
+            v = VERDICT_RE.match(s.strip())
+            if v:
+                found.append((start + max(line.find(s), 0), v.group(1)))
     recs = []
     for _, r in sorted(found, key=lambda x: x[0]):
         r = _clean_rec(r)
@@ -640,7 +650,8 @@ def recommendations(text: str) -> list[str]:
 
 
 def _rec_words(r: str) -> list[str]:
-    r = REC_ALIASES.get(r.lower().strip(), r)
+    low = r.lower().strip()
+    r = REC_ALIASES.get(low) or REC_ALIASES.get(low[:-1] if low.endswith("s") else "", r)   # "PWAs" is "PWA"
     out = []
     for w in re.findall(r"[a-z0-9]+", r.lower()):
         if len(w) > 4 and w.endswith("js"):            # "nextjs", "reactjs" -> "next js", "react js"

@@ -361,3 +361,18 @@ def test_real_recommendations_still_found_after_header_rules():
     assert recs("We have recommended Supabase.") == ["supabase"]
     assert recs("Use the Stripe API for payments.") == ["stripe api"]
     assert recs("Use AWS SDK v3.") == ["aws sdk v3"]
+
+
+def test_labelled_verdicts_count_as_picks():
+    """Small models often write "Recommendation: X is better" with no "I recommend": that is still a pick, so a
+    PWA answer and a native-app answer disagree instead of reading as agreement."""
+    a = ("Recommendation: PWAs are better for your use case.\n\nCost: PWAs are cheaper to develop than native apps.\n"
+         "Reach: PWAs work on both iOS and Android without store approval.")
+    b = ("Recommendation Native app is preferred for offline functionality and reliability.\n\n"
+         "Cost: Native apps require more development time but offer better performance.")
+    assert N.recommendations(a) == ["pwa"]
+    assert N.recommendations(b) == ["native app"]
+    pair = N.agreement([{"name": "A", "text": a}, {"name": "B", "text": b}])["pairs"][0]
+    assert pair["verdict"] == "disagree"
+    # A heading alone, or a verdict about something that is not a pick, adds nothing.
+    assert N.recommendations("Recommendation\nKeep the scope small.") == []

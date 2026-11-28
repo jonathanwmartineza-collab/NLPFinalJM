@@ -22,10 +22,14 @@ import { useClearOptions, clearWithUndo } from '../components/ClearOptions';
 type Chip = { slug: string; state: 'queued' | 'thinking' | 'writing' | 'done' | 'failed' };
 type Turn = { q: string; answer: string; contributions: { slug: string; text: string }[]; note?: string; failed?: number; stop?: string };
 
+// Two warm-ups, then harder questions that make the experts compare, disagree and reason in steps.
+// Each one was run on the free in-browser AI and gave a strong, structured answer.
 const EXAMPLES = [
   'I want to launch a booking app for independent yoga teachers. What should v1 include, how should it look, and what stack should we use?',
-  'Review this idea: an AI tool that turns meeting notes into a project plan. Who is it for, what are the risks, and what would you build first?',
   'We need a landing page for a coffee subscription. Give me the positioning, the page structure, and the accessibility must-haves.',
+  'Native app or PWA for a habit tracker that must work offline and send daily reminders? Compare cost, reach and app store risk, pick one, and say what would change your mind.',
+  'Our signup converts at 6% on desktop but only 2% on mobile. What are the three most likely causes, how would you test each one, and which would you fix first?',
+  'Our checkout must work well with a screen reader and still feel fast for everyone. Where do those two goals conflict, and how would you resolve each conflict?',
 ];
 
 export default function TeamPage({ team }: { team: Team }) {
@@ -140,7 +144,9 @@ export default function TeamPage({ team }: { team: Team }) {
               <li><b>Get one answer</b><span>{director.name} combines the experts' answers. Open “Who contributed” to see each one.</span></li>
             </ol>
             <p>Ask a question that spans several areas. {director.name} will bring in the right experts and give you one answer. For example:</p>
-            {EXAMPLES.map((p) => <button key={p} type="button" className="chip-btn" onClick={() => setSeed({ text: p, n: Date.now() })}>{p}</button>)}
+            {EXAMPLES.slice(0, 2).map((p) => <button key={p} type="button" className="chip-btn" onClick={() => setSeed({ text: p, n: Date.now() })}>{p}</button>)}
+            <p>Or challenge them. These make the experts compare options, disagree and reason in steps:</p>
+            {EXAMPLES.slice(2).map((p) => <button key={p} type="button" className="chip-btn" onClick={() => setSeed({ text: p, n: Date.now() })}>{p}</button>)}
           </div>
         )}
         {turns.map((t, i) => (
