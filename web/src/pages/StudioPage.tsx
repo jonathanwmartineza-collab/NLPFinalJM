@@ -6,6 +6,7 @@ import EngineGate from '../components/EngineGate';
 import { useEngine } from '../ai/engine';
 import { buildFromBrief, refineSpec, claudeCodePrompt } from '../ai/studio/generate';
 import type { Spec } from '../ai/studio/spec';
+import { inlinePhotos } from '../ai/studio/photos';
 
 type Stage = 'idle' | 'write' | 'render' | 'done';
 const WIDTHS = { Desktop: '100%', Tablet: '820px', Mobile: '390px' } as const;
@@ -34,6 +35,10 @@ export default function StudioPage({ library }: { library: LibraryItem[] }) {
   const busy = stage === 'write' || stage === 'render';
   const cur = versions[vi];
   const html = cur?.html ?? '';
+  // The preview, download and copy get the photos as data: URIs (the sandbox can't load site paths); code view keeps the short paths.
+  // Copy and download use the ready copy, so the click keeps its user gesture in Safari.
+  const [inlined, setInlined] = useState({ src: '', out: '' });
+  const shown = inlined.src === html ? inlined.out : '';
 
   useEffect(() => { if (tpl) setBrief(tpl.prompt); }, [tpl]);
   useEffect(() => {
@@ -46,11 +51,17 @@ export default function StudioPage({ library }: { library: LibraryItem[] }) {
   useEffect(() => {
     const on = (e: MessageEvent) => {
       if (e.source !== frame.current?.contentWindow || e.data?.type !== 'ready') return;
-      frame.current?.contentWindow?.postMessage({ type: 'render', html }, '*');
+      frame.current?.contentWindow?.postMessage({ type: 'render', html: shown }, '*');
     };
     addEventListener('message', on); return () => removeEventListener('message', on);
+  }, [shown]);
+  useEffect(() => {
+    let live = true;
+    if (!html) return;
+    inlinePhotos(html).then((out) => { if (live) setInlined({ src: html, out }); });
+    return () => { live = false; };
   }, [html]);
-  useEffect(() => { if (html) setFrameKey((k) => k + 1); }, [html]);
+  useEffect(() => { if (shown) setFrameKey((k) => k + 1); }, [shown]);
 
   const persist = (vs: Version[], b = brief) => saveBuild({ id: 'current', brief: b, versions: vs.map((v) => v.html), v2: vs, at: Date.now() } as any);
   const reset = () => { ctrl.current?.abort(); setVersions([]); setVi(0); setBrief(''); setChange(''); setCc(''); setStream(''); setErr(''); setNote(''); setStage('idle'); setTemplateId(''); };
@@ -106,8 +117,8 @@ export default function StudioPage({ library }: { library: LibraryItem[] }) {
   }
 
   const copy = async (t: string) => { try { await navigator.clipboard.writeText(t); setNote('Copied to the clipboard.'); } catch { setNote('Copy was blocked by the browser; use View code and select the text.'); } };
-  const download = () => {
-    const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+  const download = async () => {
+    const url = URL.createObjectURL(new Blob([shown || await inlinePhotos(html)], { type: 'text/html' }));
     const a = document.createElement('a'); a.href = url; a.download = `${(tpl?.id ?? 'brainyapp2-page')}-v${vi + 1}.html`; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 2000);
   };
@@ -170,7 +181,7 @@ export default function StudioPage({ library }: { library: LibraryItem[] }) {
             </div>
           )}
           <span style={{ flex: 1 }} />
-          <button type="button" className="btn ghost sm" disabled={!html} onClick={() => copy(html)}>Copy</button>
+          <button type="button" className="btn ghost sm" disabled={!html} onClick={async () => copy(shown || await inlinePhotos(html))}>Copy</button>
           <button type="button" className="btn ghost sm" disabled={!html} onClick={download}>Download .html</button>
           <button type="button" className="btn ghost sm" disabled={!html} onClick={() => { const el = wrap.current; if (!el?.requestFullscreen) { setNote('Full screen is not available here.'); return; } el.requestFullscreen().catch(() => setNote('Full screen is not available here.')); }}>Full screen</button>
         </div>
@@ -178,8 +189,9 @@ export default function StudioPage({ library }: { library: LibraryItem[] }) {
           ? <pre className="codeview" aria-label={busy ? 'Content the AI is writing' : 'HTML source'}>{busy && stream ? stream : html || 'No page yet.'}</pre>
           : (
             <div className="frame-wrap" ref={wrap}>
-              {html
+              {shown
                 ? <iframe key={frameKey} ref={frame} title="Generated page preview (sandboxed)" src="/sandbox.html" sandbox="allow-scripts allow-forms allow-modals" referrerPolicy="no-referrer" style={{ maxWidth: WIDTHS[width] }} />
+                : html ? <div className="placeholder"><p>Adding the photos…</p></div>
                 : <div className="placeholder"><p><b>Your page will appear here.</b></p><p>Pick a template or write a brief, then Generate. Pages run in a locked-down sandbox: they can't see your data or reach the internet.</p></div>}
             </div>
           )}

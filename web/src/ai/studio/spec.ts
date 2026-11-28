@@ -4,6 +4,9 @@ import { z } from 'zod';
 export const KINDS = ['features', 'cards', 'pricing', 'steps', 'stats', 'faq', 'schedule', 'gallery', 'quote', 'about', 'contact', 'cta'] as const;
 export const PALETTES = ['ember', 'ocean', 'forest', 'plum', 'slate', 'rose'] as const;
 export type Kind = (typeof KINDS)[number];
+/** Photo themes for the built-in sample photos (web/src/ai/studio/photos.ts). */
+export const THEMES = ['food', 'cafe', 'fitness', 'tech', 'business', 'education', 'health', 'travel', 'nature', 'shop', 'events', 'beauty', 'home', 'creative'] as const;
+export type Theme = (typeof THEMES)[number];
 
 const str = (max: number, def = '') => z.preprocess((v) => (v == null ? def : typeof v === 'string' ? v : typeof v === 'number' ? String(v) : def), z.string().transform((s) => s.trim().slice(0, max)));
 const Item = z.object({ title: str(80), text: str(280), meta: str(40) }).catch({ title: '', text: '', meta: '' });
@@ -19,6 +22,7 @@ export const SpecSchema = z.object({
   tagline: str(200),
   palette: z.preprocess((v) => (typeof v === 'string' ? v.toLowerCase().trim() : v), z.enum(PALETTES)).catch('ember'),
   cta: str(40, 'Get started'),
+  theme: z.preprocess((v) => (typeof v === 'string' ? v.toLowerCase().trim() : v), z.enum(THEMES)).optional().catch(undefined),
   sections: z.preprocess((v) => (Array.isArray(v) ? v : []), z.array(Section)).transform((a) => a.filter((s) => s.heading || s.items.length || s.kind === 'contact').slice(0, 8)),
 });
 export type Spec = z.infer<typeof SpecSchema>;
@@ -31,13 +35,13 @@ const S = { type: 'string' };
 export const SPEC_JSON_SCHEMA = JSON.stringify({
   type: 'object',
   properties: {
-    title: S, tagline: S, palette: { type: 'string', enum: PALETTES }, cta: S,
+    title: S, tagline: S, palette: { type: 'string', enum: PALETTES }, cta: S, theme: { type: 'string', enum: THEMES },
     sections: { type: 'array', items: { type: 'object', properties: {
       kind: { type: 'string', enum: KINDS }, heading: S, intro: S,
       items: { type: 'array', items: { type: 'object', properties: { title: S, text: S, meta: S }, required: ['title', 'text', 'meta'] } },
     }, required: ['kind', 'heading', 'intro', 'items'] } },
   },
-  required: ['title', 'tagline', 'palette', 'cta', 'sections'],
+  required: ['title', 'tagline', 'palette', 'cta', 'theme', 'sections'],
 });
 
 /** Find the first balanced {...} in a model reply (tolerates fences and chatter). */

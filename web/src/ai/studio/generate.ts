@@ -4,6 +4,11 @@ import { BUDGET } from '../models';
 import { SPEC_TASK, REFINE_TASK, STUDIO_NAME } from '../prompts';
 import { parseSpec, fallbackSpec, SPEC_JSON_SCHEMA, type Spec } from './spec';
 import { renderPage } from './render';
+import { pickTheme, keywordTheme } from './photos';
+
+const pageText = (s: Spec) => [s.title, s.tagline, ...s.sections.map((x) => x.heading)].join(' ');
+/** A change request that talks about photos and names a theme's words switches the photos. */
+const photoChange = (change: string) => (/\b(photos?|pictures?|images?|imagery)\b/i.test(change) ? keywordTheme(change) : undefined);
 
 // JSON mode (grammar-constrained by SPEC_JSON_SCHEMA) is preferred; if the engine rejects it, retry as plain text:
 // parseSpec() repairs JSON from free text.
@@ -20,7 +25,8 @@ async function fill(messages: ChatMessage[], maxTokens: number, temperature: num
   return chat(messages, { maxTokens, temperature }, onText, signal);
 }
 
-const sameSpec = (a: Spec, b: Spec) => JSON.stringify(a) === JSON.stringify(b);
+const specKey = (s: Spec) => JSON.stringify([s.title, s.tagline, s.palette, s.cta, s.theme ?? null, s.sections]);
+const sameSpec = (a: Spec, b: Spec) => specKey(a) === specKey(b);
 /** A page with no filled section besides contact (real test: Lite returned only a contact section) is not usable. */
 export const thinSpec = (s: Spec) => s.sections.filter((x) => x.kind !== 'contact' && x.items.length).length === 0;
 
@@ -35,17 +41,19 @@ export async function buildFromBrief(brief: string, onText: (t: string) => void,
   }
   if (signal?.aborted) throw new EngineError('aborted', 'Stopped.');
   const usedFallback = !spec;
-  const final = spec ?? fallbackSpec(brief);
+  const base = spec ?? fallbackSpec(brief);
+  const final: Spec = { ...base, theme: pickTheme(brief, base.theme, pageText(base)) };
   return { spec: final, html: renderPage(final, STUDIO_NAME), usedFallback };
 }
 
 export async function refineSpec(spec: Spec, change: string, onText: (t: string) => void, signal?: AbortSignal): Promise<BuildResult> {
   const r = await fill([{ role: 'system', content: REFINE_TASK }, { role: 'user', content: `Change request: ${change.slice(0, 600)}\n\nCurrent JSON:\n${JSON.stringify(spec)}` }], 1_200, 0.4, onText, signal);
   if (signal?.aborted) throw new EngineError('aborted', 'Stopped.');
-  const next = parseSpec(r.text);
+  const parsed = parseSpec(r.text);
+  const next: Spec | null = parsed && { ...parsed, theme: photoChange(change) ?? parsed.theme ?? spec.theme ?? pickTheme('', undefined, pageText(parsed)) };
   if (!next) throw new EngineError('refine', 'The AI could not apply that change, so this version was kept. Try a shorter, more specific request.');
   // A real-model test said "Version 2 ready" for a byte-identical page: never report an edit that changed nothing.
-  if (sameSpec(next, spec)) throw new EngineError('noop', 'The AI returned the page unchanged, so no new version was made. Try rewording the change, for example “Add a pricing section with 4 repairs and their prices”.');
+  if (sameSpec(spec.theme ? next : { ...next, theme: undefined }, spec)) throw new EngineError('noop', 'The AI returned the page unchanged, so no new version was made. Try rewording the change, for example “Add a pricing section with 4 repairs and their prices”.');
   return { spec: next, html: renderPage(next, STUDIO_NAME), usedFallback: false };
 }
 

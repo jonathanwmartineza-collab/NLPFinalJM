@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { parseSpec, fallbackSpec, extractObject, SPEC_JSON_SCHEMA, PALETTES, KINDS } from '../../web/src/ai/studio/spec';
-import { renderPage, esc } from '../../web/src/ai/studio/render';
+import { parseSpec, fallbackSpec, extractObject, SPEC_JSON_SCHEMA, PALETTES, KINDS, THEMES } from '../../web/src/ai/studio/spec';
+import { renderPage, esc, iconFor } from '../../web/src/ai/studio/render';
+import { keywordTheme, pickTheme, inlinePhotos, PHOTOS, photoSrc } from '../../web/src/ai/studio/photos';
+import { existsSync } from 'node:fs';
 import { claudeCodePrompt, thinSpec } from '../../web/src/ai/studio/generate';
 
 const good = { title: 'Calm Yoga', tagline: 'Small classes.', palette: 'forest', cta: 'Book', sections: [
@@ -57,7 +59,8 @@ describe('studio renderer', () => {
 describe('SPEC_JSON_SCHEMA', () => {
   it('is a JSON Schema string for WebLLM JSON mode that matches the spec fields', () => {
     const s = JSON.parse(SPEC_JSON_SCHEMA);
-    expect(s.required).toEqual(['title', 'tagline', 'palette', 'cta', 'sections']);
+    expect(s.required).toEqual(['title', 'tagline', 'palette', 'cta', 'theme', 'sections']);
+    expect(s.properties.theme.enum).toEqual([...THEMES]);
     expect(s.properties.palette.enum).toEqual([...PALETTES]);
     expect(s.properties.sections.items.properties.kind.enum).toEqual([...KINDS]);
   });
@@ -68,5 +71,57 @@ describe('thinSpec', () => {
     const only = parseSpec('{"title":"Repair Café","tagline":"Fix it.","palette":"rose","cta":"Join","sections":[{"kind":"contact","heading":"Contact","intro":"","items":[{"title":"Email","text":"Write to us","meta":""}]}]}')!;
     expect(thinSpec(only)).toBe(true);
     expect(thinSpec(parseSpec(JSON.stringify(good))!)).toBe(false);
+  });
+});
+
+describe('studio photos', () => {
+  it('picks a theme from the brief first, then the model, then the page words', () => {
+    expect(keywordTheme('A cosy coffee shop and espresso bar in Porto')).toBe('cafe');
+    expect(keywordTheme('A yoga studio in Lisbon')).toBe('fitness');
+    expect(keywordTheme('Hello world')).toBeUndefined();
+    expect(pickTheme('A dentist in Leeds', 'food')).toBe('health');
+    expect(pickTheme('Something nice', 'travel')).toBe('travel');
+    expect(pickTheme('Something nice', undefined, 'Wedding planning')).toBe('events');
+    expect(pickTheme('Something nice', undefined)).toBe('business');
+  });
+  it('reads the theme from model JSON and drops unknown themes', () => {
+    expect(parseSpec(JSON.stringify({ ...good, theme: 'Nature' }))?.theme).toBe('nature');
+    expect(parseSpec(JSON.stringify({ ...good, theme: 'space' }))?.theme).toBeUndefined();
+  });
+  it('every theme has three photos with alt text, and every photo file exists', () => {
+    for (const t of THEMES) {
+      expect(PHOTOS[t]).toHaveLength(3);
+      for (const p of PHOTOS[t]) {
+        expect(p.alt.length).toBeGreaterThan(10);
+        for (const size of ['l', 's'] as const) expect(existsSync(`web/public${photoSrc(p, size)}`), photoSrc(p, size)).toBe(true);
+      }
+    }
+  });
+  it('renders a split hero with a themed photo, photo cards and icon features', () => {
+    const spec = parseSpec(JSON.stringify({ ...good, theme: 'fitness', sections: [
+      { kind: 'features', heading: 'Why us', items: [{ title: 'Small groups', text: 'Ten people at most.' }] },
+      { kind: 'cards', heading: 'Classes', items: [{ title: 'Flow', text: 'x', meta: 'Mon' }, { title: 'Yin', text: 'y', meta: 'Tue' }] },
+      { kind: 'gallery', heading: 'Studio', items: [{ title: 'A' }, { title: 'B' }, { title: 'C' }] },
+      { kind: 'contact', heading: 'Contact', items: [] }] }))!;
+    const html = renderPage(spec);
+    expect(html).toMatch(/<figure class="hero-pic"><img src="\/studio\/photos\/fitness-1-l\.webp" alt="[^"]+"/);
+    expect(html).toMatch(/class="card media"><div class="pic"><img src="\/studio\/photos\/fitness-\d-s\.webp"/);
+    expect(html).toMatch(/<span class="chip"><svg class="ico"[^>]*aria-hidden="true"/);
+    expect(html).toMatch(/class="gallery bento"/);
+    expect(iconFor('Small groups', 0)).toBe('users');
+    expect(iconFor('Zzz', 1)).toBe('star');
+    // A spec without a theme (older saved pages) still gets photos from its own words.
+    expect(renderPage(parseSpec(JSON.stringify({ ...good, title: 'Harbour Hotel' }))!)).toMatch(/travel-1-l\.webp/);
+  });
+  it('inlines the photos as data: URIs, once per file, and blanks a photo that fails', async () => {
+    let calls = 0;
+    const ok = (async (u: string) => { calls++; return new Response(new Uint8Array([82, 73, 70, 70]), { status: u.includes('fitness-2') ? 404 : 200 }); }) as unknown as typeof fetch;
+    const html = '<img src="/studio/photos/fitness-1-l.webp"><img src="/studio/photos/fitness-1-l.webp"><img src="/studio/photos/fitness-2-s.webp">';
+    const out = await inlinePhotos(html, ok);
+    expect(out).not.toMatch(/\/studio\/photos\//);
+    expect(out).toContain('data:image/webp;base64,UklGRg==');
+    expect(out).toContain('data:image/gif;base64,');
+    expect(calls).toBe(2);
+    expect(await inlinePhotos('<p>no photos</p>', ok)).toBe('<p>no photos</p>');
   });
 });

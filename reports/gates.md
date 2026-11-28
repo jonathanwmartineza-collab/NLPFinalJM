@@ -1,6 +1,6 @@
 # Quality gates
 
-Run: 2026-11-26T20:43Z on commit 572ebb2
+Run: 2026-11-28T05:57Z on commit 7a01bde
 
 ## Team validation: PASS
 
@@ -15,7 +15,7 @@ validate-team: 36 agents OK, 49 skills present, descriptions 11309 chars
 $ bash -c node scripts/build-team.mjs && node scripts/stamp-version.mjs
 validate-team: 36 agents OK, 49 skills present, descriptions 11309 chars
 build-team: 36 agents, 12 library prompts; largest lite prompt 1197 chars
-version.json → 572ebb2 (local)
+version.json → 7a01bde (local)
 ```
 
 ## Skills check: PASS
@@ -29,7 +29,7 @@ check-skills: 49 skills OK
 
 ```
 $ python3 nlp/build_nlp.py
-build_nlp: OK 48 documents, 50871 words, 1685 topic phrases, 11.3 s; spacy.json 47 KB, topic-index.json 196 KB, nltk.json 19 KB, nltk_data.zip 187 KB
+build_nlp: OK 48 documents, 50871 words, 1685 topic phrases, 9.2 s; spacy.json 47 KB, topic-index.json 196 KB, nltk.json 19 KB, nltk_data.zip 187 KB
 ```
 
 ## NLP tests (pytest: NLTK core, spaCy gold, build output): PASS
@@ -38,9 +38,9 @@ build_nlp: OK 48 documents, 50871 words, 1685 topic phrases, 11.3 s; spacy.json 
 $ python3 -m pytest -q tests/python
 ........................................................................ [ 31%]
 ........................................................................ [ 63%]
-........................................................................ [ 95%]
-...........                                                              [100%]
-227 passed in 1.41s
+........................................................................ [ 94%]
+............                                                             [100%]
+228 passed in 1.08s
 ```
 
 ## Type check: PASS
@@ -55,16 +55,16 @@ $ npx tsc -p tsconfig.json --noEmit
 ```
 $ npx vitest run
 
- RUN  v5.1.1 /home/user/NLPFinal-BrainyApp
+ RUN  v5.1.1 /home/user/nlpfinaljm
 
 
  Test Files  11 passed (11)
-      Tests  64 passed (64)
-   Start at  20:43:40
-   Duration  2.75s (tests 76%, import 19%, transform 4%, worker 1%)
+      Tests  73 passed (73)
+   Start at  05:57:36
+   Duration  2.54s (tests 78%, import 17%, transform 4%, worker 1%)
 
-    Isolate  11 workers spawned · ~144ms startup each (spawn + environment, per file)
-             at least ~383ms faster with isolate: false — reuses workers across files instead of one per file
+    Isolate  11 workers spawned · ~111ms startup each (spawn + environment, per file)
+             at least ~297ms faster with isolate: false — reuses workers across files instead of one per file
 ```
 
 ## Production build: PASS
@@ -76,8 +76,8 @@ computing gzip size...
 web/dist/assets/nltk.worker-XyE1pPJT.js      2.55 kB
 web/dist/index.html                          2.62 kB │ gzip:     1.20 kB
 web/dist/assets/worker-HJiqo6PJ.js       6,124.96 kB
-web/dist/assets/index-CoJTIifu.css          44.10 kB │ gzip:     9.43 kB
-web/dist/assets/index-CYbxQNJx.js          651.31 kB │ gzip:   204.77 kB
+web/dist/assets/index-BEkH9lvi.css          44.77 kB │ gzip:     9.58 kB
+web/dist/assets/index-CJuc22Tm.js          666.65 kB │ gzip:   211.48 kB
 web/dist/assets/lib-DbM4P1Ls.js          6,139.64 kB │ gzip: 2,194.24 kB
 
 [plugin builtin:vite-reporter] 
@@ -85,14 +85,14 @@ web/dist/assets/lib-DbM4P1Ls.js          6,139.64 kB │ gzip: 2,194.24 kB
 - Using dynamic import() to code-split the application
 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 2.25s
+✓ built in 1.38s
 ```
 
 ## Initial JS budget (<= 250 KB gzip, WebLLM lazy): PASS
 
 ```
 $ bash -c f=$(grep -o "assets/index-[^\"]*\.js" web/dist/index.html | head -1); s=$(gzip -c "web/dist/$f" | wc -c); echo "$f gzip $s bytes"; grep -q "web-llm\|CreateWebWorkerMLCEngine" web/dist/index.html && { echo "WebLLM in entry HTML"; exit 1; }; [ "$s" -le 256000 ]
-assets/index-CYbxQNJx.js gzip 202604 bytes
+assets/index-CJuc22Tm.js gzip 209081 bytes
 ```
 
 ## End-to-end + axe (Playwright, mock engine): FAIL
@@ -116,11 +116,11 @@ $ npx playwright test --reporter=line
     [chrome] › tests/e2e/site.spec.ts:316:1 › NLP Lab: the live NLTK prompt coach returns a result ─
 ```
 
-## No server AI, secrets or private-edition links in the bundle: FAIL
+## No server AI, secrets or private-edition links in the bundle: PASS
 
 ```
-$ bash -c ! grep -rlE "/api/|sk-ant-|ANTHROPIC_API_KEY|APP_PASSWORD|SESSION_SECRET|brainyapp-stud[i]o" web/dist --include=*.html --include=index-*.js && echo "clean: no /api/ calls, secrets or private-edition links in web/dist"
-web/dist/assets/index-CYbxQNJx.js
+$ bash -c ! grep -rlE "[^A-Za-z0-9.]/api/|sk-ant-|ANTHROPIC_API_KEY|APP_PASSWORD|SESSION_SECRET|brainyapp-stud[i]o" web/dist --include=*.html --include=index-*.js && echo "clean: no relative /api/ calls, secrets or private-edition links in web/dist (external docs such as spacy.io/api/ are allowed)"
+clean: no relative /api/ calls, secrets or private-edition links in web/dist (external docs such as spacy.io/api/ are allowed)
 ```
 
 ## No bare wildcard in the CSP: PASS

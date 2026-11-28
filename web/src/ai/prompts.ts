@@ -1,6 +1,6 @@
 // Task prompts sized for a 4,096-token on-device context. Lite agent prompts come from the build.
 import gen from './_generated/agents.json';
-import { KINDS, PALETTES } from './studio/spec';
+import { KINDS, PALETTES, THEMES } from './studio/spec';
 import { SAFETY_RULE } from './safety';
 
 export type LiteAgent = { name: string; title: string; mission: string; department: string; prompt: string };
@@ -24,13 +24,13 @@ export const REVIEW_TASK = `Task: red-team review. In at most 100 words list rea
 export const SYNTH_TASK = `Task: combine the expert answers into one answer for the visitor with these bold headings: **Recommendation**, **Why**, **Risks**, **Next steps**. At most 250 words. If experts disagree, say so plainly under **Why** (name who recommends what) before you choose, and give the reason. Cover every angle the visitor asked for. Only use what the experts said.`;
 
 export const SPEC_TASK = `You write website content as JSON for a page builder. Reply with ONE JSON object only, no other text.
-Fields: "title" (≤6 words), "tagline" (1 sentence), "palette" (one of ${PALETTES.join(', ')}), "cta" (button text, ≤4 words), "sections" (4–6 items).
+Fields: "title" (≤6 words), "tagline" (1 sentence), "palette" (one of ${PALETTES.join(', ')}), "cta" (button text, ≤4 words), "theme" (photos to show, one of ${THEMES.join(', ')}), "sections" (4–6 items).
 Each section: {"kind": one of ${KINDS.join(', ')}, "heading": "...", "intro": "...", "items": [{"title": "...", "text": "...", "meta": "..."}]}.
 Use "meta" for prices (pricing), numbers (stats), dates or times (schedule), labels (cards). End with a "contact" section with no items.
 Write specific, realistic content for the brief. Example:
-{"title":"Calm Yoga Lisbon","tagline":"Small classes for busy people, in the heart of Lisbon.","palette":"forest","cta":"Book a class","sections":[{"kind":"features","heading":"Why people love us","intro":"","items":[{"title":"Small groups","text":"Never more than 10 people, so teachers can help you.","meta":""}]},{"kind":"pricing","heading":"Prices","intro":"","items":[{"title":"Drop-in","text":"One class; Mats included","meta":"€15"}]},{"kind":"contact","heading":"Book or ask","intro":"We reply within a day.","items":[]}]}`;
+{"title":"Calm Yoga Lisbon","tagline":"Small classes for busy people, in the heart of Lisbon.","palette":"forest","cta":"Book a class","theme":"fitness","sections":[{"kind":"features","heading":"Why people love us","intro":"","items":[{"title":"Small groups","text":"Never more than 10 people, so teachers can help you.","meta":""}]},{"kind":"pricing","heading":"Prices","intro":"","items":[{"title":"Drop-in","text":"One class; Mats included","meta":"€15"}]},{"kind":"contact","heading":"Book or ask","intro":"We reply within a day.","items":[]}]}`;
 
-export const REFINE_TASK = `You edit website content JSON for a page builder. Apply EVERY part of the change request: add, remove or rewrite sections and items as asked (for example a new "pricing" section, new items with prices in "meta", or a new "palette"). Keep everything else the same. Reply with the COMPLETE updated JSON object only, same fields, no other text. Allowed palettes: ${PALETTES.join(', ')}. Allowed section kinds: ${KINDS.join(', ')}.`;
+export const REFINE_TASK = `You edit website content JSON for a page builder. Apply EVERY part of the change request: add, remove or rewrite sections and items as asked (for example a new "pricing" section, new items with prices in "meta", or a new "palette"). Keep everything else the same. Reply with the COMPLETE updated JSON object only, same fields, no other text. Allowed palettes: ${PALETTES.join(', ')}. Allowed photo themes: ${THEMES.join(', ')}. Allowed section kinds: ${KINDS.join(', ')}.`;
 
 /** Room for earlier team-chat turns in each team step (expert, review, synthesis); see teamContext(). */
 export const TEAM_CONTEXT_CHARS = 1_400;
