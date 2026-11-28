@@ -10,6 +10,7 @@ import TeamPage from './pages/TeamPage';
 import StudioPage from './pages/StudioPage';
 import LibraryPage from './pages/LibraryPage';
 import NlpPage from './pages/NlpPage';
+import ShowcasePage from './pages/ShowcasePage';
 import { onLinkClick } from './lib/router';
 import { ResourcesPage, GuidePage, PrivacyPage, NotFound } from './pages/ContentPages';
 
@@ -74,6 +75,7 @@ export default function App() {
   else if (path === '/studio') page = <StudioPage library={library} />;
   else if (path === '/library') page = <LibraryPage library={library} team={team} />;
   else if (path === '/nlp') page = <NlpPage />;
+  else if (path === '/showcase') page = <ShowcasePage />;
   else if (path === '/resources') page = <ResourcesPage team={team} />;
   else if (path === '/guide') page = <GuidePage team={team} />;
   else if (path === '/privacy') page = <PrivacyPage />;
@@ -91,6 +93,7 @@ export default function App() {
         <OwnerLogo />
         <nav className="topbar-links" aria-label="NLP final project">
           <a href="/nlp" onClick={onLinkClick} aria-current={path === '/nlp' ? 'page' : undefined}>NLP Lab</a>
+          <a href="/showcase" onClick={onLinkClick} aria-current={path === '/showcase' ? 'page' : undefined}>Showcase</a>
           <a href="/resources" onClick={onLinkClick} aria-current={path === '/resources' ? 'page' : undefined}>Resources</a>
         </nav>
         <span className="topbar-name">{team.studio.name}</span>

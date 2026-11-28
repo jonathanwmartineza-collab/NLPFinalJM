@@ -34,6 +34,10 @@
   to = "/index.html"
   status = 200
 [[redirects]]
+  from = "/showcase"
+  to = "/index.html"
+  status = 200
+[[redirects]]
   from = "/resources"
   to = "/index.html"
   status = 200

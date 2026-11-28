@@ -25,7 +25,7 @@ while :; do
   sleep 20
 done
 fail=0
-for p in / /team /studio /library /resources /guide /privacy /expert/edge-ai-engineer /sandbox.html /team.json /version.json; do
+for p in / /team /studio /library /resources /showcase /guide /privacy /expert/edge-ai-engineer /sandbox.html /team.json /version.json; do
   code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 15 "$SITE$p"); echo "$code $p"; [ "$code" = 200 ] || fail=1
 done
 code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 15 "$SITE/this-page-does-not-exist"); echo "$code /this-page-does-not-exist (expect 404)"; [ "$code" = 404 ] || fail=1

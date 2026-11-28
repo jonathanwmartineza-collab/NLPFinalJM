@@ -126,7 +126,7 @@ const COPYRIGHT = '© 2026 Jonathan Martinez. All rights reserved.';
 const REPO = 'https://github.com/jonathanwmartineza-collab/NLPFinalJM';
 const allowed = (h: string) => h === REPO || h.startsWith(`${REPO}/`) || h.startsWith(`${REPO}#`);
 test('privacy: only the logo name and the copyright line are personal; no repo links (except the NLP final repo on Resources), emails or credits', async ({ page }) => {
-  for (const path of ['/', '/expert/edge-ai-engineer', '/studio', '/library', '/nlp', '/resources', '/guide', '/privacy', ...(LIVE ? [] : ['/no-such-page'])]) {
+  for (const path of ['/', '/expert/edge-ai-engineer', '/studio', '/library', '/nlp', '/showcase', '/resources', '/guide', '/privacy', ...(LIVE ? [] : ['/no-such-page'])]) {
     await open(page, path);
     const hrefs = await page.locator('a[href]').evaluateAll((as) => as.map((a) => a.getAttribute('href') || ''));
     expect(hrefs.filter((h) => /github\.com|gitlab\.com|bitbucket\.org|sourceforge\.net|codeberg\.org|^mailto:/i.test(h) && !(path === '/resources' && allowed(h))), path).toEqual([]);

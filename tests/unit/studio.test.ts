@@ -105,6 +105,7 @@ describe('studio photos', () => {
       { kind: 'contact', heading: 'Contact', items: [] }] }))!;
     const html = renderPage(spec);
     expect(html).toMatch(/<figure class="hero-pic"><img src="\/studio\/photos\/fitness-3-l\.webp" alt="[^"]+"/);
+    expect(html).not.toMatch(/fitness-1-/);   // no dumbbells on a yoga page
     expect(html).toMatch(/class="card media"><div class="pic"><img src="\/studio\/photos\/fitness-\d-s\.webp"/);
     expect(html).toMatch(/<span class="chip"><svg class="ico"[^>]*aria-hidden="true"/);
     expect(html).toMatch(/class="gallery bento"/);

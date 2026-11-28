@@ -17,6 +17,7 @@ import { useEngine } from '../ai/engine';
 import { teamContext } from '../ai/prompts';
 import { Thinking, errorText, VoiceControls, ChatFooter } from '../components/ChatParts';
 import EmergencyNotice from '../components/EmergencyNotice';
+import { onLinkClick } from '../lib/router';
 import { useClearOptions, clearWithUndo } from '../components/ClearOptions';
 
 type Chip = { slug: string; state: 'queued' | 'thinking' | 'writing' | 'done' | 'failed' };
@@ -147,6 +148,7 @@ export default function TeamPage({ team }: { team: Team }) {
             {EXAMPLES.slice(0, 2).map((p) => <button key={p} type="button" className="chip-btn" onClick={() => setSeed({ text: p, n: Date.now() })}>{p}</button>)}
             <p>Or challenge them. These make the experts compare options, disagree and reason in steps:</p>
             {EXAMPLES.slice(2).map((p) => <button key={p} type="button" className="chip-btn" onClick={() => setSeed({ text: p, n: Date.now() })}>{p}</button>)}
+            <p>Want to see real results first? <a href="/showcase" onClick={onLinkClick}>Open the showcase</a> of pages, answers and NLP results made on this site.</p>
           </div>
         )}
         {turns.map((t, i) => (
