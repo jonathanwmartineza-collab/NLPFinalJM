@@ -378,6 +378,8 @@ textarea::placeholder, input::placeholder { color: var(--faint); opacity: 1; }
 .sc-shots { display: grid; gap: 14px; align-items: start; }
 .sc-shots figure { margin: 0; border-radius: 14px; overflow: hidden; border: 1px solid var(--control); box-shadow: var(--shadow-sm); background: var(--glass-soft); }
 .sc-shots img { display: block; width: 100%; height: auto; }
+.sc-zoom { display: block; cursor: zoom-in; }
+.sc-zoom:focus-visible { outline: 3px solid var(--accent, #2f5bd3); outline-offset: -3px; }
 @media (min-width: 900px) {
   .sc-shots.n2 { grid-template-columns: 1fr 1fr; }
   .sc-shots.n3 { grid-template-columns: 1fr 1fr 260px; }

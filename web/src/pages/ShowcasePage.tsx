@@ -69,7 +69,7 @@ export default function ShowcasePage() {
     <div className="page" tabIndex={0} role="region" aria-label="Page content">
       <div className="page-inner showcase">
         <h1>What you can make here</h1>
-        <p className="lede">Real results from this site, made with the free AI that runs in your browser. Each screenshot comes with the exact prompt that made it, so you can try it yourself. The AI can word things differently each time, so your result will vary.</p>
+        <p className="lede">Real results from this site, made with the free AI that runs in your browser. Each screenshot comes with the exact prompt that made it, so you can try it yourself. The AI can word things differently each time, so your result will vary. Tap a screenshot to open it full size.</p>
         <nav className="sc-jump" aria-label="Examples on this page">
           {ITEMS.map((it) => <a key={it.id} href={`#${it.id}`}>{it.title}</a>)}
         </nav>
@@ -80,9 +80,11 @@ export default function ShowcasePage() {
             <div className={`sc-shots n${it.shots.length}`}>
               {it.shots.map((s, i) => (
                 <figure key={s.file} className={s.h > s.w ? 'tall' : undefined}>
+                  <a href={`/showcase/${s.file}.webp`} target="_blank" rel="noopener" className="sc-zoom" title="Open full size">
                   <img src={`/showcase/${s.file}.webp`} srcSet={`/showcase/${s.file}-s.webp 720w, /showcase/${s.file}.webp ${s.w}w`}
                     sizes={s.h > s.w ? '(min-width: 900px) 260px, 60vw' : '(min-width: 1100px) 820px, 92vw'}
                     width={s.w} height={s.h} alt={s.alt} loading={it.id === 'cafe' && i === 0 ? 'eager' : 'lazy'} decoding="async" />
+                  </a>
                 </figure>
               ))}
             </div>
